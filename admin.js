@@ -41,6 +41,14 @@ function showAdminPanel() {
     document.getElementById('adminPanel').style.display = 'block';
     
     setupAdminEvents();
+    
+    // Load categories first (needed for product dropdown)
+    categories = loadCategoriesFromLocal();
+    
+    // Update product category dropdown
+    updateProductCategoryDropdown();
+    
+    // Then load products
     loadProductsTab();
 }
 
@@ -214,6 +222,12 @@ function createProductRow(product) {
 function openProductModal(product = null) {
     const modal = document.getElementById('productModal');
     const title = document.getElementById('modalTitle');
+    
+    // Make sure categories are loaded and dropdown is updated
+    if (categories.length === 0) {
+        categories = loadCategoriesFromLocal();
+    }
+    updateProductCategoryDropdown();
     
     if (product) {
         title.textContent = 'Edit Product';
@@ -477,15 +491,20 @@ function loadCategoriesFromLocal() {
     }
     
     // Default categories
-    return [
+    const defaultCategories = [
         { id: 'banner', name: 'Banner', description: 'Vinyl banners and flexible print materials', icon: 'fa-flag', sort_order: 1, status: 'active' },
         { id: 'rigid', name: 'Rigid', description: 'Hard substrates including coroplast and acrylic', icon: 'fa-square', sort_order: 2, status: 'active' },
         { id: 'adhesive', name: 'Adhesive', description: 'Stickers, decals and adhesive vinyl', icon: 'fa-sticky-note', sort_order: 3, status: 'active' },
-        { id: 'real-estate', name: 'Real Estate', description: 'Real estate signs and yard signs', icon: 'fa-sign', sort_order: 4, status: 'active' },
+        { id: 'real-estate', name: 'Real Estate', description: 'Real estate signs and yard signs', icon: 'fa-home', sort_order: 4, status: 'active' },
         { id: 'magnet', name: 'Magnet', description: 'Magnetic materials for vehicles and displays', icon: 'fa-magnet', sort_order: 5, status: 'active' },
         { id: 'apparel', name: 'Apparel', description: 'Custom printed clothing and wearables', icon: 'fa-tshirt', sort_order: 6, status: 'active' },
         { id: 'misc', name: 'Miscellaneous', description: 'Other specialty products', icon: 'fa-th', sort_order: 7, status: 'active' }
     ];
+    
+    // Save to localStorage for future use
+    localStorage.setItem('signs365_categories', JSON.stringify(defaultCategories));
+    
+    return defaultCategories;
 }
 
 // Save categories to localStorage
