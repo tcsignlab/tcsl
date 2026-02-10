@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Configurator - Signs365</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Header (same as index) -->
+    <header class="header">
+        <div class="logo">
+            <h1>SIGNS<span class="logo-365">365</span></h1>
+        </div>
+        
+        <nav class="main-nav">
+            <a href="index.html" class="nav-item">
+                <i class="fas fa-arrow-left"></i>
+                <span>BACK TO CATALOG</span>
+            </a>
+        </nav>
+
+        <div class="header-right">
+            <a href="#" class="header-link">
+                <i class="fas fa-shopping-cart"></i> CART
+            </a>
+        </div>
+    </header>
+
+    <!-- Product Configurator -->
+    <div class="configurator-container">
+        <!-- Left Side - Product Preview -->
+        <div class="configurator-preview">
+            <div class="pricing-box">
+                <h3 id="productName">HD BANNER (VINYL)</h3>
+                <p class="product-subtitle" id="productSubtitle">Vinyl 13oz Single-Sided, 0" x 0"</p>
+                
+                <div class="pricing-table" id="pricingTable">
+                    <div class="pricing-header">
+                        <span>PRICING AND SHIPPING</span>
+                    </div>
+                    <div class="pricing-row">
+                        <span>Single-Sided</span>
+                        <div class="price-options">
+                            <div>13oz: $<span id="price13oz">0.00</span> per sqft</div>
+                            <div>15oz: $<span id="price15oz">0.00</span> per sqft</div>
+                            <div>18oz: $<span id="price18oz">0.00</span> per sqft</div>
+                        </div>
+                    </div>
+                    <div class="pricing-row">
+                        <span>Double Sided</span>
+                        <div class="price">$<span id="priceDouble">0.00</span> per sqft</div>
+                    </div>
+                </div>
+
+                <div class="total-price">
+                    <span class="price-label">$<span id="totalPrice">0.00</span></span>
+                    <span class="production-time">0 sqft / 24 Hours Production</span>
+                </div>
+            </div>
+
+            <div class="image-upload-area" id="imageUploadArea">
+                <i class="fas fa-image"></i>
+                <p>PLEASE SPECIFY DIMENSIONS OR</p>
+                <p>CLICK TO SELECT AN IMAGE</p>
+                <input type="file" id="imageUpload" accept="image/*" style="display:none;">
+            </div>
+        </div>
+
+        <!-- Right Side - Options -->
+        <div class="configurator-options">
+            <div class="option-group">
+                <button class="option-button" id="imagesBtn">
+                    <span>IMAGES</span>
+                    <span class="option-value">1</span>
+                </button>
+            </div>
+
+            <div class="option-group">
+                <button class="option-button active" id="sizeBtn">
+                    <span>SIZE</span>
+                    <span class="option-value">0" x 0"</span>
+                </button>
+                <div class="option-dropdown" id="sizeDropdown">
+                    <div class="size-inputs">
+                        <input type="number" id="widthInput" placeholder="Width (inches)" min="1">
+                        <span>x</span>
+                        <input type="number" id="heightInput" placeholder="Height (inches)" min="1">
+                    </div>
+                </div>
+            </div>
+
+            <div class="option-group">
+                <button class="option-button active" id="materialBtn">
+                    <span>MATERIAL</span>
+                    <span class="option-value">13oz</span>
+                </button>
+                <div class="option-dropdown" id="materialDropdown">
+                    <!-- Material options will be populated dynamically -->
+                </div>
+            </div>
+
+            <div class="option-group">
+                <button class="option-button" id="printSidesBtn">
+                    <span>PRINT SIDES</span>
+                    <span class="option-value">SINGLE</span>
+                </button>
+                <div class="option-dropdown" id="printSidesDropdown">
+                    <button class="dropdown-option" data-value="single">Single-Sided</button>
+                    <button class="dropdown-option" data-value="double">Double-Sided</button>
+                </div>
+            </div>
+
+            <div class="option-group">
+                <button class="option-button" id="weldingBtn">
+                    <span>WELDING</span>
+                    <span class="option-value">YES</span>
+                </button>
+                <div class="option-dropdown" id="weldingDropdown">
+                    <button class="dropdown-option" data-value="yes">Yes</button>
+                    <button class="dropdown-option" data-value="no">No</button>
+                </div>
+            </div>
+
+            <div class="option-group">
+                <button class="option-button" id="ropeBtn">
+                    <span>ROPE</span>
+                    <span class="option-value">NONE</span>
+                </button>
+                <div class="option-dropdown" id="ropeDropdown">
+                    <button class="dropdown-option" data-value="none">None</button>
+                    <button class="dropdown-option" data-value="included">Included</button>
+                </div>
+            </div>
+
+            <div class="option-group">
+                <button class="option-button" id="grommetsBtn">
+                    <span>GROMMETS</span>
+                    <span class="option-value">YES</span>
+                </button>
+                <div class="option-dropdown" id="grommetsDropdown">
+                    <button class="dropdown-option" data-value="yes">Yes</button>
+                    <button class="dropdown-option" data-value="no">No</button>
+                </div>
+            </div>
+
+            <div class="option-group">
+                <button class="option-button" id="polePocketsBtn">
+                    <span>POLE POCKETS</span>
+                    <span class="option-value">NONE</span>
+                </button>
+                <div class="option-dropdown" id="polePocketsDropdown">
+                    <button class="dropdown-option" data-value="none">None</button>
+                    <button class="dropdown-option" data-value="top">Top</button>
+                    <button class="dropdown-option" data-value="bottom">Bottom</button>
+                    <button class="dropdown-option" data-value="both">Both</button>
+                </div>
+            </div>
+
+            <div class="option-group">
+                <button class="option-button" id="windSlitsBtn">
+                    <span>WIND SLITS</span>
+                    <span class="option-value">NO</span>
+                </button>
+                <div class="option-dropdown" id="windSlitsDropdown">
+                    <button class="dropdown-option" data-value="no">No</button>
+                    <button class="dropdown-option" data-value="yes">Yes</button>
+                </div>
+            </div>
+
+            <div class="quantity-section">
+                <label>Quantity:</label>
+                <input type="number" id="quantityInput" value="1" min="1">
+            </div>
+
+            <button class="add-to-cart-btn" id="addToCartBtn">
+                <i class="fas fa-shopping-cart"></i> ADD TO CART
+            </button>
+        </div>
+    </div>
+
+    <script src="config.js"></script>
+    <script src="configurator.js"></script>
+</body>
+</html>

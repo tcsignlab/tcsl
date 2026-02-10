@@ -1,0 +1,8 @@
+id,name,description,icon,sort_order
+banner,Banner,Vinyl banners and flexible print materials,fa-flag,1
+rigid,Rigid,Hard substrates including coroplast and acrylic,fa-square,2
+adhesive,Adhesive,Stickers decals and adhesive vinyl,fa-sticky-note,3
+real-estate,Real Estate,Real estate signs and yard signs,fa-home,4
+magnet,Magnet,Magnetic materials for vehicles and displays,fa-magnet,5
+apparel,Apparel,Custom printed clothing and wearables,fa-tshirt,6
+misc,Miscellaneous,Other specialty products,fa-th,7

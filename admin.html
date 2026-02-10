@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Signs365</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Login Screen -->
+    <div class="admin-login" id="adminLogin">
+        <div class="login-box">
+            <h2>Admin Login</h2>
+            <form id="loginForm">
+                <input type="password" id="adminPassword" placeholder="Enter Admin Password" required>
+                <button type="submit">Login</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Admin Panel (hidden until login) -->
+    <div class="admin-panel" id="adminPanel" style="display:none;">
+        <header class="admin-header">
+            <h1>Admin Panel</h1>
+            <div>
+                <a href="index.html" class="admin-btn">View Site</a>
+                <button id="adminLogoutBtn" class="admin-btn">Logout</button>
+            </div>
+        </header>
+
+        <div class="admin-tabs">
+            <button class="admin-tab active" data-tab="products">Products</button>
+            <button class="admin-tab" data-tab="categories">Categories</button>
+            <button class="admin-tab" data-tab="images">Images</button>
+            <button class="admin-tab" data-tab="settings">Settings</button>
+        </div>
+
+        <!-- Products Tab -->
+        <div class="admin-content" id="productsTab">
+            <div class="admin-toolbar">
+                <button id="addProductBtn" class="primary-btn">
+                    <i class="fas fa-plus"></i> Add New Product
+                </button>
+                <button id="syncSheetsBtn" class="secondary-btn">
+                    <i class="fas fa-sync"></i> Sync with Google Sheets
+                </button>
+            </div>
+
+            <div class="products-table-container">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Image</th>
+                            <th>Name</th>
+                            <th>Category</th>
+                            <th>Description</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="productsTableBody">
+                        <!-- Products will be loaded here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Categories Tab -->
+        <div class="admin-content" id="categoriesTab" style="display:none;">
+            <div class="admin-toolbar">
+                <button id="addCategoryBtn" class="primary-btn">
+                    <i class="fas fa-plus"></i> Add New Category
+                </button>
+                <button id="importCategoriesBtn" class="secondary-btn">
+                    <i class="fas fa-download"></i> Import from Google Sheets
+                </button>
+                <button id="exportCategoriesBtn" class="secondary-btn">
+                    <i class="fas fa-file-export"></i> Export Categories
+                </button>
+            </div>
+
+            <div class="categories-management">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Sort Order</th>
+                            <th>Icon</th>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Description</th>
+                            <th>Products</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="categoriesTableBody">
+                        <!-- Categories will be loaded here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Images Tab -->
+        <div class="admin-content" id="imagesTab" style="display:none;">
+            <div class="admin-toolbar">
+                <button id="uploadProductImageBtn" class="primary-btn">
+                    <i class="fas fa-upload"></i> Upload Image
+                </button>
+            </div>
+
+            <div class="admin-images-grid" id="adminImagesGrid">
+                <!-- Images will be loaded here -->
+            </div>
+        </div>
+
+        <!-- Settings Tab -->
+        <div class="admin-content" id="settingsTab" style="display:none;">
+            <h3>Google Sheets Configuration</h3>
+            <div class="settings-form">
+                <label>Google Sheets ID:</label>
+                <input type="text" id="sheetsId" placeholder="Enter your Google Sheets ID">
+                
+                <label>API Key (for public sheets):</label>
+                <input type="text" id="apiKey" placeholder="Enter Google Sheets API Key">
+                
+                <button id="saveSettingsBtn" class="primary-btn">Save Settings</button>
+                
+                <div class="settings-info">
+                    <h4>Setup Instructions:</h4>
+                    <ol>
+                        <li>Create a Google Sheet with the following sheets:
+                            <ul>
+                                <li><strong>Products</strong> - columns: id, name, category, description, image_url, status, pricing_data, options_data</li>
+                                <li><strong>Categories</strong> - columns: id, name, description, icon, sort_order</li>
+                                <li><strong>Materials</strong> - columns: id, product_id, name, price_multiplier, description</li>
+                                <li><strong>Finishing</strong> - columns: id, name, type, options, prices</li>
+                            </ul>
+                        </li>
+                        <li>Make the sheet publicly viewable (Share > Anyone with the link can view)</li>
+                        <li>Get the Sheet ID from the URL (between /d/ and /edit)</li>
+                        <li>Get an API key from Google Cloud Console (Enable Sheets API)</li>
+                        <li>Enter both values above and click Save</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Product Edit Modal -->
+    <div class="modal" id="productModal">
+        <div class="modal-content large">
+            <span class="close-modal">&times;</span>
+            <h2 id="modalTitle">Add New Product</h2>
+            
+            <form id="productForm">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Product Name:</label>
+                        <input type="text" id="productNameInput" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Category:</label>
+                        <select id="productCategoryInput" required>
+                            <option value="">Select Category</option>
+                            <option value="banner">Banner</option>
+                            <option value="rigid">Rigid</option>
+                            <option value="adhesive">Adhesive</option>
+                            <option value="real-estate">Real Estate</option>
+                            <option value="magnet">Magnet</option>
+                            <option value="apparel">Apparel</option>
+                            <option value="misc">Misc</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label>Description:</label>
+                        <textarea id="productDescriptionInput" rows="3"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Image URL:</label>
+                        <input type="text" id="productImageInput">
+                        <small>Or upload image below</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Upload Image:</label>
+                        <input type="file" id="productImageUpload" accept="image/*">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Status:</label>
+                        <select id="productStatusInput">
+                            <option value="active">Active</option>
+                            <option value="inactive">Inactive</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label>Materials (JSON):</label>
+                        <textarea id="productMaterialsInput" rows="4" placeholder='[{"name":"13oz","price":1.25},{"name":"15oz","price":1.75}]'></textarea>
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label>Finishing Options (JSON):</label>
+                        <textarea id="productOptionsInput" rows="6" placeholder='{"welding":["yes","no"],"grommets":["yes","no"],"rope":["none","included"]}'></textarea>
+                    </div>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="submit" class="primary-btn">Save Product</button>
+                    <button type="button" class="secondary-btn" id="cancelProductBtn">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Category Edit Modal -->
+    <div class="modal" id="categoryModal">
+        <div class="modal-content">
+            <span class="close-modal" id="closeCategoryModal">&times;</span>
+            <h2 id="categoryModalTitle">Add New Category</h2>
+            
+            <form id="categoryForm">
+                <div class="form-group">
+                    <label>Category ID:</label>
+                    <input type="text" id="categoryIdInput" required pattern="[a-z-]+" placeholder="lowercase-with-hyphens">
+                    <small>Lowercase letters and hyphens only (e.g., "custom-signs")</small>
+                </div>
+
+                <div class="form-group">
+                    <label>Category Name:</label>
+                    <input type="text" id="categoryNameInput" required placeholder="Display name">
+                </div>
+
+                <div class="form-group">
+                    <label>Description:</label>
+                    <textarea id="categoryDescriptionInput" rows="3" required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Icon (Font Awesome):</label>
+                    <div class="icon-input-group">
+                        <input type="text" id="categoryIconInput" required placeholder="fa-flag" value="fa-tag">
+                        <span class="icon-preview"><i class="fas fa-tag" id="iconPreview"></i></span>
+                    </div>
+                    <small>Font Awesome icon name (e.g., fa-flag, fa-square, fa-sticky-note)</small>
+                    <div class="icon-suggestions">
+                        <button type="button" class="icon-suggestion" data-icon="fa-flag"><i class="fas fa-flag"></i> fa-flag</button>
+                        <button type="button" class="icon-suggestion" data-icon="fa-square"><i class="fas fa-square"></i> fa-square</button>
+                        <button type="button" class="icon-suggestion" data-icon="fa-sticky-note"><i class="fas fa-sticky-note"></i> fa-sticky-note</button>
+                        <button type="button" class="icon-suggestion" data-icon="fa-sign"><i class="fas fa-sign"></i> fa-sign</button>
+                        <button type="button" class="icon-suggestion" data-icon="fa-magnet"><i class="fas fa-magnet"></i> fa-magnet</button>
+                        <button type="button" class="icon-suggestion" data-icon="fa-tshirt"><i class="fas fa-tshirt"></i> fa-tshirt</button>
+                        <button type="button" class="icon-suggestion" data-icon="fa-th"><i class="fas fa-th"></i> fa-th</button>
+                        <button type="button" class="icon-suggestion" data-icon="fa-star"><i class="fas fa-star"></i> fa-star</button>
+                        <button type="button" class="icon-suggestion" data-icon="fa-paint-brush"><i class="fas fa-paint-brush"></i> fa-paint-brush</button>
+                        <button type="button" class="icon-suggestion" data-icon="fa-truck"><i class="fas fa-truck"></i> fa-truck</button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Sort Order:</label>
+                    <input type="number" id="categorySortInput" required min="1" value="1">
+                    <small>Lower numbers appear first in navigation</small>
+                </div>
+
+                <div class="form-group">
+                    <label>Status:</label>
+                    <select id="categoryStatusInput">
+                        <option value="active">Active</option>
+                        <option value="inactive">Inactive</option>
+                    </select>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="submit" class="primary-btn">Save Category</button>
+                    <button type="button" class="secondary-btn" id="cancelCategoryBtn">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="config.js"></script>
+    <script src="admin.js"></script>
+</body>
+</html>

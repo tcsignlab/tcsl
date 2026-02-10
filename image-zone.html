@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Zone - Signs365</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <header class="header">
+        <div class="logo">
+            <h1>SIGNS<span class="logo-365">365</span></h1>
+        </div>
+        
+        <nav class="main-nav">
+            <a href="index.html" class="nav-item">
+                <i class="fas fa-arrow-left"></i>
+                <span>BACK TO CATALOG</span>
+            </a>
+        </nav>
+    </header>
+
+    <div class="image-zone-container">
+        <h2>Image Zone</h2>
+
+        <div class="image-zone-toolbar">
+            <select id="folderSelect">
+                <option value="home">Home</option>
+            </select>
+            <button class="toolbar-btn" id="uploadImageBtn">
+                <i class="fas fa-upload"></i> UPLOAD IMAGE
+            </button>
+            <button class="toolbar-btn" id="createFolderBtn">
+                <i class="fas fa-folder-plus"></i> CREATE FOLDER
+            </button>
+            <button class="toolbar-btn" id="renameFolderBtn">
+                <i class="fas fa-edit"></i> RENAME FOLDER
+            </button>
+            <button class="toolbar-btn" id="deleteFolderBtn">
+                <i class="fas fa-trash"></i> DELETE FOLDER
+            </button>
+            <button class="toolbar-btn" id="imageSetupBtn">
+                <i class="fas fa-cog"></i> IMAGE SETUP
+            </button>
+            <input type="text" id="searchImages" placeholder="Search Images">
+            <select id="sortImages">
+                <option value="date">Date</option>
+                <option value="name">Name</option>
+                <option value="size">Size</option>
+            </select>
+        </div>
+
+        <div class="image-zone-actions">
+            <button class="action-btn" id="selectAllBtn">SELECT ALL</button>
+            <span id="selectedCount">0 items selected</span>
+        </div>
+
+        <div class="image-grid" id="imageGrid">
+            <!-- Images will be loaded here -->
+        </div>
+    </div>
+
+    <input type="file" id="fileInput" accept="image/*" multiple style="display:none;">
+
+    <!-- Image Preview Modal -->
+    <div class="modal" id="imageModal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <img id="modalImage" src="" alt="Preview">
+            <div class="modal-info">
+                <p id="modalImageName"></p>
+                <p id="modalImageSize"></p>
+                <p id="modalImageDimensions"></p>
+                <p id="modalImageDate"></p>
+            </div>
+            <button class="delete-image-btn" id="deleteImageBtn">
+                <i class="fas fa-trash"></i> Delete
+            </button>
+        </div>
+    </div>
+
+    <script src="config.js"></script>
+    <script src="image-zone.js"></script>
+</body>
+</html>
