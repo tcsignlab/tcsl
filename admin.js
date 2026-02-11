@@ -8,6 +8,67 @@ document.addEventListener('DOMContentLoaded', () => {
     checkAdminAuth();
 });
 
+// Parse Google Sheets data
+function parseSheetData(rows) {
+    if (!rows || rows.length < 2) return [];
+    
+    const headers = rows[0].map(h => h.toLowerCase().trim());
+    const products = [];
+    
+    for (let i = 1; i < rows.length; i++) {
+        const row = rows[i];
+        if (!row || row.length === 0) continue;
+        
+        const product = {};
+        
+        headers.forEach((header, index) => {
+            const value = row[index] || '';
+            
+            // Parse JSON fields
+            if (header === 'materials' || header === 'materials_json') {
+                try {
+                    const parsed = JSON.parse(value);
+                    product.materials = parsed.materials || parsed;
+                } catch (e) {
+                    console.warn('Failed to parse materials:', value);
+                    product.materials = [];
+                }
+            } else if (header === 'options' || header === 'options_json') {
+                try {
+                    product.options = JSON.parse(value);
+                } catch (e) {
+                    console.warn('Failed to parse options:', value);
+                    product.options = {};
+                }
+            } else if (header === 'pricing' || header === 'pricing_json') {
+                try {
+                    product.pricing = JSON.parse(value);
+                } catch (e) {
+                    console.warn('Failed to parse pricing:', value);
+                    product.pricing = {};
+                }
+            } else if (header === 'image' || header === 'image_url') {
+                product.image = value;
+            } else {
+                product[header] = value;
+            }
+        });
+        
+        if (product.id && product.name) {
+            // Ensure required fields exist
+            if (!product.status) product.status = 'active';
+            if (!product.materials) product.materials = [];
+            if (!product.options) product.options = {};
+            if (!product.pricing) product.pricing = {};
+            if (!product.category) product.category = 'misc';
+            
+            products.push(product);
+        }
+    }
+    
+    return products;
+}
+
 // Check admin authentication
 function checkAdminAuth() {
     if (CONFIG_HELPERS.isAdminAuthenticated()) {
@@ -223,21 +284,40 @@ function openProductModal(product = null) {
     const modal = document.getElementById('productModal');
     const title = document.getElementById('modalTitle');
     
+    console.log('Opening product modal, product:', product);
+    
     // Make sure categories are loaded and dropdown is updated
-    if (categories.length === 0) {
+    if (!categories || categories.length === 0) {
+        console.log('Loading categories...');
         categories = loadCategoriesFromLocal();
     }
+    
+    console.log('Categories loaded:', categories.length);
+    
+    // Update dropdown
     updateProductCategoryDropdown();
     
     if (product) {
         title.textContent = 'Edit Product';
+        console.log('Populating form with product:', product.name, 'category:', product.category);
         populateProductForm(product);
     } else {
         title.textContent = 'Add New Product';
         document.getElementById('productForm').reset();
+        console.log('Form reset for new product');
     }
     
     modal.classList.add('active');
+    
+    // Force a re-check of the category dropdown after a brief delay
+    setTimeout(() => {
+        const select = document.getElementById('productCategoryInput');
+        console.log('Category dropdown check - options count:', select ? select.options.length : 'not found');
+        if (select && select.options.length <= 1) {
+            console.warn('Dropdown still empty, retrying...');
+            updateProductCategoryDropdown();
+        }
+    }, 100);
 }
 
 // Close product modal
@@ -652,7 +732,17 @@ function deleteCategory(categoryId, productCount) {
 // Update product category dropdown
 function updateProductCategoryDropdown() {
     const select = document.getElementById('productCategoryInput');
-    if (!select) return;
+    if (!select) {
+        console.warn('Category dropdown not found');
+        return;
+    }
+    
+    // Load categories if not already loaded
+    if (!categories || categories.length === 0) {
+        categories = loadCategoriesFromLocal();
+    }
+    
+    console.log('Updating category dropdown with', categories.length, 'categories');
     
     // Save current value
     const currentValue = select.value;
@@ -669,12 +759,16 @@ function updateProductCategoryDropdown() {
             option.value = cat.id;
             option.textContent = cat.name;
             select.appendChild(option);
+            console.log('Added category option:', cat.id, cat.name);
         });
     
     // Restore selected value if it still exists
     if (currentValue) {
         select.value = currentValue;
+        console.log('Restored selected category:', currentValue);
     }
+    
+    console.log('Category dropdown updated, total options:', select.options.length);
 }
 
 // Import categories from Google Sheets

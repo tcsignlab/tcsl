@@ -250,7 +250,7 @@ function updateCategoryDisplay() {
         banner: 'Banner Products',
         rigid: 'Rigid Products',
         adhesive: 'Adhesive Products',
-        handheld: 'Real Estate Products',
+        'real-estate': 'Real Estate Products',
         magnet: 'Magnet Products',
         apparel: 'Apparel Products',
         misc: 'Miscellaneous Products'
