@@ -288,7 +288,7 @@ function openProductModal(product = null) {
     const modal = document.getElementById('productModal');
     const title = document.getElementById('modalTitle');
     
-    console.log('Opening product modal, product:', product);
+    console.log('Opening product modal');
     
     // Make sure categories are loaded and dropdown is updated
     if (!categories || categories.length === 0) {
@@ -296,32 +296,25 @@ function openProductModal(product = null) {
         categories = loadCategoriesFromLocal();
     }
     
-    console.log('Categories loaded:', categories.length);
+    console.log('Categories available:', categories.length);
     
-    // Update dropdown
+    // Update dropdown BEFORE populating form
     updateProductCategoryDropdown();
     
-    if (product) {
-        title.textContent = 'Edit Product';
-        console.log('Populating form with product:', product.name, 'category:', product.category);
-        populateProductForm(product);
-    } else {
-        title.textContent = 'Add New Product';
-        document.getElementById('productForm').reset();
-        console.log('Form reset for new product');
-    }
+    // Small delay to ensure dropdown is populated before setting value
+    setTimeout(() => {
+        if (product) {
+            title.textContent = 'Edit Product';
+            console.log('Populating form with product:', product.name, 'category:', product.category);
+            populateProductForm(product);
+        } else {
+            title.textContent = 'Add New Product';
+            document.getElementById('productForm').reset();
+            console.log('Form reset for new product');
+        }
+    }, 50);
     
     modal.classList.add('active');
-    
-    // Force a re-check of the category dropdown after a brief delay
-    setTimeout(() => {
-        const select = document.getElementById('productCategoryInput');
-        console.log('Category dropdown check - options count:', select ? select.options.length : 'not found');
-        if (select && select.options.length <= 1) {
-            console.warn('Dropdown still empty, retrying...');
-            updateProductCategoryDropdown();
-        }
-    }, 100);
 }
 
 // Close product modal

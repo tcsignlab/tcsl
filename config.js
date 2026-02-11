@@ -37,7 +37,7 @@ const SAMPLE_PRODUCTS = [
         name: 'HD BANNER - 13oz Vinyl',
         category: 'banner',
         description: 'Premium Vinyl Scrim Banner - Most Popular Choice',
-        image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800',
+        image: 'https://via.placeholder.com/800x600/4CAF50/ffffff?text=HD+Banner+13oz',
         status: 'active',
         materials: [
             { name: '13oz', price: 1.25, description: 'Standard weight vinyl scrim' }
@@ -60,7 +60,7 @@ const SAMPLE_PRODUCTS = [
         name: 'HD BANNER - 15oz Vinyl',
         category: 'banner',
         description: 'Medium Weight Vinyl Banner - Enhanced Durability',
-        image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800',
+        image: 'https://via.placeholder.com/800x600/4CAF50/ffffff?text=HD+Banner+15oz',
         status: 'active',
         materials: [
             { name: '15oz', price: 1.75, description: 'Medium weight vinyl scrim' }
@@ -83,7 +83,7 @@ const SAMPLE_PRODUCTS = [
         name: 'HD BANNER - 18oz Vinyl',
         category: 'banner',
         description: 'Heavy Duty Vinyl Banner - Maximum Durability',
-        image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800',
+        image: 'https://via.placeholder.com/800x600/4CAF50/ffffff?text=HD+Banner+18oz',
         status: 'active',
         materials: [
             { name: '18oz', price: 2.25, description: 'Heavy duty vinyl scrim' }
@@ -106,7 +106,7 @@ const SAMPLE_PRODUCTS = [
         name: 'MESH BANNER',
         category: 'banner',
         description: 'Wind Resistant Mesh - 37% Air Flow Reduction',
-        image: 'https://images.unsplash.com/photo-1621905251918-48416bd8575a?w=800',
+        image: 'https://via.placeholder.com/800x600/667eea/ffffff?text=Mesh+Banner',
         status: 'active',
         materials: [
             { name: '9oz Mesh', price: 2.75, description: 'Perforated vinyl for wind resistance' }
@@ -125,7 +125,7 @@ const SAMPLE_PRODUCTS = [
         name: 'COROPLAST - 4mm',
         category: 'rigid',
         description: 'High Definition Yard Signs - Most Popular',
-        image: 'https://images.unsplash.com/photo-1589939705384-5185137a7f0f?w=800',
+        image: 'https://via.placeholder.com/800x600/FF9800/ffffff?text=Coroplast+4mm',
         status: 'active',
         materials: [
             { name: '4mm', price: 3.00, description: 'Standard corrugated plastic' }
@@ -144,7 +144,7 @@ const SAMPLE_PRODUCTS = [
         name: 'COROPLAST - 10mm',
         category: 'rigid',
         description: 'Extra Thick Yard Signs - Heavy Duty',
-        image: 'https://images.unsplash.com/photo-1589939705384-5185137a7f0f?w=800',
+        image: 'https://via.placeholder.com/800x600/FF9800/ffffff?text=Coroplast+10mm',
         status: 'active',
         materials: [
             { name: '10mm', price: 4.50, description: 'Extra thick corrugated plastic' }
@@ -163,7 +163,7 @@ const SAMPLE_PRODUCTS = [
         name: 'ACRYLIC - Clear',
         category: 'rigid',
         description: 'Rigid Plastic - Photos & Indoor Signage',
-        image: 'https://images.unsplash.com/photo-1618336753974-aae8e04506aa?w=800',
+        image: 'https://via.placeholder.com/800x600/2196F3/ffffff?text=Acrylic+Clear',
         status: 'active',
         materials: [
             { name: '3/16" Clear', price: 8.50, description: 'Premium transparent acrylic' }
@@ -181,7 +181,7 @@ const SAMPLE_PRODUCTS = [
         name: 'ADHESIVE VINYL - Removable',
         category: 'adhesive',
         description: 'Premium Vinyl Stickers - Easy Removal',
-        image: 'https://images.unsplash.com/photo-1611329532992-fd977e522f7f?w=800',
+        image: 'https://via.placeholder.com/800x600/E91E63/ffffff?text=Adhesive+Vinyl',
         status: 'active',
         materials: [
             { name: 'Removable', price: 2.75, description: 'Easy removal, no residue' }
@@ -200,7 +200,7 @@ const SAMPLE_PRODUCTS = [
         name: 'VEHICLE MAGNET',
         category: 'magnet',
         description: 'Car Door Magnets - 30 mil Material',
-        image: 'https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=800',
+        image: 'https://via.placeholder.com/800x600/9C27B0/ffffff?text=Vehicle+Magnet',
         status: 'active',
         materials: [
             { name: '30 mil', price: 6.50, description: 'Heavy duty vehicle magnet' }
