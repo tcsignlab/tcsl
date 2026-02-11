@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Signs365 - System Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 { color: #333; }
+        h2 { color: #4CAF50; border-bottom: 2px solid #4CAF50; padding-bottom: 10px; }
+        .success { color: #4CAF50; font-weight: bold; }
+        .error { color: #f44336; font-weight: bold; }
+        .info { color: #2196F3; }
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        button:hover { background: #45a049; }
+        .test-result {
+            margin: 10px 0;
+            padding: 10px;
+            background: #f9f9f9;
+            border-left: 4px solid #4CAF50;
+            font-family: monospace;
+        }
+        .console-output {
+            background: #1e1e1e;
+            color: #00ff00;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .nav-test {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .nav-test a {
+            padding: 10px 20px;
+            background: #667eea;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+        }
+        .nav-test a:hover { background: #5568d3; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Signs365 System Test</h1>
+
+    <!-- Test 1: Script Loading -->
+    <div class="test-section">
+        <h2>Test 1: Script Files Loaded</h2>
+        <div id="scriptsTest"></div>
+        <button onclick="testScripts()">Run Test</button>
+    </div>
+
+    <!-- Test 2: Categories -->
+    <div class="test-section">
+        <h2>Test 2: Categories System</h2>
+        <div id="categoriesTest"></div>
+        <button onclick="testCategories()">Test Categories</button>
+        <button onclick="loadCategories()">Load Categories</button>
+        <button onclick="clearCategories()">Clear Categories</button>
+    </div>
+
+    <!-- Test 3: Navigation -->
+    <div class="test-section">
+        <h2>Test 3: Navigation Links</h2>
+        <p>Click each link to test navigation:</p>
+        <div class="nav-test">
+            <a href="index.html">Home Page</a>
+            <a href="index.html#banner">Banner</a>
+            <a href="index.html#rigid">Rigid</a>
+            <a href="index.html#adhesive">Adhesive</a>
+            <a href="index.html#real-estate">Real Estate</a>
+            <a href="admin.html">Admin Panel</a>
+            <a href="cart.html">Cart</a>
+            <a href="image-zone.html">Image Zone</a>
+        </div>
+    </div>
+
+    <!-- Test 4: LocalStorage -->
+    <div class="test-section">
+        <h2>Test 4: LocalStorage</h2>
+        <div id="storageTest"></div>
+        <button onclick="testLocalStorage()">Test Storage</button>
+        <button onclick="viewStorage()">View All Data</button>
+        <button onclick="clearAllStorage()">Clear All Storage</button>
+    </div>
+
+    <!-- Test 5: Sample Products -->
+    <div class="test-section">
+        <h2>Test 5: Sample Products</h2>
+        <div id="productsTest"></div>
+        <button onclick="testProducts()">Test Products</button>
+        <button onclick="loadSampleProducts()">Load Sample Products</button>
+    </div>
+
+    <!-- Console Output -->
+    <div class="test-section">
+        <h2>Console Output</h2>
+        <div id="consoleOutput" class="console-output">Console logs will appear here...</div>
+        <button onclick="clearConsole()">Clear Console</button>
+    </div>
+
+    <script src="config.js"></script>
+    <script>
+        // Override console.log to capture output
+        const originalLog = console.log;
+        const consoleOutput = document.getElementById('consoleOutput');
+        
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            const message = args.map(arg => 
+                typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
+            ).join(' ');
+            consoleOutput.innerHTML += `> ${message}\n`;
+            consoleOutput.scrollTop = consoleOutput.scrollHeight;
+        };
+
+        function clearConsole() {
+            consoleOutput.innerHTML = 'Console cleared.\n';
+        }
+
+        // Test 1: Scripts
+        function testScripts() {
+            const div = document.getElementById('scriptsTest');
+            let html = '';
+            
+            html += `<div class="test-result">`;
+            html += `CONFIG exists: ${typeof CONFIG !== 'undefined' ? '<span class="success">✓ YES</span>' : '<span class="error">✗ NO</span>'}<br>`;
+            html += `CONFIG_HELPERS exists: ${typeof CONFIG_HELPERS !== 'undefined' ? '<span class="success">✓ YES</span>' : '<span class="error">✗ NO</span>'}<br>`;
+            html += `SAMPLE_PRODUCTS exists: ${typeof SAMPLE_PRODUCTS !== 'undefined' ? '<span class="success">✓ YES</span>' : '<span class="error">✗ NO</span>'}<br>`;
+            
+            if (typeof SAMPLE_PRODUCTS !== 'undefined') {
+                html += `Sample products count: <span class="info">${SAMPLE_PRODUCTS.length}</span><br>`;
+            }
+            html += `</div>`;
+            
+            div.innerHTML = html;
+            console.log('Script test completed');
+        }
+
+        // Test 2: Categories
+        function testCategories() {
+            const div = document.getElementById('categoriesTest');
+            let html = '<div class="test-result">';
+            
+            // Check localStorage
+            const saved = localStorage.getItem('signs365_categories');
+            html += `Categories in localStorage: ${saved ? '<span class="success">✓ YES</span>' : '<span class="error">✗ NO</span>'}<br>`;
+            
+            if (saved) {
+                const cats = JSON.parse(saved);
+                html += `Categories count: <span class="info">${cats.length}</span><br>`;
+                html += `Categories: ${cats.map(c => c.name).join(', ')}<br>`;
+            } else {
+                html += '<span class="info">No categories in localStorage. Click "Load Categories" to create them.</span><br>';
+            }
+            
+            html += '</div>';
+            div.innerHTML = html;
+            console.log('Categories test:', saved ? JSON.parse(saved) : 'None');
+        }
+
+        function loadCategories() {
+            const defaultCategories = [
+                { id: 'banner', name: 'Banner', description: 'Vinyl banners', icon: 'fa-flag', sort_order: 1, status: 'active' },
+                { id: 'rigid', name: 'Rigid', description: 'Hard substrates', icon: 'fa-square', sort_order: 2, status: 'active' },
+                { id: 'adhesive', name: 'Adhesive', description: 'Stickers and decals', icon: 'fa-sticky-note', sort_order: 3, status: 'active' },
+                { id: 'real-estate', name: 'Real Estate', description: 'Yard signs', icon: 'fa-home', sort_order: 4, status: 'active' },
+                { id: 'magnet', name: 'Magnet', description: 'Magnetic materials', icon: 'fa-magnet', sort_order: 5, status: 'active' },
+                { id: 'apparel', name: 'Apparel', description: 'Clothing', icon: 'fa-tshirt', sort_order: 6, status: 'active' },
+                { id: 'misc', name: 'Miscellaneous', description: 'Other products', icon: 'fa-th', sort_order: 7, status: 'active' }
+            ];
+            
+            localStorage.setItem('signs365_categories', JSON.stringify(defaultCategories));
+            console.log('✓ Categories loaded:', defaultCategories.length);
+            testCategories();
+        }
+
+        function clearCategories() {
+            localStorage.removeItem('signs365_categories');
+            console.log('Categories cleared from localStorage');
+            testCategories();
+        }
+
+        // Test 3: LocalStorage
+        function testLocalStorage() {
+            const div = document.getElementById('storageTest');
+            let html = '<div class="test-result">';
+            
+            const keys = [
+                'signs365_products',
+                'signs365_categories', 
+                'signs365_cart',
+                'signs365_images',
+                'signs365_settings',
+                'signs365_auth'
+            ];
+            
+            keys.forEach(key => {
+                const value = localStorage.getItem(key);
+                html += `${key}: ${value ? '<span class="success">✓ EXISTS</span>' : '<span class="error">✗ EMPTY</span>'}<br>`;
+            });
+            
+            html += '</div>';
+            div.innerHTML = html;
+            console.log('LocalStorage test completed');
+        }
+
+        function viewStorage() {
+            console.log('=== ALL LOCALSTORAGE DATA ===');
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key.startsWith('signs365_')) {
+                    const value = localStorage.getItem(key);
+                    try {
+                        console.log(key + ':', JSON.parse(value));
+                    } catch (e) {
+                        console.log(key + ':', value);
+                    }
+                }
+            }
+        }
+
+        function clearAllStorage() {
+            if (confirm('Clear ALL localStorage data? This will reset the entire application.')) {
+                localStorage.clear();
+                console.log('✓ All localStorage cleared');
+                testLocalStorage();
+                testCategories();
+            }
+        }
+
+        // Test 4: Products
+        function testProducts() {
+            const div = document.getElementById('productsTest');
+            let html = '<div class="test-result">';
+            
+            if (typeof SAMPLE_PRODUCTS !== 'undefined') {
+                html += `SAMPLE_PRODUCTS available: <span class="success">✓ YES</span><br>`;
+                html += `Sample products count: <span class="info">${SAMPLE_PRODUCTS.length}</span><br>`;
+                html += `Products: ${SAMPLE_PRODUCTS.map(p => p.name).join(', ')}<br>`;
+            } else {
+                html += `SAMPLE_PRODUCTS: <span class="error">✗ NOT LOADED</span><br>`;
+            }
+            
+            const saved = localStorage.getItem('signs365_products');
+            html += `Products in localStorage: ${saved ? '<span class="success">✓ YES</span>' : '<span class="error">✗ NO</span>'}<br>`;
+            
+            if (saved) {
+                const products = JSON.parse(saved);
+                html += `Saved products count: <span class="info">${products.length}</span><br>`;
+            }
+            
+            html += '</div>';
+            div.innerHTML = html;
+            console.log('Products test completed');
+        }
+
+        function loadSampleProducts() {
+            if (typeof SAMPLE_PRODUCTS !== 'undefined') {
+                localStorage.setItem('signs365_products', JSON.stringify(SAMPLE_PRODUCTS));
+                console.log('✓ Sample products loaded:', SAMPLE_PRODUCTS.length);
+                testProducts();
+            } else {
+                alert('SAMPLE_PRODUCTS not available. Make sure config.js is loaded.');
+            }
+        }
+
+        // Auto-run tests on page load
+        window.addEventListener('load', () => {
+            console.log('=== SIGNS365 SYSTEM TEST ===');
+            console.log('Page loaded. Running automatic tests...\n');
+            testScripts();
+            testCategories();
+            testLocalStorage();
+            testProducts();
+        });
+    </script>
+</body>
+</html>

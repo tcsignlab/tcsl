@@ -5,6 +5,10 @@ let editingCategory = null;
 let categories = [];
 
 document.addEventListener('DOMContentLoaded', () => {
+    // Load categories immediately
+    categories = loadCategoriesFromLocal();
+    console.log('Categories loaded on page load:', categories.length);
+    
     checkAdminAuth();
 });
 
