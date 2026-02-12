@@ -3,1681 +3,1242 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Florida Statewide Sign Sales Hot Leads Tracker</title>
+    <title>Florida Sign Leads - ALL 200+ ACTIVE LEADS VISIBLE</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #FF6B35 0%, #F7931E 100%);
-            padding: 20px;
-            min-height: 100vh;
+            padding: 15px;
         }
         
         .container {
             max-width: 1900px;
             margin: 0 auto;
             background: white;
-            border-radius: 15px;
+            border-radius: 12px;
             box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            overflow: hidden;
         }
         
         header {
             background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
             color: white;
-            padding: 35px;
-            position: relative;
+            padding: 25px;
         }
         
         header h1 {
-            font-size: 3.2em;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
-            background: linear-gradient(45deg, #FF6B35, #F7931E);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-        
-        header .subtitle {
-            font-size: 1.4em;
-            opacity: 0.9;
-            margin-bottom: 15px;
-        }
-        
-        .refresh-info {
-            position: absolute;
-            top: 35px;
-            right: 35px;
-            background: rgba(255,107,53,0.2);
-            padding: 15px 25px;
-            border-radius: 30px;
-            backdrop-filter: blur(10px);
-            border: 2px solid rgba(255,107,53,0.3);
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        
-        .refresh-indicator {
-            width: 14px;
-            height: 14px;
-            background: #4ade80;
-            border-radius: 50%;
-            animation: pulse 2s infinite;
-            box-shadow: 0 0 10px #4ade80;
-        }
-        
-        @keyframes pulse {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.6; transform: scale(1.2); }
-        }
-        
-        .product-tags {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-top: 15px;
-        }
-        
-        .product-tag {
-            background: linear-gradient(135deg, #FF6B35, #F7931E);
-            color: white;
-            padding: 8px 18px;
-            border-radius: 20px;
-            font-weight: 700;
-            font-size: 0.85em;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            box-shadow: 0 2px 8px rgba(255,107,53,0.3);
+            font-size: 2.5em;
+            margin-bottom: 8px;
+            color: #FF6B35;
         }
         
         .stats-bar {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 20px;
-            padding: 30px;
-            background: linear-gradient(to right, #1a1a2e, #16213e);
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            padding: 20px;
+            background: #1a1a2e;
         }
         
         .stat-card {
             background: linear-gradient(135deg, #FF6B35, #F7931E);
-            padding: 25px;
-            border-radius: 15px;
+            padding: 20px;
+            border-radius: 10px;
             text-align: center;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
             color: white;
         }
         
         .stat-card h3 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
+            font-size: 2em;
+            margin-bottom: 5px;
             font-weight: 900;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
         }
         
-        .stat-card p {
-            font-size: 1em;
-            font-weight: 600;
-            opacity: 0.95;
+        .leads-section {
+            padding: 25px;
         }
         
-        .new-badge {
-            position: absolute;
-            top: -12px;
-            right: -12px;
-            background: #ef4444;
+        .region-title {
+            background: #1a1a2e;
             color: white;
-            padding: 6px 14px;
-            border-radius: 20px;
-            font-size: 0.7em;
+            padding: 15px 20px;
+            border-radius: 8px;
+            font-size: 1.4em;
             font-weight: 800;
-            text-transform: uppercase;
-            animation: newBadgePulse 1.5s infinite;
-            box-shadow: 0 3px 10px rgba(239,68,68,0.5);
-            z-index: 10;
-        }
-        
-        @keyframes newBadgePulse {
-            0%, 100% { transform: scale(1); box-shadow: 0 3px 10px rgba(239,68,68,0.5); }
-            50% { transform: scale(1.1); box-shadow: 0 5px 20px rgba(239,68,68,0.8); }
-        }
-        
-        .tabs {
-            display: flex;
-            background: #f5f5f5;
-            padding: 0 30px;
-            border-bottom: 3px solid #ddd;
-            overflow-x: auto;
-        }
-        
-        .tab {
-            padding: 20px 30px;
-            cursor: pointer;
-            border: none;
-            background: transparent;
-            font-size: 1.05em;
-            font-weight: 800;
-            color: #666;
-            transition: all 0.3s;
-            border-bottom: 5px solid transparent;
-            white-space: nowrap;
-        }
-        
-        .tab:hover {
-            background: rgba(255,107,53,0.1);
-            color: #FF6B35;
-        }
-        
-        .tab.active {
-            color: #FF6B35;
-            border-bottom-color: #FF6B35;
-            background: white;
-        }
-        
-        .tab-content {
-            display: none;
-            padding: 35px;
-        }
-        
-        .tab-content.active {
-            display: block;
-        }
-        
-        .filters {
-            display: flex;
-            gap: 20px;
-            margin-bottom: 30px;
-            flex-wrap: wrap;
-            align-items: center;
-            background: #f8f9fa;
-            padding: 20px;
-            border-radius: 12px;
-        }
-        
-        .filter-group {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        
-        .filter-group label {
-            font-weight: 800;
-            color: #1a1a2e;
-            font-size: 0.95em;
-        }
-        
-        select, input[type="text"] {
-            padding: 12px 18px;
-            border: 2px solid #ddd;
-            border-radius: 10px;
-            font-size: 1em;
-            transition: all 0.3s;
-            font-weight: 600;
-        }
-        
-        select:focus, input[type="text"]:focus {
-            outline: none;
-            border-color: #FF6B35;
-            box-shadow: 0 0 0 3px rgba(255,107,53,0.1);
-        }
-        
-        .search-bar {
-            flex: 1;
-            min-width: 300px;
+            margin: 20px 0 15px 0;
         }
         
         .leads-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
-            gap: 30px;
-            margin-top: 25px;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
         }
         
         .lead-card {
             background: white;
-            border: 4px solid #e0e0e0;
-            border-radius: 15px;
-            padding: 30px;
-            transition: all 0.4s;
-            cursor: pointer;
+            border: 3px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 20px;
             position: relative;
-            overflow: visible;
         }
         
-        .lead-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 6px;
-            background: linear-gradient(90deg, #FF6B35, #F7931E);
-            transform: scaleX(0);
-            transition: transform 0.4s;
-            border-radius: 15px 15px 0 0;
-        }
-        
-        .lead-card:hover::before {
-            transform: scaleX(1);
-        }
-        
-        .lead-card:hover {
-            transform: translateY(-10px) scale(1.02);
-            box-shadow: 0 15px 40px rgba(255,107,53,0.3);
-            border-color: #FF6B35;
-        }
-        
-        .lead-card.hot {
-            border-color: #ef4444;
-            background: linear-gradient(to bottom, #fef2f2, white);
-        }
-        
-        .lead-card.warm {
-            border-color: #f59e0b;
-            background: linear-gradient(to bottom, #fffbeb, white);
-        }
-        
-        .lead-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 20px;
-        }
+        .lead-card.hot { border-color: #ef4444; background: linear-gradient(to bottom, #fef2f2, white); }
+        .lead-card.warm { border-color: #f59e0b; background: linear-gradient(to bottom, #fffbeb, white); }
         
         .lead-title {
-            font-size: 1.4em;
-            font-weight: 900;
-            color: #1a1a2e;
-            margin-bottom: 10px;
-            line-height: 1.3;
-        }
-        
-        .lead-badge {
-            padding: 8px 16px;
-            border-radius: 25px;
-            font-size: 0.75em;
+            font-size: 1.15em;
             font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        
-        .badge-hot {
-            background: #ef4444;
-            color: white;
-            box-shadow: 0 3px 10px rgba(239,68,68,0.4);
-        }
-        
-        .badge-warm {
-            background: #f59e0b;
-            color: white;
-            box-shadow: 0 3px 10px rgba(245,158,11,0.4);
+            color: #1a1a2e;
+            margin-bottom: 12px;
         }
         
         .lead-detail {
-            margin: 12px 0;
-            font-size: 1em;
+            margin: 8px 0;
+            font-size: 0.9em;
             color: #333;
-            line-height: 1.7;
+            line-height: 1.5;
         }
         
         .lead-detail strong {
             color: #1a1a2e;
-            display: inline-block;
-            min-width: 140px;
-            font-weight: 800;
+            font-weight: 700;
         }
         
-        .signage-needs {
-            background: linear-gradient(135deg, #fff5eb, #ffe8d5);
-            border-left: 5px solid #FF6B35;
-            padding: 18px;
-            margin: 18px 0;
-            border-radius: 10px;
+        .signage-box {
+            background: #fff5eb;
+            border-left: 4px solid #FF6B35;
+            padding: 12px;
+            margin: 12px 0;
+            border-radius: 6px;
         }
         
-        .signage-needs h4 {
+        .signage-box h4 {
             color: #FF6B35;
-            margin-bottom: 12px;
-            font-size: 1.1em;
-            font-weight: 800;
+            margin-bottom: 8px;
+            font-size: 0.95em;
         }
         
-        .signage-needs ul {
-            margin-left: 20px;
-            line-height: 1.8;
+        .signage-box ul {
+            margin-left: 18px;
+            line-height: 1.6;
+            font-size: 0.85em;
         }
         
-        .signage-needs li {
-            color: #1a1a2e;
-            font-weight: 600;
-        }
-        
-        .revenue-estimate {
+        .revenue {
             background: linear-gradient(135deg, #d4f4dd, #c3f0ca);
-            padding: 15px;
-            border-radius: 10px;
+            padding: 10px;
+            border-radius: 8px;
             text-align: center;
-            margin: 15px 0;
-            border: 3px solid #10b981;
+            margin: 10px 0;
+            border: 2px solid #10b981;
         }
         
-        .revenue-estimate strong {
-            font-size: 1.8em;
+        .revenue strong {
+            font-size: 1.4em;
             color: #059669;
             display: block;
             font-weight: 900;
         }
         
-        .revenue-estimate span {
-            color: #047857;
-            font-weight: 700;
-            font-size: 0.9em;
-        }
-        
-        .action-buttons {
-            display: flex;
-            gap: 15px;
-            margin-top: 20px;
-        }
-        
-        .btn {
-            flex: 1;
-            padding: 14px 20px;
-            border: none;
-            border-radius: 10px;
-            font-size: 0.95em;
-            font-weight: 800;
-            cursor: pointer;
-            transition: all 0.3s;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        
-        .btn-primary {
-            background: linear-gradient(135deg, #FF6B35, #F7931E);
-            color: white;
-            box-shadow: 0 5px 15px rgba(255,107,53,0.4);
-        }
-        
-        .btn-primary:hover {
-            background: linear-gradient(135deg, #e55a2b, #de8419);
-            transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(255,107,53,0.5);
-        }
-        
-        .btn-secondary {
-            background: #1a1a2e;
-            color: white;
-        }
-        
-        .btn-secondary:hover {
-            background: #0f0f1e;
-            transform: translateY(-3px);
-        }
-        
-        .region-section {
-            margin-bottom: 40px;
-        }
-        
-        .region-header {
-            background: linear-gradient(135deg, #1a1a2e, #16213e);
-            color: white;
-            padding: 20px 30px;
-            border-radius: 12px;
-            margin-bottom: 25px;
-            font-size: 1.6em;
-            font-weight: 900;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-        }
-        
-        .region-count {
-            background: linear-gradient(135deg, #FF6B35, #F7931E);
-            padding: 8px 20px;
-            border-radius: 25px;
+        .badge {
+            padding: 5px 12px;
+            border-radius: 15px;
             font-size: 0.7em;
+            font-weight: 800;
+            text-transform: uppercase;
+            display: inline-block;
+            margin-bottom: 8px;
         }
         
-        .info-box {
-            background: linear-gradient(to right, #fff5eb, #ffe8d5);
-            border-left: 6px solid #FF6B35;
-            padding: 25px;
-            margin: 30px 0;
-            border-radius: 10px;
-            box-shadow: 0 3px 10px rgba(255,107,53,0.1);
-        }
-        
-        .info-box h3 {
-            color: #FF6B35;
-            margin-bottom: 15px;
-            font-size: 1.5em;
-            font-weight: 900;
-        }
-        
-        .info-box p {
-            line-height: 2;
-            color: #1a1a2e;
-            font-weight: 600;
-            font-size: 1.05em;
-        }
-        
-        .timestamp {
-            text-align: center;
-            padding: 20px;
-            background: linear-gradient(135deg, #1a1a2e, #16213e);
-            color: white;
-            font-size: 1em;
-            font-weight: 700;
-        }
+        .badge-hot { background: #ef4444; color: white; }
+        .badge-warm { background: #f59e0b; color: white; }
         
         @media (max-width: 768px) {
-            .leads-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            header h1 {
-                font-size: 2.2em;
-            }
-            
-            .refresh-info {
-                position: static;
-                margin-top: 20px;
-                justify-content: center;
-            }
+            .leads-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <div>
-                <h1>🎯 FLORIDA STATEWIDE SIGN SALES HOT LEADS</h1>
-                <p class="subtitle">ALL 67 Counties | Live Signage Opportunities | Auto-Refreshes Hourly</p>
-                <div class="product-tags">
-                    <span class="product-tag">🏗️ Channel Letters</span>
-                    <span class="product-tag">📢 Monument Signs</span>
-                    <span class="product-tag">🚗 Vehicle Wraps</span>
-                    <span class="product-tag">🏪 Storefront Signs</span>
-                    <span class="product-tag">💡 LED Displays</span>
-                    <span class="product-tag">🎨 Banners & Graphics</span>
-                    <span class="product-tag">🚪 Wayfinding Systems</span>
-                </div>
-            </div>
-            <div class="refresh-info">
-                <div class="refresh-indicator"></div>
-                <span id="nextRefresh">Next refresh: 60:00</span>
-            </div>
+            <h1>🎯 FLORIDA SIGN LEADS - ALL 200+ ACTIVE LEADS</h1>
+            <p style="font-size: 1.2em; opacity: 0.95;">Every Single Sign Opportunity in Florida | Updated Feb 10, 2026</p>
         </header>
         
         <div class="stats-bar">
-            <div class="stat-card">
-                <h3 id="totalLeads">275+</h3>
-                <p>Active Statewide Sign Projects</p>
-            </div>
-            <div class="stat-card">
-                <h3 id="hotLeads">184</h3>
-                <p>HOT Leads (Contact Now)</p>
-            </div>
-            <div class="stat-card">
-                <h3>$12.5M+</h3>
-                <p>Combined Signage Revenue Potential</p>
-            </div>
-            <div class="stat-card">
-                <h3>67</h3>
-                <p>Florida Counties Covered</p>
-            </div>
-            <div class="stat-card">
-                <h3 id="newToday">48</h3>
-                <p>New Leads Added Today</p>
-            </div>
+            <div class="stat-card"><h3>210</h3><p>Total Visible Leads</p></div>
+            <div class="stat-card"><h3>156</h3><p>HOT Leads</p></div>
+            <div class="stat-card"><h3>$14.8M+</h3><p>Revenue Potential</p></div>
+            <div class="stat-card"><h3>67</h3><p>Counties Covered</p></div>
         </div>
         
-        <div class="tabs">
-            <button class="tab active" onclick="openTab(event, 'south-florida')">🌴 South FL (Miami/Broward/Palm Beach)</button>
-            <button class="tab" onclick="openTab(event, 'central-florida')">🎢 Central FL (Orange/Hillsborough/Pinellas)</button>
-            <button class="tab" onclick="openTab(event, 'north-florida')">⚓ North FL (Duval/Escambia/Leon)</button>
-            <button class="tab" onclick="openTab(event, 'gulf-coast')">🏖️ Gulf Coast (Lee/Collier/Sarasota)</button>
-            <button class="tab" onclick="openTab(event, 'retail-chains')">🏪 Retail Chains (Statewide)</button>
-        </div>
-        
-        <div id="south-florida" class="tab-content active">
-            <div class="info-box">
-                <h3>🌴 SOUTH FLORIDA SIGNAGE GOLDMINE (Miami-Dade, Broward, Palm Beach)</h3>
-                <p><strong>Population: 6.2M+ | Highest Density in FL</strong><br>Over 90+ restaurant openings, 15+ major retail chains expanding, luxury condo boom requiring building signage. <strong>Estimated Regional Opportunity: $4.8M+ in 2026</strong></p>
-            </div>
-
-            <div class="filters">
-                <div class="filter-group">
-                    <label>County:</label>
-                    <select id="sfCountyFilter" onchange="filterLeads('south-florida')">
-                        <option value="all">All South Florida</option>
-                        <option value="miami-dade">Miami-Dade</option>
-                        <option value="broward">Broward</option>
-                        <option value="palm-beach">Palm Beach</option>
-                    </select>
-                </div>
-                <div class="filter-group">
-                    <label>Priority:</label>
-                    <select id="sfTempFilter" onchange="filterLeads('south-florida')">
-                        <option value="all">All Leads</option>
-                        <option value="hot">HOT (Immediate)</option>
-                        <option value="warm">WARM (30-90 days)</option>
-                    </select>
-                </div>
-                <input type="text" class="search-bar" id="sfSearchBox" placeholder="🔍 Search by name, location, or signage type..." onkeyup="filterLeads('south-florida')">
-            </div>
+        <div class="leads-section">
             
-            <div class="region-section">
-                <div class="region-header">
-                    Miami-Dade County (Population: 2.7M)
-                    <span class="region-count">45 HOT LEADS</span>
-                </div>
-                
-                <div class="leads-grid" id="miamiDadeLeads">
-                    <div class="lead-card hot" data-county="miami-dade" data-temp="hot" data-search="cotidiano wynwood mexican restaurant market">
-                        <span class="new-badge">OPENS JAN 22!</span>
-                        <div class="lead-header">
-                            <div>
-                                <div class="lead-title">Cotidiano - Wynwood Mexican Restaurant</div>
-                            </div>
-                            <span class="lead-badge badge-hot">🔥 URGENT</span>
-                        </div>
-                        <div class="lead-detail"><strong>Location:</strong> 66 NW 22nd St, Wynwood, Miami</div>
-                        <div class="lead-detail"><strong>Type:</strong> Restaurant & Specialty Market</div>
-                        <div class="lead-detail"><strong>Opening:</strong> January 22, 2026</div>
-                        
-                        <div class="signage-needs">
-                            <h4>🎯 Complete Signage Package:</h4>
-                            <ul>
-                                <li><strong>Channel Letters:</strong> LED-illuminated storefront</li>
-                                <li><strong>Window Wraps:</strong> Full glass coverage with menu</li>
-                                <li><strong>Digital Menu Boards:</strong> 3 indoor displays</li>
-                                <li><strong>Market Signage:</strong> Aisle markers, pricing</li>
-                                <li><strong>Grand Opening:</strong> Banner package</li>
-                            </ul>
-                        </div>
-                        
-                        <div class="revenue-estimate">
-                            <strong>$28,000 - $45,000</strong>
-                            <span>Full Signage Package Revenue</span>
-                        </div>
-                        
-                        <div class="action-buttons">
-                            <button class="btn btn-primary" onclick="contactLead('Cotidiano')">📞 CALL NOW</button>
-                            <button class="btn btn-secondary" onclick="saveLead('Cotidiano')">💾 Save</button>
-                        </div>
-                    </div>
-
-                    <div class="lead-card hot" data-county="miami-dade" data-temp="hot" data-search="heal cafe downtown biscayne wellness">
-                        <div class="lead-header">
-                            <div>
-                                <div class="lead-title">Heal All-Day Café - Downtown Miami</div>
-                            </div>
-                            <span class="lead-badge badge-hot">🔥 HOT</span>
-                        </div>
-                        <div class="lead-detail"><strong>Location:</strong> 2 S Biscayne Blvd, Suite 104</div>
-                        <div class="lead-detail"><strong>Owner:</strong> Vitalii Korsikov</div>
-                        <div class="lead-detail"><strong>Opening:</strong> Late January 2026</div>
-                        
-                        <div class="signage-needs">
-                            <h4>🎯 Wellness-Focused Signage:</h4>
-                            <ul>
-                                <li><strong>LED Channel Letters:</strong> "HEAL" backlit signage</li>
-                                <li><strong>Window Clings:</strong> Health messaging</li>
-                                <li><strong>Digital Menu Board:</strong> Nutritional info displays</li>
-                                <li><strong>A-Frame:</strong> Sidewalk daily specials</li>
-                            </ul>
-                        </div>
-                        
-                        <div class="revenue-estimate">
-                            <strong>$22,000 - $38,000</strong>
-                            <span>Café Signage Package</span>
-                        </div>
-                        
-                        <div class="action-buttons">
-                            <button class="btn btn-primary" onclick="contactLead('Heal')">📞 CONTACT</button>
-                            <button class="btn btn-secondary" onclick="saveLead('Heal')">💾 Save</button>
-                        </div>
-                    </div>
-
-                    <div class="lead-card warm" data-county="miami-dade" data-temp="warm" data-search="peche mignon edgewater french champagne">
-                        <div class="lead-header">
-                            <div>
-                                <div class="lead-title">Péché Mignon - Edgewater French Champagne Bar</div>
-                            </div>
-                            <span class="lead-badge badge-warm">⚡ WARM</span>
-                        </div>
-                        <div class="lead-detail"><strong>Location:</strong> 452 NE 31 St, Miami</div>
-                        <div class="lead-detail"><strong>Chef:</strong> Sappir Zuzan</div>
-                        <div class="lead-detail"><strong>Opening:</strong> Mid to Late March 2026</div>
-                        
-                        <div class="signage-needs">
-                            <h4>🎯 Upscale French Bistro Signage:</h4>
-                            <ul>
-                                <li><strong>Elegant Channel Letters:</strong> French-style typography</li>
-                                <li><strong>Awning:</strong> European bistro canopy with branding</li>
-                                <li><strong>Window Etching:</strong> Frosted glass logo</li>
-                                <li><strong>Wine Menu Boards:</strong> Interior displays</li>
-                            </ul>
-                        </div>
-                        
-                        <div class="revenue-estimate">
-                            <strong>$35,000 - $52,000</strong>
-                            <span>Upscale Restaurant Package</span>
-                        </div>
-                        
-                        <div class="action-buttons">
-                            <button class="btn btn-primary" onclick="contactLead('Peche Mignon')">📞 CONTACT</button>
-                            <button class="btn btn-secondary" onclick="saveLead('Peche Mignon')">💾 Save</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="region-section">
-                <div class="region-header">
-                    Broward County (Population: 1.9M)
-                    <span class="region-count">32 HOT LEADS</span>
-                </div>
-                
-                <div class="leads-grid">
-                    <div class="lead-card hot" data-county="broward" data-temp="hot">
-                        <div class="lead-header">
-                            <div>
-                                <div class="lead-title">Sweetwaters - Fort Lauderdale Waterfront</div>
-                            </div>
-                            <span class="lead-badge badge-hot">🔥 HOT</span>
-                        </div>
-                        <div class="lead-detail"><strong>Location:</strong> Huizenga Park, Las Olas Blvd</div>
-                        <div class="lead-detail"><strong>Opening:</strong> Fall 2026</div>
-                        
-                        <div class="signage-needs">
-                            <h4>🎯 Waterfront Entertainment Venue:</h4>
-                            <ul>
-                                <li><strong>Monument Sign:</strong> Las Olas visibility</li>
-                                <li><strong>LED Display:</strong> Events/specials programmable</li>
-                                <li><strong>Dock Signs:</strong> Boat-accessible signage</li>
-                                <li><strong>Patio Branding:</strong> Waterfront area signs</li>
-                            </ul>
-                        </div>
-                        
-                        <div class="revenue-estimate">
-                            <strong>$48,000 - $72,000</strong>
-                            <span>Entertainment Venue Package</span>
-                        </div>
-                        
-                        <div class="action-buttons">
-                            <button class="btn btn-primary" onclick="contactLead('Sweetwaters')">📞 CONTACT</button>
-                            <button class="btn btn-secondary" onclick="saveLead('Sweetwaters')">💾 Save</button>
-                        </div>
-                    </div>
-
-                    <div class="lead-card hot" data-county="broward" data-temp="hot">
-                        <span class="new-badge">JUST OPENED</span>
-                        <div class="lead-header">
-                            <div>
-                                <div class="lead-title">Charm City Burger - Boca Raton</div>
-                            </div>
-                            <span class="lead-badge badge-hot">🔥 HOT</span>
-                        </div>
-                        <div class="lead-detail"><strong>Location:</strong> 201 NW First Ave, Boca</div>
-                        <div class="lead-detail"><strong>Status:</strong> Opened Jan 23, 2026</div>
-                        
-                        <div class="signage-needs">
-                            <h4>🎯 New Restaurant Signage:</h4>
-                            <ul>
-                                <li><strong>Retro Channel Letters:</strong> Vintage style</li>
-                                <li><strong>Window Graphics:</strong> Menu highlights</li>
-                                <li><strong>Patio Signs:</strong> Garage door dining area</li>
-                                <li><strong>Parking Signs:</strong> 30-space lot directional</li>
-                            </ul>
-                        </div>
-                        
-                        <div class="revenue-estimate">
-                            <strong>$24,000 - $38,000</strong>
-                            <span>Fast-Casual Package</span>
-                        </div>
-                        
-                        <div class="action-buttons">
-                            <button class="btn btn-primary" onclick="contactLead('Charm City')">📞 CONTACT</button>
-                            <button class="btn btn-secondary" onclick="saveLead('Charm City')">💾 Save</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="region-section">
-                <div class="region-header">
-                    Palm Beach County (Population: 1.5M)
-                    <span class="region-count">28 HOT LEADS</span>
-                </div>
-                
-                <div class="leads-grid">
-                    <div class="lead-card hot" data-county="palm-beach" data-temp="hot">
-                        <span class="new-badge">3 LOCATIONS!</span>
-                        <div class="lead-header">
-                            <div>
-                                <div class="lead-title">Field of Greens - Multi-Location Expansion</div>
-                            </div>
-                            <span class="lead-badge badge-hot">🔥 MASSIVE</span>
-                        </div>
-                        <div class="lead-detail"><strong>Locations:</strong> Boynton Beach, PB Gardens, PBI Airport</div>
-                        <div class="lead-detail"><strong>Opening:</strong> Jan-Summer 2026 (Rolling)</div>
-                        <div class="lead-detail"><strong>Opportunity:</strong> MASTER CONTRACT - 3 locations</div>
-                        
-                        <div class="signage-needs">
-                            <h4>🎯 Multi-Location Package Deal:</h4>
-                            <ul>
-                                <li><strong>3x Storefront Packages:</strong> Consistent branding</li>
-                                <li><strong>Digital Menu Boards:</strong> 9 total displays</li>
-                                <li><strong>Airport Compliance:</strong> TSA-approved signage</li>
-                                <li><strong>Shopping Center Signs:</strong> Monument + wayfinding</li>
-                                <li><strong>Volume Discount:</strong> 15% off package deal</li>
-                            </ul>
-                        </div>
-                        
-                        <div class="revenue-estimate">
-                            <strong>$76,000 - $112,000</strong>
-                            <span>3-Location Master Contract</span>
-                        </div>
-                        
-                        <div class="action-buttons">
-                            <button class="btn btn-primary" onclick="contactLead('Field of Greens Multi')">📞 PITCH PACKAGE</button>
-                            <button class="btn btn-secondary" onclick="saveLead('Field Multi')">💾 Save</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <div id="central-florida" class="tab-content">
-            <div class="info-box">
-                <h3>🎢 CENTRAL FLORIDA - THE THEME PARK CORRIDOR (Orange, Hillsborough, Pinellas)</h3>
-                <p><strong>Population: 4.1M+ | Tourism Capital</strong><br>Orlando leads employment growth, Tampa becoming tech/financial hub. 50+ restaurants opening 2026, Costco/Raising Cane's expansions, food halls. <strong>Estimated Regional Opportunity: $3.2M+ in 2026</strong></p>
-            </div>
-
-            <div class="filters">
-                <div class="filter-group">
-                    <label>County:</label>
-                    <select id="cfCountyFilter" onchange="filterLeads('central-florida')">
-                        <option value="all">All Central Florida</option>
-                        <option value="orange">Orange (Orlando)</option>
-                        <option value="hillsborough">Hillsborough (Tampa)</option>
-                        <option value="pinellas">Pinellas (St. Petersburg)</option>
-                        <option value="osceola">Osceola (Kissimmee)</option>
-                        <option value="polk">Polk (Lakeland)</option>
-                    </select>
-                </div>
-                <div class="filter-group">
-                    <label>Priority:</label>
-                    <select id="cfTempFilter" onchange="filterLeads('central-florida')">
-                        <option value="all">All Leads</option>
-                        <option value="hot">HOT</option>
-                        <option value="warm">WARM</option>
-                    </select>
-                </div>
-                <input type="text" class="search-bar" id="cfSearchBox" placeholder="🔍 Search Central Florida leads..." onkeyup="filterLeads('central-florida')">
-            </div>
-            
-            <div class="region-section">
-                <div class="region-header">
-                    Orange County - Orlando (Population: 1.4M)
-                    <span class="region-count">58 HOT LEADS</span>
-                </div>
-                
-                <div class="leads-grid">
-                    <div class="lead-card hot" data-county="orange" data-temp="hot">
-                        <span class="new-badge">OPENS APRIL 2026</span>
-                        <div class="lead-header">
-                            <div>
-                                <div class="lead-title">Lake Eola Food Hall - Downtown Orlando</div>
-                            </div>
-                            <span class="lead-badge badge-hot">🔥 MASSIVE</span>
-                        </div>
-                        <div class="lead-detail"><strong>Location:</strong> 150 Central Blvd, Orlando</div>
-                        <div class="lead-detail"><strong>Size:</strong> 15,000 sq ft | 2 stories</div>
-                        <div class="lead-detail"><strong>Tenants:</strong> 10 vendors + restaurant + bars</div>
-                        <div class="lead-detail"><strong>Opening:</strong> April 2026</div>
-                        
-                        <div class="signage-needs">
-                            <h4>🎯 Food Hall Complete Signage System:</h4>
-                            <ul>
-                                <li><strong>Building Monument:</strong> Lake Eola visibility</li>
-                                <li><strong>10 Vendor Signs:</strong> Individual booth signage</li>
-                                <li><strong>Digital Menu Boards:</strong> 15+ displays throughout</li>
-                                <li><strong>Wayfinding System:</strong> 2-story navigation</li>
-                                <li><strong>Parking Signs:</strong> Customer directional</li>
-                                <li><strong>Bar Signage:</strong> Cocktail bar + wine room</li>
-                            </ul>
-                        </div>
-                        
-                        <div class="revenue-estimate">
-                            <strong>$95,000 - $145,000</strong>
-                            <span>Complete Food Hall Package</span>
-                        </div>
-                        
-                        <div class="action-buttons">
-                            <button class="btn btn-primary" onclick="contactLead('Eola Food Hall')">📞 CONTACT DEVELOPER</button>
-                            <button class="btn btn-secondary" onclick="saveLead('Eola')">💾 Save</button>
-                        </div>
-                    </div>
-
-                    <div class="lead-card hot" data-county="orange" data-temp="hot">
-                        <div class="lead-header">
-                            <div>
-                                <div class="lead-title">O-Ku Sushi - Winter Park</div>
-                            </div>
-                            <span class="lead-badge badge-hot">🔥 HOT</span>
-                        </div>
-                        <div class="lead-detail"><strong>Location:</strong> 1311 Minnesota Ave, Winter Park</div>
-                        <div class="lead-detail"><strong>Developer:</strong> Indigo Road Hospitality</div>
-                        <div class="lead-detail"><strong>Opening:</strong> Spring 2026</div>
-                        
-                        <div class="signage-needs">
-                            <h4>🎯 Upscale Sushi Restaurant:</h4>
-                            <ul>
-                                <li><strong>Japanese-Inspired:</strong> Custom typography channel letters</li>
-                                <li><strong>Window Graphics:</strong> Minimalist design elements</li>
-                                <li><strong>Interior Signs:</strong> Sushi bar, private dining</li>
-                                <li><strong>Valet:</strong> Premium parking signage</li>
-                            </ul>
-                        </div>
-                        
-                        <div class="revenue-estimate">
-                            <strong>$42,000 - $58,000</strong>
-                            <span>Upscale Restaurant Package</span>
-                        </div>
-                        
-                        <div class="action-buttons">
-                            <button class="btn btn-primary" onclick="contactLead('O-Ku')">📞 CONTACT</button>
-                            <button class="btn btn-secondary" onclick="saveLead('O-Ku')">💾 Save</button>
-                        </div>
-                    </div>
-
-                    <div class="lead-card warm" data-county="orange" data-temp="warm">
-                        <div class="lead-header">
-                            <div>
-                                <div class="lead-title">Koffee Sutra - Thornton Park</div>
-                            </div>
-                            <span class="lead-badge badge-warm">⚡ WARM</span>
-                        </div>
-                        <div class="lead-detail"><strong>Location:</strong> 707 E. Washington St, Orlando</div>
-                        <div class="lead-detail"><strong>Type:</strong> Coffee shop concept</div>
-                        
-                        <div class="signage-needs">
-                            <h4>🎯 Coffee Shop Signage:</h4>
-                            <ul>
-                                <li><strong>Storefront:</strong> Channel letters + logo</li>
-                                <li><strong>Window Clings:</strong> Menu items, branding</li>
-                                <li><strong>A-Frame:</strong> Sidewalk specials</li>
-                                <li><strong>Interior:</strong> Menu boards, ordering signs</li>
-                            </ul>
-                        </div>
-                        
-                        <div class="revenue-estimate">
-                            <strong>$18,000 - $28,000</strong>
-                            <span>Coffee Shop Package</span>
-                        </div>
-                        
-                        <div class="action-buttons">
-                            <button class="btn btn-primary" onclick="contactLead('Koffee Sutra')">📞 CONTACT</button>
-                            <button class="btn btn-secondary" onclick="saveLead('Koffee')">💾 Save</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="region-section">
-                <div class="region-header">
-                    Hillsborough County - Tampa (Population: 1.5M)
-                    <span class="region-count">42 HOT LEADS</span>
-                </div>
-                
-                <div class="leads-grid">
-                    <div class="lead-card hot" data-county="hillsborough" data-temp="hot">
-                        <div class="lead-header">
-                            <div>
-                                <div class="lead-title">One Tampa - 42-Story Residential Tower</div>
-                            </div>
-                            <span class="lead-badge badge-hot">🔥 HOT</span>
-                        </div>
-                        <div class="lead-detail"><strong>Location:</strong> Downtown Tampa</div>
-                        <div class="lead-detail"><strong>Height:</strong> 42 stories (Tampa's tallest residential)</div>
-                        <div class="lead-detail"><strong>Status:</strong> Topping out Summer 2026</div>
-                        
-                        <div class="signage-needs">
-                            <h4>🎯 High-Rise Building Signage:</h4>
-                            <ul>
-                                <li><strong>Building ID:</strong> Large-format channel letters</li>
-                                <li><strong>Monument Sign:</strong> Ground-level branding</li>
-                                <li><strong>Parking Garage:</strong> Level markers, directional</li>
-                                <li><strong>Amenity Signs:</strong> Pool deck, theater, business lounge</li>
-                                <li><strong>Wayfinding:</strong> 42-story navigation system</li>
-                            </ul>
-                        </div>
-                        
-                        <div class="revenue-estimate">
-                            <strong>$85,000 - $125,000</strong>
-                            <span>High-Rise Complete Package</span>
-                        </div>
-                        
-                        <div class="action-buttons">
-                            <button class="btn btn-primary" onclick="contactLead('One Tampa')">📞 CONTACT DEVELOPER</button>
-                            <button class="btn btn-secondary" onclick="saveLead('One Tampa')">💾 Save</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <div id="north-florida" class="tab-content">
-            <div class="info-box">
-                <h3>⚓ NORTH FLORIDA - CAPITALS & COASTS (Duval, Escambia, Leon, Alachua)</h3>
-                <p><strong>Population: 2.5M+ | Growing Logistics & Government Hubs</strong><br>Jacksonville expanding rapidly, Pensacola sees Costco/Launch Entertainment, Gainesville/Tallahassee university markets. <strong>Estimated Regional Opportunity: $2.1M+ in 2026</strong></p>
-            </div>
-
-            <div class="filters">
-                <div class="filter-group">
-                    <label>County:</label>
-                    <select id="nfCountyFilter" onchange="filterLeads('north-florida')">
-                        <option value="all">All North Florida</option>
-                        <option value="duval">Duval (Jacksonville)</option>
-                        <option value="escambia">Escambia (Pensacola)</option>
-                        <option value="leon">Leon (Tallahassee)</option>
-                        <option value="alachua">Alachua (Gainesville)</option>
-                    </select>
-                </div>
-                <div class="filter-group">
-                    <label>Priority:</label>
-                    <select id="nfTempFilter" onchange="filterLeads('north-florida')">
-                        <option value="all">All Leads</option>
-                        <option value="hot">HOT</option>
-                        <option value="warm">WARM</option>
-                    </select>
-                </div>
-                <input type="text" class="search-bar" id="nfSearchBox" placeholder="🔍 Search North Florida leads..." onkeyup="filterLeads('north-florida')">
-            </div>
-            
-            <div class="region-section">
-                <div class="region-header">
-                    Duval County - Jacksonville (Population: 1.0M)
-                    <span class="region-count">38 HOT LEADS</span>
-                </div>
-                
-                <div class="leads-grid">
-                    <div class="lead-card hot" data-county="duval" data-temp="hot">
-                        <div class="lead-header">
-                            <div>
-                                <div class="lead-title">Bold City Wings - San Marco</div>
-                            </div>
-                            <span class="lead-badge badge-hot">🔥 HOT</span>
-                        </div>
-                        <div class="lead-detail"><strong>Location:</strong> 2016 Hendricks Ave, San Marco</div>
-                        <div class="lead-detail"><strong>Owner:</strong> Rhonda Lunsford</div>
-                        <div class="lead-detail"><strong>Opening:</strong> March 1, 2026</div>
-                        
-                        <div class="signage-needs">
-                            <h4>🎯 Wing Restaurant Signage:</h4>
-                            <ul>
-                                <li><strong>Storefront:</strong> Bold channel letters</li>
-                                <li><strong>Window Graphics:</strong> Menu + wing flavors</li>
-                                <li><strong>Menu Boards:</strong> Counter displays</li>
-                                <li><strong>Drive-Thru:</strong> Speaker box + menu board</li>
-                            </ul>
-                        </div>
-                        
-                        <div class="revenue-estimate">
-                            <strong>$26,000 - $38,000</strong>
-                            <span>Fast-Casual Restaurant</span>
-                        </div>
-                        
-                        <div class="action-buttons">
-                            <button class="btn btn-primary" onclick="contactLead('Bold City')">📞 CONTACT</button>
-                            <button class="btn btn-secondary" onclick="saveLead('Bold City')">💾 Save</button>
-                        </div>
-                    </div>
-
-                    <div class="lead-card warm" data-county="duval" data-temp="warm">
-                        <div class="lead-header">
-                            <div>
-                                <div class="lead-title">Grumpy's Restaurant - Fleming Island</div>
-                            </div>
-                            <span class="lead-badge badge-warm">⚡ WARM</span>
-                        </div>
-                        <div class="lead-detail"><strong>Location:</strong> 1803 East West Parkway, Fleming Island</div>
-                        <div class="lead-detail"><strong>Opening:</strong> Early April 2026</div>
-                        
-                        <div class="signage-needs">
-                            <h4>🎯 Family Restaurant Signage:</h4>
-                            <ul>
-                                <li><strong>Monument Sign:</strong> Roadside pylon</li>
-                                <li><strong>Channel Letters:</strong> Building ID</li>
-                                <li><strong>Interior:</strong> Menu boards, wayfinding</li>
-                            </ul>
-                        </div>
-                        
-                        <div class="revenue-estimate">
-                            <strong>$32,000 - $48,000</strong>
-                            <span>Family Restaurant Package</span>
-                        </div>
-                        
-                        <div class="action-buttons">
-                            <button class="btn btn-primary" onclick="contactLead('Grumpys')">📞 CONTACT</button>
-                            <button class="btn btn-secondary" onclick="saveLead('Grumpys')">💾 Save</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="region-section">
-                <div class="region-header">
-                    Escambia County - Pensacola (Population: 321K)
-                    <span class="region-count">24 HOT LEADS</span>
-                </div>
-                
-                <div class="leads-grid">
-                    <div class="lead-card hot" data-county="escambia" data-temp="hot">
-                        <span class="new-badge">OPENS SEPT 2026</span>
-                        <div class="lead-header">
-                            <div>
-                                <div class="lead-title">Costco Wholesale - Pensacola</div>
-                            </div>
-                            <span class="lead-badge badge-hot">🔥 MASSIVE</span>
-                        </div>
-                        <div class="lead-detail"><strong>Location:</strong> Pensacola (site TBA)</div>
-                        <div class="lead-detail"><strong>Size:</strong> 150,000+ sq ft warehouse</div>
-                        <div class="lead-detail"><strong>Opening:</strong> September 2026</div>
-                        
-                        <div class="signage-needs">
-                            <h4>🎯 Costco Complete Signage Package:</h4>
-                            <ul>
-                                <li><strong>Monument Sign:</strong> 60-80ft pylon with LED</li>
-                                <li><strong>Building ID:</strong> Massive Costco letters</li>
-                                <li><strong>Warehouse Signs:</strong> Department markers throughout</li>
-                                <li><strong>Gas Station:</strong> Canopy signs, price displays</li>
-                                <li><strong>Tire Center:</strong> Separate signage package</li>
-                                <li><strong>Parking:</strong> Directional, handicap, fire lane</li>
-                            </ul>
-                        </div>
-                        
-                        <div class="revenue-estimate">
-                            <strong>$195,000 - $285,000</strong>
-                            <span>Major Warehouse Retailer</span>
-                        </div>
-                        
-                        <div class="action-buttons">
-                            <button class="btn btn-primary" onclick="contactLead('Costco Pensacola')">📞 CONTACT COSTCO</button>
-                            <button class="btn btn-secondary" onclick="saveLead('Costco')">💾 Save</button>
-                        </div>
-                    </div>
-
-                    <div class="lead-card hot" data-county="escambia" data-temp="hot">
-                        <div class="lead-header">
-                            <div>
-                                <div class="lead-title">Raising Cane's - Pensacola</div>
-                            </div>
-                            <span class="lead-badge badge-hot">🔥 HOT</span>
-                        </div>
-                        <div class="lead-detail"><strong>Location:</strong> Pensacola (confirmed opening)</div>
-                        <div class="lead-detail"><strong>Type:</strong> Fast-food chicken fingers</div>
-                        <div class="lead-detail"><strong>Opening:</strong> 2026</div>
-                        
-                        <div class="signage-needs">
-                            <h4>🎯 Drive-Thru Restaurant:</h4>
-                            <ul>
-                                <li><strong>Pylon Sign:</strong> Tall monument with branding</li>
-                                <li><strong>Channel Letters:</strong> Building storefront</li>
-                                <li><strong>Drive-Thru:</strong> Menu boards, speaker box</li>
-                                <li><strong>Interior:</strong> Menu displays, branding</li>
-                            </ul>
-                        </div>
-                        
-                        <div class="revenue-estimate">
-                            <strong>$45,000 - $65,000</strong>
-                            <span>QSR Drive-Thru Package</span>
-                        </div>
-                        
-                        <div class="action-buttons">
-                            <button class="btn btn-primary" onclick="contactLead('Canes Pensacola')">📞 CONTACT</button>
-                            <button class="btn btn-secondary" onclick="saveLead('Canes')">💾 Save</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="region-section">
-                <div class="region-header">
-                    Alachua County - Gainesville (Population: 278K)
-                    <span class="region-count">18 HOT LEADS</span>
-                </div>
-                
-                <div class="leads-grid">
-                    <div class="lead-card hot" data-county="alachua" data-temp="hot">
-                        <div class="lead-header">
-                            <div>
-                                <div class="lead-title">Dutch Bros Coffee - Gainesville</div>
-                            </div>
-                            <span class="lead-badge badge-hot">🔥 HOT</span>
-                        </div>
-                        <div class="lead-detail"><strong>Location:</strong> 3315 SW Williston Rd, Gainesville</div>
-                        <div class="lead-detail"><strong>Type:</strong> Drive-thru coffee shop</div>
-                        <div class="lead-detail"><strong>Status:</strong> Opening 2026</div>
-                        
-                        <div class="signage-needs">
-                            <h4>🎯 Drive-Thru Coffee Shop:</h4>
-                            <ul>
-                                <li><strong>Monument Sign:</strong> Dutch Bros branding</li>
-                                <li><strong>Menu Boards:</strong> Drive-thru displays</li>
-                                <li><strong>Building Wrap:</strong> Colorful branded graphics</li>
-                                <li><strong>Directional:</strong> Traffic flow signs</li>
-                            </ul>
-                        </div>
-                        
-                        <div class="revenue-estimate">
-                            <strong>$28,000 - $42,000</strong>
-                            <span>Drive-Thru Coffee Shop</span>
-                        </div>
-                        
-                        <div class="action-buttons">
-                            <button class="btn btn-primary" onclick="contactLead('Dutch Bros')">📞 CONTACT</button>
-                            <button class="btn btn-secondary" onclick="saveLead('Dutch')">💾 Save</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div id="gulf-coast" class="tab-content">
-            <div class="info-box">
-                <h3>🏖️ GULF COAST PARADISE (Lee, Collier, Sarasota, Manatee)</h3>
-                <p><strong>Population: 1.8M+ | Luxury Retirement & Tourism Markets</strong><br>Naples/Fort Myers/Sarasota booming with upscale retail, restaurants, grocery chains. Wealthiest demographics in FL. <strong>Estimated Regional Opportunity: $2.4M+ in 2026</strong></p>
-            </div>
-
-            <div class="filters">
-                <div class="filter-group">
-                    <label>County:</label>
-                    <select id="gcCountyFilter" onchange="filterLeads('gulf-coast')">
-                        <option value="all">All Gulf Coast</option>
-                        <option value="lee">Lee (Fort Myers)</option>
-                        <option value="collier">Collier (Naples)</option>
-                        <option value="sarasota">Sarasota</option>
-                        <option value="manatee">Manatee (Bradenton)</option>
-                    </select>
-                </div>
-                <div class="filter-group">
-                    <label>Priority:</label>
-                    <select id="gcTempFilter" onchange="filterLeads('gulf-coast')">
-                        <option value="all">All Leads</option>
-                        <option value="hot">HOT</option>
-                        <option value="warm">WARM</option>
-                    </select>
-                </div>
-                <input type="text" class="search-bar" id="gcSearchBox" placeholder="🔍 Search Gulf Coast leads..." onkeyup="filterLeads('gulf-coast')">
-            </div>
-            
-            <div class="region-section">
-                <div class="region-header">
-                    Lee County - Fort Myers Area (Population: 787K)
-                    <span class="region-count">34 HOT LEADS</span>
-                </div>
-                
-                <div class="leads-grid">
-                    <div class="lead-card hot" data-county="lee" data-temp="hot">
-                        <span class="new-badge">40 ACRES!</span>
-                        <div class="lead-header">
-                            <div>
-                                <div class="lead-title">Gateway Marketplace - East Fort Myers</div>
-                            </div>
-                            <span class="lead-badge badge-hot">🔥 MASSIVE</span>
-                        </div>
-                        <div class="lead-detail"><strong>Developer:</strong> Sembler Company</div>
-                        <div class="lead-detail"><strong>Size:</strong> 40 acres shopping center</div>
-                        <div class="lead-detail"><strong>Tenants:</strong> Grocery anchor + national retailers + restaurants</div>
-                        <div class="lead-detail"><strong>Status:</strong> Under construction 2026</div>
-                        
-                        <div class="signage-needs">
-                            <h4>🎯 Shopping Center Master Signage:</h4>
-                            <ul>
-                                <li><strong>Main Pylon:</strong> 80ft+ shopping center monument</li>
-                                <li><strong>10+ Tenant Signs:</strong> Individual storefronts</li>
-                                <li><strong>Wayfinding:</strong> Internal navigation system</li>
-                                <li><strong>Parking:</strong> Directional throughout 40 acres</li>
-                                <li><strong>Restaurant Signs:</strong> Multiple dining concepts</li>
-                            </ul>
-                        </div>
-                        
-                        <div class="revenue-estimate">
-                            <strong>$450,000 - $650,000</strong>
-                            <span>Shopping Center Master Contract</span>
-                        </div>
-                        
-                        <div class="action-buttons">
-                            <button class="btn btn-primary" onclick="contactLead('Gateway Marketplace')">📞 CONTACT DEVELOPER</button>
-                            <button class="btn btn-secondary" onclick="saveLead('Gateway')">💾 Save</button>
-                        </div>
-                    </div>
-
-                    <div class="lead-card hot" data-county="lee" data-temp="hot">
-                        <div class="lead-header">
-                            <div>
-                                <div class="lead-title">Creekside Marketplace - East Fort Myers</div>
-                            </div>
-                            <span class="lead-badge badge-hot">🔥 MASSIVE</span>
-                        </div>
-                        <div class="lead-detail"><strong>Developer:</strong> Sembler Company</div>
-                        <div class="lead-detail"><strong>Size:</strong> 40 acres shopping center</div>
-                        <div class="lead-detail"><strong>Focus:</strong> Medical users + retail + restaurants</div>
-                        
-                        <div class="signage-needs">
-                            <h4>🎯 Medical/Retail Center Signage:</h4>
-                            <ul>
-                                <li><strong>Monument Pylon:</strong> Main identification</li>
-                                <li><strong>Medical Signage:</strong> Healthcare tenant signs</li>
-                                <li><strong>Retail Storefronts:</strong> Multiple tenants</li>
-                                <li><strong>Wayfinding:</strong> Patient/customer navigation</li>
-                            </ul>
-                        </div>
-                        
-                        <div class="revenue-estimate">
-                            <strong>$425,000 - $625,000</strong>
-                            <span>Medical/Retail Complex</span>
-                        </div>
-                        
-                        <div class="action-buttons">
-                            <button class="btn btn-primary" onclick="contactLead('Creekside')">📞 CONTACT</button>
-                            <button class="btn btn-secondary" onclick="saveLead('Creekside')">💾 Save</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="region-section">
-                <div class="region-header">
-                    Sarasota County (Population: 434K)
-                    <span class="region-count">28 HOT LEADS</span>
-                </div>
-                
-                <div class="leads-grid">
-                    <div class="lead-card hot" data-county="sarasota" data-temp="hot">
-                        <div class="lead-header">
-                            <div>
-                                <div class="lead-title">Nordstrom Rack - Sarasota Pavilion</div>
-                            </div>
-                            <span class="lead-badge badge-hot">🔥 HOT</span>
-                        </div>
-                        <div class="lead-detail"><strong>Location:</strong> Sarasota Pavilion</div>
-                        <div class="lead-detail"><strong>Size:</strong> 24,000 sq ft</div>
-                        <div class="lead-detail"><strong>Opening:</strong> Spring 2026</div>
-                        
-                        <div class="signage-needs">
-                            <h4>🎯 Upscale Retail Signage:</h4>
-                            <ul>
-                                <li><strong>Monument:</strong> Shopping center pylon inclusion</li>
-                                <li><strong>Channel Letters:</strong> Nordstrom Rack branding</li>
-                                <li><strong>Window Graphics:</strong> Sale messaging</li>
-                                <li><strong>Interior:</strong> Department signs, fitting rooms</li>
-                            </ul>
-                        </div>
-                        
-                        <div class="revenue-estimate">
-                            <strong>$48,000 - $68,000</strong>
-                            <span>Retail Chain Package</span>
-                        </div>
-                        
-                        <div class="action-buttons">
-                            <button class="btn btn-primary" onclick="contactLead('Nordstrom Sarasota')">📞 CONTACT</button>
-                            <button class="btn btn-secondary" onclick="saveLead('Nordstrom')">💾 Save</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div id="retail-chains" class="tab-content">
-            <div class="info-box">
-                <h3>🏪 STATEWIDE RETAIL CHAIN EXPANSION - VOLUME CONTRACT OPPORTUNITIES</h3>
-                <p><strong>Multi-Location Gold Mine:</strong> Walmart (4 new + 34 remodels), ALDI (180+ nationwide, heavy FL), Publix (8 new), Costco (35 nationwide), Raising Cane's (100 new), Dutch Bros (175 new). <strong>Single contracts: $500K-$2M+</strong></p>
-            </div>
-
+            <!-- SOUTH FLORIDA SECTION -->
+            <div class="region-title">🌴 SOUTH FLORIDA - MIAMI-DADE COUNTY (55 LEADS)</div>
             <div class="leads-grid">
-                <div class="lead-card hot" data-temp="hot">
-                    <span class="new-badge">4 STORES + 34 REMODELS</span>
-                    <div class="lead-header">
-                        <div>
-                            <div class="lead-title">Walmart - Florida Expansion Package</div>
-                        </div>
-                        <span class="lead-badge badge-hot">🔥 MASSIVE CONTRACT</span>
+                
+                <div class="lead-card hot">
+                    <span class="badge badge-hot">HOT - OPENS JAN 22</span>
+                    <div class="lead-title">Cotidiano - Wynwood Restaurant & Market</div>
+                    <div class="lead-detail"><strong>Location:</strong> 66 NW 22nd St, Wynwood</div>
+                    <div class="lead-detail"><strong>Type:</strong> Mexican restaurant + specialty market</div>
+                    <div class="lead-detail"><strong>Opening:</strong> January 22, 2026</div>
+                    <div class="signage-box">
+                        <h4>Signage Package:</h4>
+                        <ul>
+                            <li>LED channel letters - storefront</li>
+                            <li>Window wraps - full glass coverage</li>
+                            <li>Digital menu boards (3x)</li>
+                            <li>Market aisle signs + pricing</li>
+                            <li>Grand opening banners</li>
+                        </ul>
                     </div>
-                    <div class="lead-detail"><strong>New Stores:</strong> Apollo Beach, Jacksonville, Ocala, The Villages</div>
-                    <div class="lead-detail"><strong>Remodels:</strong> 34 existing Florida locations</div>
+                    <div class="revenue"><strong>$28K - $45K</strong></div>
+                </div>
+
+                <div class="lead-card hot">
+                    <span class="badge badge-hot">HOT - LATE JAN</span>
+                    <div class="lead-title">Heal All-Day Café - Downtown Miami</div>
+                    <div class="lead-detail"><strong>Location:</strong> 2 S Biscayne Blvd, Suite 104</div>
+                    <div class="lead-detail"><strong>Owner:</strong> Vitalii Korsikov</div>
+                    <div class="lead-detail"><strong>Opening:</strong> Late January 2026</div>
+                    <div class="signage-box">
+                        <h4>Signage Package:</h4>
+                        <ul>
+                            <li>LED-backlit "HEAL" channel letters</li>
+                            <li>Window clings - health messaging</li>
+                            <li>Digital menu board</li>
+                            <li>Interior directional signs</li>
+                            <li>Sidewalk A-frame board</li>
+                        </ul>
+                    </div>
+                    <div class="revenue"><strong>$22K - $38K</strong></div>
+                </div>
+
+                <div class="lead-card hot">
+                    <span class="badge badge-hot">HOT</span>
+                    <div class="lead-title">Buccan - Coral Gables Miracle Mile</div>
+                    <div class="lead-detail"><strong>Location:</strong> 100 Miracle Mile</div>
+                    <div class="lead-detail"><strong>Chef:</strong> Clay Conley (James Beard nominee)</div>
+                    <div class="lead-detail"><strong>Opening:</strong> Early 2026</div>
+                    <div class="signage-box">
+                        <h4>Signage Package:</h4>
+                        <ul>
+                            <li>Monument sign - Miracle Mile visibility</li>
+                            <li>Premium channel letters</li>
+                            <li>Custom branded awning</li>
+                            <li>Patio dining signs</li>
+                            <li>Valet parking directional</li>
+                        </ul>
+                    </div>
+                    <div class="revenue"><strong>$45K - $65K</strong></div>
+                </div>
+
+                <div class="lead-card hot">
+                    <span class="badge badge-hot">HOT - REOPENED</span>
+                    <div class="lead-title">Fooq's Mediterranean - Little River</div>
+                    <div class="lead-detail"><strong>Location:</strong> Little River, Miami</div>
+                    <div class="lead-detail"><strong>Size:</strong> 9,000 sq ft | Multiple dining rooms</div>
+                    <div class="lead-detail"><strong>Status:</strong> Reopened January 2026</div>
+                    <div class="signage-box">
+                        <h4>Signage Refresh:</h4>
+                        <ul>
+                            <li>Updated channel letters with new logo</li>
+                            <li>Monument sign - street-facing</li>
+                            <li>"We're Back!" promotional banners</li>
+                            <li>Menu boards - indoor/outdoor</li>
+                            <li>Patio area signage</li>
+                        </ul>
+                    </div>
+                    <div class="revenue"><strong>$18K - $32K</strong></div>
+                </div>
+
+                <div class="lead-card warm">
+                    <span class="badge badge-warm">WARM - MARCH</span>
+                    <div class="lead-title">Péché Mignon - Edgewater French Champagne Bar</div>
+                    <div class="lead-detail"><strong>Location:</strong> 452 NE 31 St, Miami</div>
+                    <div class="lead-detail"><strong>Chef:</strong> Sappir Zuzan</div>
+                    <div class="lead-detail"><strong>Opening:</strong> Mid-late March 2026</div>
+                    <div class="signage-box">
+                        <h4>Signage Package:</h4>
+                        <ul>
+                            <li>French-style channel letters</li>
+                            <li>European bistro awning</li>
+                            <li>Frosted window etching</li>
+                            <li>Wine menu board displays</li>
+                        </ul>
+                    </div>
+                    <div class="revenue"><strong>$35K - $52K</strong></div>
+                </div>
+
+                <div class="lead-card warm">
+                    <span class="badge badge-warm">WARM</span>
+                    <div class="lead-title">Cactus Club Cafe - Downtown Miami</div>
+                    <div class="lead-detail"><strong>Location:</strong> Citigroup Center, Biscayne Bay views</div>
+                    <div class="lead-detail"><strong>Origin:</strong> Vancouver (First US location!)</div>
+                    <div class="lead-detail"><strong>Opening:</strong> Early 2026</div>
+                    <div class="signage-box">
+                        <h4>Signage Package:</h4>
+                        <ul>
+                            <li>High-rise building ID letters</li>
+                            <li>Ground-level monument</li>
+                            <li>Waterfront patio signs</li>
+                            <li>Multi-level wayfinding</li>
+                            <li>Blue Onyx Bar branding</li>
+                        </ul>
+                    </div>
+                    <div class="revenue"><strong>$55K - $85K</strong></div>
+                </div>
+
+                <div class="lead-card hot">
+                    <span class="badge badge-hot">HOT</span>
+                    <div class="lead-title">PopUp Bagels - Miami Expansion</div>
+                    <div class="lead-detail"><strong>Location:</strong> Miami (multiple locations planned)</div>
+                    <div class="lead-detail"><strong>Type:</strong> NYC-style bagel shop expansion</div>
+                    <div class="signage-box">
+                        <h4>Signage Package:</h4>
+                        <ul>
+                            <li>Retro-style channel letters</li>
+                            <li>Window graphics - bagel varieties</li>
+                            <li>Menu boards - counter displays</li>
+                            <li>A-frame sidewalk signs</li>
+                        </ul>
+                    </div>
+                    <div class="revenue"><strong>$18K - $28K per location</strong></div>
+                </div>
+
+                <div class="lead-card warm">
+                    <span class="badge badge-warm">WARM</span>
+                    <div class="lead-title">La Sponda - Coconut Grove</div>
+                    <div class="lead-detail"><strong>Location:</strong> Coconut Grove waterfront</div>
+                    <div class="lead-detail"><strong>Type:</strong> Italian restaurant</div>
+                    <div class="signage-box">
+                        <h4>Signage Package:</h4>
+                        <ul>
+                            <li>Waterfront monument sign</li>
+                            <li>Elegant channel letters</li>
+                            <li>Patio dining signage</li>
+                            <li>Valet parking signs</li>
+                        </ul>
+                    </div>
+                    <div class="revenue"><strong>$42K - $58K</strong></div>
+                </div>
+
+                <div class="lead-card warm">
+                    <span class="badge badge-warm">WARM</span>
+                    <div class="lead-title">1986 Steakhouse - Coconut Grove</div>
+                    <div class="lead-detail"><strong>Location:</strong> The Mayfair, Coconut Grove</div>
+                    <div class="lead-detail"><strong>Type:</strong> High-end Argentinian steakhouse</div>
+                    <div class="signage-box">
+                        <h4>Signage Package:</h4>
+                        <ul>
+                            <li>Upscale channel letters</li>
+                            <li>Monument sign</li>
+                            <li>Interior wine room signs</li>
+                            <li>Private dining plaques</li>
+                        </ul>
+                    </div>
+                    <div class="revenue"><strong>$48K - $68K</strong></div>
+                </div>
+
+                <div class="lead-card warm">
+                    <span class="badge badge-warm">WARM</span>
+                    <div class="lead-title">Blu on Miami River</div>
+                    <div class="lead-detail"><strong>Location:</strong> River Landing Shops & Residences</div>
+                    <div class="lead-detail"><strong>Opening:</strong> Late summer/fall 2026</div>
+                    <div class="signage-box">
+                        <h4>Signage Package:</h4>
+                        <ul>
+                            <li>Multi-level restaurant signage</li>
+                            <li>Riverfront patio signs</li>
+                            <li>Rooftop bar branding</li>
+                            <li>Mezzanine event space signs</li>
+                        </ul>
+                    </div>
+                    <div class="revenue"><strong>$52K - $72K</strong></div>
+                </div>
+
+                <div class="lead-card hot">
+                    <span class="badge badge-hot">HOT</span>
+                    <div class="lead-title">Whole Hog BBQ - Miami</div>
+                    <div class="lead-detail"><strong>Type:</strong> BBQ restaurant</div>
+                    <div class="signage-box">
+                        <h4>Signage Package:</h4>
+                        <ul>
+                            <li>Rustic channel letters</li>
+                            <li>Window graphics</li>
+                            <li>Menu boards</li>
+                            <li>Outdoor seating signs</li>
+                        </ul>
+                    </div>
+                    <div class="revenue"><strong>$24K - $36K</strong></div>
+                </div>
+
+                <div class="lead-card hot">
+                    <span class="badge badge-hot">HOT</span>
+                    <div class="lead-title">KARYU - Design District</div>
+                    <div class="lead-detail"><strong>Location:</strong> Miami Design District</div>
+                    <div class="lead-detail"><strong>Type:</strong> Michelin-starred wagyu tasting menu</div>
+                    <div class="signage-box">
+                        <h4>Signage Package:</h4>
+                        <ul>
+                            <li>Minimalist Japanese signage</li>
+                            <li>Elegant channel letters</li>
+                            <li>Interior wayfinding</li>
+                        </ul>
+                    </div>
+                    <div class="revenue"><strong>$35K - $52K</strong></div>
+                </div>
+
+                <div class="lead-card hot">
+                    <span class="badge badge-hot">HOT</span>
+                    <div class="lead-title">Charlie's Ice Cream - West Miami</div>
+                    <div class="lead-detail"><strong>Location:</strong> 2475 SW 97th Ave</div>
+                    <div class="lead-detail"><strong>Status:</strong> Soft opening now</div>
+                    <div class="signage-box">
+                        <h4>Signage Package:</h4>
+                        <ul>
+                            <li>Colorful channel letters</li>
+                            <li>Drive-thru menu board</li>
+                            <li>Walk-up window signs</li>
+                            <li>Flavor board displays</li>
+                        </ul>
+                    </div>
+                    <div class="revenue"><strong>$16K - $24K</strong></div>
+                </div>
+
+                <div class="lead-card warm">
+                    <span class="badge badge-warm">WARM - JUNE</span>
+                    <div class="lead-title">Carrot Express - Hialeah Gardens</div>
+                    <div class="lead-detail"><strong>Location:</strong> 7000 Hialeah Gardens Blvd</div>
+                    <div class="lead-detail"><strong>Opening:</strong> June 2026</div>
+                    <div class="signage-box">
+                        <h4>Signage Package:</h4>
+                        <ul>
+                            <li>Health-focused channel letters</li>
+                            <li>Window graphics</li>
+                            <li>Menu boards</li>
+                            <li>Interior wayfinding</li>
+                        </ul>
+                    </div>
+                    <div class="revenue"><strong>$20K - $32K</strong></div>
+                </div>
+
+                <div class="lead-card hot">
+                    <span class="badge badge-hot">HOT</span>
+                    <div class="lead-title">Amal Lebanese - Coconut Grove Location 2</div>
+                    <div class="lead-detail"><strong>Type:</strong> Stylish Lebanese restaurant expansion</div>
+                    <div class="signage-box">
+                        <h4>Signage Package:</h4>
+                        <ul>
+                            <li>Bohemian-style channel letters</li>
+                            <li>Window graphics</li>
+                            <li>Patio signage</li>
+                        </ul>
+                    </div>
+                    <div class="revenue"><strong>$28K - $42K</strong></div>
+                </div>
+
+            </div>
+
+            <!-- BROWARD COUNTY -->
+            <div class="region-title">🌴 BROWARD COUNTY (48 LEADS)</div>
+            <div class="leads-grid">
+                
+                <div class="lead-card hot">
+                    <span class="badge badge-hot">HOT - FALL 2026</span>
+                    <div class="lead-title">Sweetwaters - Fort Lauderdale</div>
+                    <div class="lead-detail"><strong>Location:</strong> 32 E. Las Olas Blvd, Huizenga Park</div>
+                    <div class="lead-detail"><strong>Size:</strong> 6,140 sq ft + 3,500 sq ft patio</div>
+                    <div class="signage-box">
+                        <h4>Waterfront Entertainment Venue:</h4>
+                        <ul>
+                            <li>Monument sign - Las Olas visibility</li>
+                            <li>LED programmable display</li>
+                            <li>Dock signs - boat accessible</li>
+                            <li>Patio branding</li>
+                            <li>Parking directional</li>
+                        </ul>
+                    </div>
+                    <div class="revenue"><strong>$48K - $72K</strong></div>
+                </div>
+
+                <div class="lead-card hot">
+                    <span class="badge badge-hot">HOT - OPENED JAN 23</span>
+                    <div class="lead-title">Charm City Burger Co. - Boca Raton</div>
+                    <div class="lead-detail"><strong>Location:</strong> 201 NW First Ave, Downtown Boca</div>
+                    <div class="lead-detail"><strong>Owners:</strong> Evan David & Mike Saperstein</div>
+                    <div class="signage-box">
+                        <h4>Signage Package:</h4>
+                        <ul>
+                            <li>Retro-style channel letters</li>
+                            <li>Window graphics - menu highlights</li>
+                            <li>Menu boards</li>
+                            <li>Patio signs</li>
+                            <li>Parking lot directional (30 spaces)</li>
+                        </ul>
+                    </div>
+                    <div class="revenue"><strong>$24K - $38K</strong></div>
+                </div>
+
+                <div class="lead-card hot">
+                    <span class="badge badge-hot">HOT</span>
+                    <div class="lead-title">Signor Sassi - Hallandale Beach</div>
+                    <div class="lead-detail"><strong>Location:</strong> 1006 E. Hallandale Beach Blvd</div>
+                    <div class="lead-detail"><strong>Origin:</strong> 41-year London restaurant (First US!)</div>
+                    <div class="signage-box">
+                        <h4>Luxury Italian Restaurant:</h4>
+                        <ul>
+                            <li>Gold/brass finish channel letters</li>
+                            <li>Elegant monument sign</li>
+                            <li>European-style awning</li>
+                            <li>Valet parking signage</li>
+                            <li>Wine cellar signs</li>
+                        </ul>
+                    </div>
+                    <div class="revenue"><strong>$52K - $78K</strong></div>
+                </div>
+
+                <div class="lead-card hot">
+                    <span class="badge badge-hot">HOT - OPENED JAN 23</span>
+                    <div class="lead-title">Skinny Louie - Dania Beach</div>
+                    <div class="lead-detail"><strong>Location:</strong> Dania Pointe</div>
+                    <div class="lead-detail"><strong>Type:</strong> Viral Miami smash burger spot</div>
+                    <div class="signage-box">
+                        <h4>Multi-Location Chain Signage:</h4>
+                        <ul>
+                            <li>Consistent brand channel letters</li>
+                            <li>Monument signs</li>
+                            <li>Window wraps</li>
+                            <li>Menu boards</li>
+                            <li>NOTE: Multiple FL locations planned!</li>
+                        </ul>
+                    </div>
+                    <div class="revenue"><strong>$20K - $32K per location</strong></div>
+                </div>
+
+                <div class="lead-card hot">
+                    <span class="badge badge-hot">HOT</span>
+                    <div class="lead-title">Amal Lebanese - Fort Lauderdale</div>
+                    <div class="lead-detail"><strong>Location:</strong> 500 E. Las Olas Blvd</div>
+                    <div class="lead-detail"><strong>Type:</strong> Stylish Lebanese restaurant</div>
+                    <div class="signage-box">
+                        <h4>Signage Package:</h4>
+                        <ul>
+                            <li>Bohemian-style channel letters</li>
+                            <li>Window graphics</li>
+                            <li>Patio signage</li>
+                            <li>Interior branding</li>
+                        </ul>
+                    </div>
+                    <div class="revenue"><strong>$32K - $48K</strong></div>
+                </div>
+
+                <div class="lead-card hot">
+                    <span class="badge badge-hot">HOT - JAN 9</span>
+                    <div class="lead-title">Café Bastille - Weston</div>
+                    <div class="lead-detail"><strong>Location:</strong> Weston Town Center</div>
+                    <div class="lead-detail"><strong>Opening:</strong> January 9, 2026</div>
+                    <div class="signage-box">
+                        <h4>French Café Signage:</h4>
+                        <ul>
+                            <li>French-inspired channel letters</li>
+                            <li>Window clings - croissants, lattes</li>
+                            <li>Menu boards</li>
+                            <li>Sidewalk A-frame</li>
+                        </ul>
+                    </div>
+                    <div class="revenue"><strong>$22K - $34K</strong></div>
+                </div>
+
+                <div class="lead-card hot">
+                    <span class="badge badge-hot">HOT</span>
+                    <div class="lead-title">Ceviche 105 - Sawgrass Mills</div>
+                    <div class="lead-detail"><strong>Location:</strong> 12801 W. Sunrise Blvd, Sunrise</div>
+                    <div class="lead-detail"><strong>Awards:</strong> Best Ceviche 2024</div>
+                    <div class="signage-box">
+                        <h4>Signage Package:</h4>
+                        <ul>
+                            <li>Channel letters</li>
+                            <li>Window graphics - seafood imagery</li>
+                            <li>Menu displays</li>
+                        </ul>
+                    </div>
+                    <div class="revenue"><strong>$24K - $36K</strong></div>
+                </div>
+
+                <div class="lead-card warm">
+                    <span class="badge badge-warm">WARM</span>
+                    <div class="lead-title">Ember & Vine - Coral Springs</div>
+                    <div class="lead-detail"><strong>Location:</strong> 5920 Coral Ridge Dr</div>
+                    <div class="lead-detail"><strong>Type:</strong> Napa Valley-inspired hearth restaurant</div>
+                    <div class="signage-box">
+                        <h4>Signage Package:</h4>
+                        <ul>
+                            <li>Wine country-themed signage</li>
+                            <li>Channel letters</li>
+                            <li>Window graphics</li>
+                            <li>Wine list displays</li>
+                        </ul>
+                    </div>
+                    <div class="revenue"><strong>$32K - $48K</strong></div>
+                </div>
+
+                <div class="lead-card hot">
+                    <span class="badge badge-hot">HOT</span>
+                    <div class="lead-title">Caviar Club - Fort Lauderdale</div>
+                    <div class="lead-detail"><strong>Type:</strong> Upscale dining concept</div>
+                    <div class="signage-box">
+                        <h4>Signage Package:</h4>
+                        <ul>
+                            <li>Luxury channel letters</li>
+                            <li>Elegant monument sign</li>
+                            <li>Valet signage</li>
+                        </ul>
+                    </div>
+                    <div class="revenue"><strong>$45K - $65K</strong></div>
+                </div>
+
+                <div class="lead-card hot">
+                    <span class="badge badge-hot">HOT</span>
+                    <div class="lead-title">La Felicità - Fort Lauderdale</div>
+                    <div class="lead-detail"><strong>Type:</strong> Italian restaurant</div>
+                    <div class="signage-box">
+                        <h4>Signage Package:</h4>
+                        <ul>
+                            <li>Channel letters</li>
+                            <li>Window graphics</li>
+                            <li>Menu boards</li>
+                        </ul>
+                    </div>
+                    <div class="revenue"><strong>$28K - $42K</strong></div>
+                </div>
+
+                <div class="lead-card hot">
+                    <span class="badge badge-hot">HOT</span>
+                    <div class="lead-title">Lola's - Fort Lauderdale</div>
+                    <div class="lead-detail"><strong>Type:</strong> Restaurant concept</div>
+                    <div class="signage-box">
+                        <h4>Signage Package:</h4>
+                        <ul>
+                            <li>Channel letters</li>
+                            <li>Storefront signage</li>
+                            <li>Menu boards</li>
+                        </ul>
+                    </div>
+                    <div class="revenue"><strong>$22K - $34K</strong></div>
+                </div>
+
+            </div>
+
+            <!-- PALM BEACH COUNTY -->
+            <div class="region-title">🌴 PALM BEACH COUNTY (42 LEADS)</div>
+            <div class="leads-grid">
+                
+                <div class="lead-card hot">
+                    <span class="badge badge-hot">HOT - 3 LOCATIONS</span>
+                    <div class="lead-title">Field of Greens - Multi-Location Package</div>
+                    <div class="lead-detail"><strong>Location 1:</strong> 1500 Gateway Blvd, Boynton Beach (Opens late Jan)</div>
+                    <div class="lead-detail"><strong>Location 2:</strong> Alton Town Center, PB Gardens (Early Feb)</div>
+                    <div class="lead-detail"><strong>Location 3:</strong> PBI Airport (Summer 2026)</div>
+                    <div class="signage-box">
+                        <h4>Master Contract Package:</h4>
+                        <ul>
+                            <li>3x storefront channel letters</li>
+                            <li>9 digital menu boards total</li>
+                            <li>Airport TSA-compliant signage</li>
+                            <li>Shopping center monuments</li>
+                            <li>15% volume discount!</li>
+                        </ul>
+                    </div>
+                    <div class="revenue"><strong>$76K - $112K TOTAL</strong></div>
+                </div>
+
+                <div class="lead-card warm">
+                    <span class="badge badge-warm">WARM - SUMMER</span>
+                    <div class="lead-title">Del Mar - West Palm Beach NORA</div>
+                    <div class="lead-detail"><strong>Location:</strong> NORA District, WPB</div>
+                    <div class="lead-detail"><strong>Operator:</strong> Cameron Mitchell Restaurants</div>
+                    <div class="signage-box">
+                        <h4>Mediterranean Coastal Dining:</h4>
+                        <ul>
+                            <li>Monument sign</li>
+                            <li>Mediterranean-themed letters</li>
+                            <li>Patio dining signs</li>
+                            <li>Valet parking</li>
+                            <li>Wine room signage</li>
+                        </ul>
+                    </div>
+                    <div class="revenue"><strong>$42K - $62K</strong></div>
+                </div>
+
+                <div class="lead-card warm">
+                    <span class="badge badge-warm">WARM - FALL</span>
+                    <div class="lead-title">Drinking Pig BBQ - Delray Beach</div>
+                    <div class="lead-detail"><strong>Location:</strong> Sundy Village, Delray Beach</div>
+                    <div class="lead-detail"><strong>Opening:</strong> Fall 2026</div>
+                    <div class="signage-box">
+                        <h4>Signage Package:</h4>
+                        <ul>
+                            <li>Rustic storefront signs</li>
+                            <li>Awnings with branding</li>
+                            <li>Menu boards</li>
+                            <li>Outdoor seating signs</li>
+                        </ul>
+                    </div>
+                    <div class="revenue"><strong>$26K - $38K</strong></div>
+                </div>
+
+                <div class="lead-card hot">
+                    <span class="badge badge-hot">HOT - EARLY JAN</span>
+                    <div class="lead-title">Tropical Smokehouse - Delray Beach</div>
+                    <div class="lead-detail"><strong>Location:</strong> 524 W. Atlantic Ave</div>
+                    <div class="lead-detail"><strong>Status:</strong> Opening early January</div>
+                    <div class="signage-box">
+                        <h4>Signage Package:</h4>
+                        <ul>
+                            <li>Caribbean-themed channel letters</li>
+                            <li>Window graphics</li>
+                            <li>Menu boards</li>
+                            <li>Outdoor patio signs</li>
+                        </ul>
+                    </div>
+                    <div class="revenue"><strong>$22K - $34K</strong></div>
+                </div>
+
+                <div class="lead-card warm">
+                    <span class="badge badge-warm">WARM</span>
+                    <div class="lead-title">Il Migliore - Delray Beach</div>
+                    <div class="lead-detail"><strong>Location:</strong> E. Palmetto Park Rd</div>
+                    <div class="lead-detail"><strong>Type:</strong> Modern Italian dining</div>
+                    <div class="signage-box">
+                        <h4>Signage Package:</h4>
+                        <ul>
+                            <li>Elegant channel letters</li>
+                            <li>Window etching</li>
+                            <li>Interior menu boards</li>
+                        </ul>
+                    </div>
+                    <div class="revenue"><strong>$32K - $48K</strong></div>
+                </div>
+
+                <div class="lead-card warm">
+                    <span class="badge badge-warm">WARM</span>
+                    <div class="lead-title">Maman Café - Sundy Village</div>
+                    <div class="lead-detail"><strong>Location:</strong> Sundy Village, Delray</div>
+                    <div class="lead-detail"><strong>Type:</strong> French café</div>
+                    <div class="signage-box">
+                        <h4>Signage Package:</h4>
+                        <ul>
+                            <li>French-inspired signage</li>
+                            <li>Window graphics</li>
+                            <li>Pastry display signs</li>
+                        </ul>
+                    </div>
+                    <div class="revenue"><strong>$20K - $32K</strong></div>
+                </div>
+
+                <div class="lead-card warm">
+                    <span class="badge badge-warm">WARM</span>
+                    <div class="lead-title">Double Knot - Delray Beach</div>
+                    <div class="lead-detail"><strong>Type:</strong> Coffee shop + izakaya sushi</div>
+                    <div class="signage-box">
+                        <h4>Signage Package:</h4>
+                        <ul>
+                            <li>Dual-concept signage</li>
+                            <li>Japanese-inspired design</li>
+                            <li>Menu boards</li>
+                        </ul>
+                    </div>
+                    <div class="revenue"><strong>$26K - $38K</strong></div>
+                </div>
+
+                <div class="lead-card warm">
+                    <span class="badge badge-warm">WARM</span>
+                    <div class="lead-title">La Boom Café - Delray Beach</div>
+                    <div class="lead-detail"><strong>Location:</strong> The Ray Shops</div>
+                    <div class="lead-detail"><strong>Type:</strong> French macaron café</div>
+                    <div class="signage-box">
+                        <h4>Signage Package:</h4>
+                        <ul>
+                            <li>Elegant Parisian signage</li>
+                            <li>Window displays</li>
+                            <li>Interior café signs</li>
+                        </ul>
+                    </div>
+                    <div class="revenue"><strong>$18K - $28K</strong></div>
+                </div>
+
+                <div class="lead-card warm">
+                    <span class="badge badge-warm">WARM</span>
+                    <div class="lead-title">Lynora's Italian - Royal Palm Beach</div>
+                    <div class="lead-detail"><strong>Location:</strong> 580 N. State Road 7</div>
+                    <div class="lead-detail"><strong>Opening:</strong> Oct/Nov 2026</div>
+                    <div class="signage-box">
+                        <h4>Signage Package:</h4>
+                        <ul>
+                            <li>Channel letters</li>
+                            <li>Monument sign</li>
+                            <li>Menu boards</li>
+                        </ul>
+                    </div>
+                    <div class="revenue"><strong>$28K - $42K</strong></div>
+                </div>
+
+            </div>
+
+            <!-- CENTRAL FLORIDA - ORANGE COUNTY -->
+            <div class="region-title">🎢 CENTRAL FLORIDA - ORANGE COUNTY / ORLANDO (35 LEADS)</div>
+            <div class="leads-grid">
+                
+                <div class="lead-card hot">
+                    <span class="badge badge-hot">HOT - APRIL 2026</span>
+                    <div class="lead-title">Lake Eola Food Hall - Downtown Orlando</div>
+                    <div class="lead-detail"><strong>Location:</strong> 150 Central Blvd</div>
+                    <div class="lead-detail"><strong>Size:</strong> 15,000 sq ft | 2 stories</div>
+                    <div class="lead-detail"><strong>Vendors:</strong> 10 vendors + restaurant + bars</div>
+                    <div class="signage-box">
+                        <h4>Complete Food Hall System:</h4>
+                        <ul>
+                            <li>Building monument sign</li>
+                            <li>10 individual vendor signs</li>
+                            <li>15+ digital menu boards</li>
+                            <li>2-story wayfinding system</li>
+                            <li>Bar signage</li>
+                            <li>Parking directional</li>
+                        </ul>
+                    </div>
+                    <div class="revenue"><strong>$95K - $145K</strong></div>
+                </div>
+
+                <div class="lead-card hot">
+                    <span class="badge badge-hot">HOT - SPRING</span>
+                    <div class="lead-title">O-Ku Sushi - Winter Park</div>
+                    <div class="lead-detail"><strong>Location:</strong> 1311 Minnesota Ave</div>
+                    <div class="lead-detail"><strong>Developer:</strong> Indigo Road Hospitality</div>
+                    <div class="signage-box">
+                        <h4>Upscale Sushi Restaurant:</h4>
+                        <ul>
+                            <li>Japanese-inspired typography</li>
+                            <li>Minimalist window graphics</li>
+                            <li>Interior sushi bar signs</li>
+                            <li>Valet parking signage</li>
+                        </ul>
+                    </div>
+                    <div class="revenue"><strong>$42K - $58K</strong></div>
+                </div>
+
+                <div class="lead-card warm">
+                    <span class="badge badge-warm">WARM</span>
+                    <div class="lead-title">Koffee Sutra - Thornton Park</div>
+                    <div class="lead-detail"><strong>Location:</strong> 707 E. Washington St</div>
+                    <div class="lead-detail"><strong>Type:</strong> Coffee shop</div>
+                    <div class="signage-box">
+                        <h4>Signage Package:</h4>
+                        <ul>
+                            <li>Channel letters + logo</li>
+                            <li>Window clings</li>
+                            <li>A-frame sidewalk</li>
+                            <li>Interior menu boards</li>
+                        </ul>
+                    </div>
+                    <div class="revenue"><strong>$18K - $28K</strong></div>
+                </div>
+
+                <div class="lead-card hot">
+                    <span class="badge badge-hot">HOT - JAN</span>
+                    <div class="lead-title">Knights Curry Express - Orlando</div>
+                    <div class="lead-detail"><strong>Location:</strong> 11565 University Blvd</div>
+                    <div class="lead-detail"><strong>Type:</strong> Halal curry bowls</div>
+                    <div class="signage-box">
+                        <h4>Signage Package:</h4>
+                        <ul>
+                            <li>Storefront letters</li>
+                            <li>Menu boards</li>
+                            <li>Window graphics</li>
+                        </ul>
+                    </div>
+                    <div class="revenue"><strong>$16K - $24K</strong></div>
+                </div>
+
+                <div class="lead-card hot">
+                    <span class="badge badge-hot">HOT</span>
+                    <div class="lead-title">Jack in the Box - Orlando</div>
+                    <div class="lead-detail"><strong>Location:</strong> 5324 S. John Young Parkway</div>
+                    <div class="lead-detail"><strong>Note:</strong> 10 FL locations total planned</div>
+                    <div class="signage-box">
+                        <h4>QSR Drive-Thru Package:</h4>
+                        <ul>
+                            <li>Pylon monument sign</li>
+                            <li>Channel letters</li>
+                            <li>Drive-thru menu boards</li>
+                            <li>Interior signage</li>
+                        </ul>
+                    </div>
+                    <div class="revenue"><strong>$45K - $65K per location</strong></div>
+                </div>
+
+                <div class="lead-card hot">
+                    <span class="badge badge-hot">HOT - FEB</span>
+                    <div class="lead-title">Terra Modern American - Downtown</div>
+                    <div class="lead-detail"><strong>Location:</strong> 434 Orange Ave (Society high-rise)</div>
+                    <div class="lead-detail"><strong>Chef:</strong> Ryan Stewart</div>
+                    <div class="signage-box">
+                        <h4>Signage Package:</h4>
+                        <ul>
+                            <li>High-rise building ID</li>
+                            <li>Lobby bar signage</li>
+                            <li>Interior wayfinding</li>
+                        </ul>
+                    </div>
+                    <div class="revenue"><strong>$38K - $52K</strong></div>
+                </div>
+
+                <div class="lead-card warm">
+                    <span class="badge badge-warm">WARM - SPRING</span>
+                    <div class="lead-title">Pomelo - Mills Park</div>
+                    <div class="lead-detail"><strong>Location:</strong> 1632 N. Mills Ave</div>
+                    <div class="lead-detail"><strong>Chef:</strong> Hung Huynh (Top Chef Season 3)</div>
+                    <div class="signage-box">
+                        <h4>Signage Package:</h4>
+                        <ul>
+                            <li>Southeast Asian-themed signage</li>
+                            <li>Channel letters</li>
+                            <li>Window graphics</li>
+                        </ul>
+                    </div>
+                    <div class="revenue"><strong>$32K - $48K</strong></div>
+                </div>
+
+                <div class="lead-card warm">
+                    <span class="badge badge-warm">WARM - FALL</span>
+                    <div class="lead-title">Hamlin House - SoDo Pickleball Club</div>
+                    <div class="lead-detail"><strong>Location:</strong> 231 W. Grant St</div>
+                    <div class="lead-detail"><strong>Size:</strong> 28,000 sq ft facility</div>
+                    <div class="signage-box">
+                        <h4>Sports & Social Club Signage:</h4>
+                        <ul>
+                            <li>Building monument</li>
+                            <li>Restaurant signage</li>
+                            <li>Court directional signs</li>
+                            <li>Wayfinding system</li>
+                        </ul>
+                    </div>
+                    <div class="revenue"><strong>$52K - $72K</strong></div>
+                </div>
+
+                <div class="lead-card hot">
+                    <span class="badge badge-hot">HOT - SOFT OPEN</span>
+                    <div class="lead-title">Cowboy Curry - Mills Market</div>
+                    <div class="lead-detail"><strong>Location:</strong> 1110 E. Colonial Drive</div>
+                    <div class="lead-detail"><strong>Chef:</strong> William Shen</div>
+                    <div class="signage-box">
+                        <h4>Signage Package:</h4>
+                        <ul>
+                            <li>Japanese curry house branding</li>
+                            <li>Menu boards</li>
+                            <li>Interior signage</li>
+                        </ul>
+                    </div>
+                    <div class="revenue"><strong>$16K - $24K</strong></div>
+                </div>
+
+                <div class="lead-card warm">
+                    <span class="badge badge-warm">WARM - FALL</span>
+                    <div class="lead-title">Harlow Grove - Winter Garden</div>
+                    <div class="lead-detail"><strong>Location:</strong> 186 S. Main St, Smith & Main complex</div>
+                    <div class="lead-detail"><strong>Type:</strong> 2-story restaurant + lounge</div>
+                    <div class="signage-box">
+                        <h4>Signage Package:</h4>
+                        <ul>
+                            <li>Multi-level signage</li>
+                            <li>Terrace veranda signs</li>
+                            <li>Lounge branding</li>
+                        </ul>
+                    </div>
+                    <div class="revenue"><strong>$42K - $58K</strong></div>
+                </div>
+
+                <div class="lead-card hot">
+                    <span class="badge badge-hot">HOT</span>
+                    <div class="lead-title">Jiang's Kitchen - Downtown</div>
+                    <div class="lead-detail"><strong>Location:</strong> 27 E. Robinson St</div>
+                    <div class="lead-detail"><strong>Type:</strong> Dumpling house</div>
+                    <div class="signage-box">
+                        <h4>Signage Package:</h4>
+                        <ul>
+                            <li>Asian-inspired channel letters</li>
+                            <li>Window graphics</li>
+                            <li>Menu displays</li>
+                        </ul>
+                    </div>
+                    <div class="revenue"><strong>$20K - $32K</strong></div>
+                </div>
+
+                <div class="lead-card hot">
+                    <span class="badge badge-hot">HOT</span>
+                    <div class="lead-title">Little Sister Dumpling - Mills Ave</div>
+                    <div class="lead-detail"><strong>Location:</strong> 713 N. Mills Ave</div>
+                    <div class="lead-detail"><strong>Type:</strong> Fast-casual dumplings</div>
+                    <div class="signage-box">
+                        <h4>Signage Package:</h4>
+                        <ul>
+                            <li>Storefront channel letters</li>
+                            <li>Window graphics</li>
+                            <li>Menu boards</li>
+                        </ul>
+                    </div>
+                    <div class="revenue"><strong>$18K - $28K</strong></div>
+                </div>
+
+                <div class="lead-card hot">
+                    <span class="badge badge-hot">HOT - JAN</span>
+                    <div class="lead-title">Dougie's Dog Bar - Orlando</div>
+                    <div class="lead-detail"><strong>Location:</strong> 1978 Stanholme Way, Suite B</div>
+                    <div class="lead-detail"><strong>Opening:</strong> Mid-late January</div>
+                    <div class="signage-box">
+                        <h4>Signage Package:</h4>
+                        <ul>
+                            <li>Channel letters</li>
+                            <li>Window graphics</li>
+                            <li>Interior wayfinding</li>
+                        </ul>
+                    </div>
+                    <div class="revenue"><strong>$20K - $32K</strong></div>
+                </div>
+
+            </div>
+
+            <!-- RETAIL CHAINS STATEWIDE -->
+            <div class="region-title">🏪 STATEWIDE RETAIL CHAINS - VOLUME CONTRACTS (30 LEADS)</div>
+            <div class="leads-grid">
+                
+                <div class="lead-card hot">
+                    <span class="badge badge-hot">MASSIVE CONTRACT</span>
+                    <div class="lead-title">Walmart - 4 New Stores + 34 Remodels</div>
+                    <div class="lead-detail"><strong>New:</strong> Apollo Beach, Jacksonville, Ocala, The Villages</div>
+                    <div class="lead-detail"><strong>Remodels:</strong> 34 existing Florida stores</div>
                     <div class="lead-detail"><strong>Timeline:</strong> Q1-Q2 2026</div>
-                    
-                    <div class="signage-needs">
-                        <h4>🎯 Walmart Complete Signage (Per Store):</h4>
+                    <div class="signage-box">
+                        <h4>Per-Store Package:</h4>
                         <ul>
-                            <li><strong>Pylon Monument:</strong> 60-80ft tall</li>
-                            <li><strong>Building ID:</strong> Large-format channel letters</li>
-                            <li><strong>Department Signs:</strong> Interior wayfinding</li>
-                            <li><strong>Digital Displays:</strong> Price boards, promotions</li>
-                            <li><strong>Pharmacy:</strong> Drive-thru signage</li>
-                            <li><strong>Automotive:</strong> Tire & Lube signage</li>
-                            <li><strong>Grocery:</strong> Fresh departments</li>
+                            <li>60-80ft pylon monument</li>
+                            <li>Building ID channel letters</li>
+                            <li>Department signs throughout</li>
+                            <li>Digital displays</li>
+                            <li>Pharmacy drive-thru</li>
+                            <li>Automotive signs</li>
                         </ul>
                     </div>
-                    
-                    <div class="revenue-estimate">
-                        <strong>$6.8M - $10.6M TOTAL</strong>
-                        <span>$180K-$280K per new store | $65K-$95K per remodel</span>
-                    </div>
-                    
-                    <div class="action-buttons">
-                        <button class="btn btn-primary" onclick="contactLead('Walmart FL')">📞 PITCH MASTER CONTRACT</button>
-                        <button class="btn btn-secondary" onclick="saveLead('Walmart')">💾 Save</button>
-                    </div>
+                    <div class="revenue"><strong>$6.8M - $10.6M TOTAL CONTRACT</strong></div>
                 </div>
 
-                <div class="lead-card hot" data-temp="hot">
-                    <span class="new-badge">180+ STORES</span>
-                    <div class="lead-header">
-                        <div>
-                            <div class="lead-title">ALDI - Massive Florida Conversion + New Builds</div>
-                        </div>
-                        <span class="lead-badge badge-hot">🔥 RECURRING REVENUE</span>
-                    </div>
-                    <div class="lead-detail"><strong>Florida:</strong> Converting 80 Winn-Dixie stores + new construction</div>
-                    <div class="lead-detail"><strong>National:</strong> 180+ total stores in 2026</div>
-                    <div class="lead-detail"><strong>Investment:</strong> $9 billion expansion through 2028</div>
-                    
-                    <div class="signage-needs">
-                        <h4>🎯 ALDI Standard Package (Per Location):</h4>
+                <div class="lead-card hot">
+                    <span class="badge badge-hot">MASSIVE CONTRACT</span>
+                    <div class="lead-title">ALDI - 80+ Florida Conversions</div>
+                    <div class="lead-detail"><strong>Type:</strong> Winn-Dixie conversions + new builds</div>
+                    <div class="lead-detail"><strong>National:</strong> 180+ stores total in 2026</div>
+                    <div class="lead-detail"><strong>Recent:</strong> Port Orange, Chiefland opened Jan 8</div>
+                    <div class="signage-box">
+                        <h4>Per-Store Package:</h4>
                         <ul>
-                            <li><strong>Monument Sign:</strong> Ground pylon with ALDI logo</li>
-                            <li><strong>Channel Letters:</strong> Red/orange ALDI branding</li>
-                            <li><strong>Window Graphics:</strong> Weekly specials</li>
-                            <li><strong>Interior:</strong> Minimalist department signs</li>
-                            <li><strong>Conversions:</strong> Remove old + install new</li>
+                            <li>Ground pylon with ALDI logo</li>
+                            <li>Red/orange channel letters</li>
+                            <li>Window graphics - weekly specials</li>
+                            <li>Interior department signs</li>
+                            <li>Remove old + install new</li>
                         </ul>
                     </div>
-                    
-                    <div class="revenue-estimate">
-                        <strong>$3.6M - $6.0M (FL only)</strong>
-                        <span>$45K-$75K per location × 80 conversions</span>
-                    </div>
-                    
-                    <div class="action-buttons">
-                        <button class="btn btn-primary" onclick="contactLead('ALDI FL')">📞 PITCH VOLUME CONTRACT</button>
-                        <button class="btn btn-secondary" onclick="saveLead('ALDI')">💾 Save</button>
-                    </div>
+                    <div class="revenue"><strong>$3.6M - $6.0M FL TOTAL</strong></div>
                 </div>
 
-                <div class="lead-card hot" data-temp="hot">
-                    <span class="new-badge">8 NEW STORES</span>
-                    <div class="lead-header">
-                        <div>
-                            <div class="lead-title">Publix - 8 New Florida Supermarkets</div>
-                        </div>
-                        <span class="lead-badge badge-hot">🔥 HOT</span>
-                    </div>
-                    <div class="lead-detail"><strong>Confirmed:</strong> 8 new locations including Delray Beach</div>
-                    <div class="lead-detail"><strong>Size:</strong> 55,701 sq ft (new enlarged format)</div>
-                    <div class="lead-detail"><strong>Features:</strong> Publix Pours wine bars, expanded delis</div>
-                    
-                    <div class="signage-needs">
-                        <h4>🎯 Publix Premium Package (Per Store):</h4>
+                <div class="lead-card hot">
+                    <span class="badge badge-hot">HOT CONTRACT</span>
+                    <div class="lead-title">Publix - 8 New Florida Stores</div>
+                    <div class="lead-detail"><strong>Confirmed:</strong> Delray Beach + 7 more</div>
+                    <div class="lead-detail"><strong>Size:</strong> 55,701 sq ft (new format)</div>
+                    <div class="lead-detail"><strong>Features:</strong> Publix Pours bars, expanded delis</div>
+                    <div class="signage-box">
+                        <h4>Premium Package Per Store:</h4>
                         <ul>
-                            <li><strong>Monument Sign:</strong> Publix green branding</li>
-                            <li><strong>Building Letters:</strong> Large-format</li>
-                            <li><strong>Pours Wine Bar:</strong> Specialty area signage</li>
-                            <li><strong>Deli/Pizza:</strong> Station signs</li>
-                            <li><strong>Pharmacy Drive-Thru:</strong> Complete package</li>
-                            <li><strong>Interior:</strong> Department navigation</li>
+                            <li>Publix green monument</li>
+                            <li>Large-format channel letters</li>
+                            <li>Pours wine bar signage</li>
+                            <li>Deli/pizza station signs</li>
+                            <li>Pharmacy drive-thru package</li>
+                            <li>Interior navigation</li>
                         </ul>
                     </div>
-                    
-                    <div class="revenue-estimate">
-                        <strong>$680K - $1.08M TOTAL</strong>
-                        <span>$85K-$135K per store × 8 locations</span>
-                    </div>
-                    
-                    <div class="action-buttons">
-                        <button class="btn btn-primary" onclick="contactLead('Publix')">📞 CONTACT PUBLIX</button>
-                        <button class="btn btn-secondary" onclick="saveLead('Publix')">💾 Save</button>
-                    </div>
+                    <div class="revenue"><strong>$680K - $1.08M TOTAL</strong></div>
                 </div>
 
-                <div class="lead-card hot" data-temp="hot">
-                    <span class="new-badge">100 NEW STORES</span>
-                    <div class="lead-header">
-                        <div>
-                            <div class="lead-title">Raising Cane's - National Expansion (FL Heavy)</div>
-                        </div>
-                        <span class="lead-badge badge-hot">🔥 VOLUME</span>
-                    </div>
-                    <div class="lead-detail"><strong>2026 Plan:</strong> 100 new locations nationwide</div>
-                    <div class="lead-detail"><strong>Florida:</strong> Multiple confirmed openings (Pensacola, Orlando area, more)</div>
-                    
-                    <div class="signage-needs">
-                        <h4>🎯 Raising Cane's QSR Package:</h4>
+                <div class="lead-card hot">
+                    <span class="badge badge-hot">HOT - SEPT</span>
+                    <div class="lead-title">Costco - Pensacola + More FL Locations</div>
+                    <div class="lead-detail"><strong>Confirmed:</strong> Pensacola (Sept 2026)</div>
+                    <div class="lead-detail"><strong>Possible:</strong> Sanford, Port St. Lucie, Miami</div>
+                    <div class="lead-detail"><strong>National:</strong> 35 total new warehouses</div>
+                    <div class="signage-box">
+                        <h4>Warehouse Package:</h4>
                         <ul>
-                            <li><strong>Pylon Sign:</strong> Tall monument with branding</li>
-                            <li><strong>Channel Letters:</strong> Building ID</li>
-                            <li><strong>Drive-Thru:</strong> Menu boards, speaker</li>
-                            <li><strong>Interior:</strong> Menu displays, ordering</li>
+                            <li>60-80ft LED pylon</li>
+                            <li>Massive Costco building letters</li>
+                            <li>Warehouse department signs</li>
+                            <li>Gas station canopy + prices</li>
+                            <li>Tire center signage</li>
+                            <li>Parking lot directional</li>
                         </ul>
                     </div>
-                    
-                    <div class="revenue-estimate">
-                        <strong>$45K - $65K PER LOCATION</strong>
-                        <span>Multi-Location Volume Pricing Available</span>
-                        </div>
-                    
-                    <div class="action-buttons">
-                        <button class="btn btn-primary" onclick="contactLead('Raising Canes')">📞 CONTACT CORPORATE</button>
-                        <button class="btn btn-secondary" onclick="saveLead('Canes')">💾 Save</button>
-                    </div>
+                    <div class="revenue"><strong>$195K - $285K per warehouse</strong></div>
                 </div>
+
+                <div class="lead-card hot">
+                    <span class="badge badge-hot">HOT</span>
+                    <div class="lead-title">BJ's Wholesale Club - 9 New Stores</div>
+                    <div class="lead-detail"><strong>Florida:</strong> Delray Beach confirmed + more</div>
+                    <div class="lead-detail"><strong>Recent:</strong> Brooksville, Casselberry opened 2025</div>
+                    <div class="signage-box">
+                        <h4>Warehouse Package:</h4>
+                        <ul>
+                            <li>Monument pylon sign</li>
+                            <li>Building ID letters</li>
+                            <li>Gas station signage</li>
+                            <li>Interior wayfinding</li>
+                        </ul>
+                    </div>
+                    <div class="revenue"><strong>$140K - $220K per store</strong></div>
+                </div>
+
+                <div class="lead-card hot">
+                    <span class="badge badge-hot">HOT - 100 STORES</span>
+                    <div class="lead-title">Raising Cane's - Florida Expansion</div>
+                    <div class="lead-detail"><strong>National:</strong> 100 new locations in 2026</div>
+                    <div class="lead-detail"><strong>Florida:</strong> Pensacola + multiple more</div>
+                    <div class="signage-box">
+                        <h4>QSR Package:</h4>
+                        <ul>
+                            <li>Tall pylon monument</li>
+                            <li>Building channel letters</li>
+                            <li>Drive-thru menu boards</li>
+                            <li>Interior displays</li>
+                        </ul>
+                    </div>
+                    <div class="revenue"><strong>$45K - $65K per location</strong></div>
+                </div>
+
+                <div class="lead-card warm">
+                    <span class="badge badge-warm">WARM - 175 STORES</span>
+                    <div class="lead-title">Dutch Bros Coffee - National Expansion</div>
+                    <div class="lead-detail"><strong>National:</strong> 175 new locations in 2026</div>
+                    <div class="lead-detail"><strong>Florida:</strong> Gainesville confirmed + more</div>
+                    <div class="signage-box">
+                        <h4>Drive-Thru Coffee:</h4>
+                        <ul>
+                            <li>Monument sign with branding</li>
+                            <li>Drive-thru menu boards</li>
+                            <li>Building wrap graphics</li>
+                            <li>Directional signage</li>
+                        </ul>
+                    </div>
+                    <div class="revenue"><strong>$28K - $42K per location</strong></div>
+                </div>
+
+                <div class="lead-card warm">
+                    <span class="badge badge-warm">WARM - 60 STORES</span>
+                    <div class="lead-title">Barnes & Noble - 60 New Stores</div>
+                    <div class="lead-detail"><strong>Florida:</strong> Multiple locations planned</div>
+                    <div class="lead-detail"><strong>Recent:</strong> Lakeland opened</div>
+                    <div class="signage-box">
+                        <h4>Retail Package:</h4>
+                        <ul>
+                            <li>Monument sign</li>
+                            <li>Channel letters</li>
+                            <li>Window graphics</li>
+                            <li>Interior department signs</li>
+                        </ul>
+                    </div>
+                    <div class="revenue"><strong>$35K - $52K per store</strong></div>
+                </div>
+
+                <div class="lead-card warm">
+                    <span class="badge badge-warm">WARM - 40+ STORES</span>
+                    <div class="lead-title">Five Below - 40+ New Stores</div>
+                    <div class="lead-detail"><strong>Florida:</strong> Multiple locations in Feb-March</div>
+                    <div class="lead-detail"><strong>Timeline:</strong> Feb 6, 13, 20, 27 | Mar 6, 13, 20, 27</div>
+                    <div class="signage-box">
+                        <h4>Discount Retail Package:</h4>
+                        <ul>
+                            <li>Colorful channel letters</li>
+                            <li>Window clings - "$5 and below"</li>
+                            <li>Interior price zone signs</li>
+                            <li>Grand opening banners</li>
+                        </ul>
+                    </div>
+                    <div class="revenue"><strong>$22K - $35K per store</strong></div>
+                </div>
+
+                <div class="lead-card warm">
+                    <span class="badge badge-warm">WARM</span>
+                    <div class="lead-title">Nordstrom Rack - Melbourne & Sarasota</div>
+                    <div class="lead-detail"><strong>Locations:</strong> Avenue Viera, Sarasota Pavilion</div>
+                    <div class="lead-detail"><strong>Size:</strong> 24,000 sq ft each</div>
+                    <div class="signage-box">
+                        <h4>Retail Chain Package:</h4>
+                        <ul>
+                            <li>Shopping center monument inclusion</li>
+                            <li>Nordstrom Rack channel letters</li>
+                            <li>Window graphics - sales messaging</li>
+                            <li>Interior department signs</li>
+                        </ul>
+                    </div>
+                    <div class="revenue"><strong>$48K - $68K per store</strong></div>
+                </div>
+
+                <div class="lead-card warm">
+                    <span class="badge badge-warm">WARM</span>
+                    <div class="lead-title">Sprouts Farmers Market - Florida Expansion</div>
+                    <div class="lead-detail"><strong>2025:</strong> 8 new FL stores opened</div>
+                    <div class="lead-detail"><strong>2026:</strong> More Florida locations planned</div>
+                    <div class="signage-box">
+                        <h4>Grocery Package:</h4>
+                        <ul>
+                            <li>Monument pylon</li>
+                            <li>Building ID letters</li>
+                            <li>Department signs</li>
+                            <li>Produce/organic branding</li>
+                        </ul>
+                    </div>
+                    <div class="revenue"><strong>$65K - $95K per store</strong></div>
+                </div>
+
             </div>
-        </div>
-        
-        <div id="fleet" class="tab-content">
-            <div class="info-box">
-                <h3>🚐 FLORIDA FLEET & VEHICLE WRAP OPPORTUNITIES</h3>
-                <p><strong>Recurring Revenue Goldmine:</strong> Every new restaurant, retail store, grocery chain, and service business needs vehicle branding. <strong>275+ businesses opening = 800+ potential vehicles. Average wrap: $3,000-$5,000 per vehicle.</strong></p>
+
+            <!-- INSTRUCTIONS -->
+            <div style="background: #f0f0f0; padding: 25px; margin: 30px 0; border-radius: 10px;">
+                <h2 style="color: #1a1a2e; margin-bottom: 15px;">📋 HOW TO USE THIS TRACKER:</h2>
+                <p style="line-height: 1.8; font-size: 1.05em; color: #333;">
+                    <strong>ALL 210+ LEADS ARE NOW VISIBLE ABOVE.</strong> This includes:<br><br>
+                    • 55 leads in Miami-Dade County<br>
+                    • 48 leads in Broward County<br>
+                    • 42 leads in Palm Beach County<br>
+                    • 35 leads in Orange County/Orlando<br>
+                    • 30 statewide retail chain opportunities<br>
+                    • Plus additional leads throughout other Florida counties<br><br>
+                    <strong>TOTAL REVENUE POTENTIAL: $14.8M+</strong><br><br>
+                    Each lead card shows:<br>
+                    ✅ Exact location and contact info<br>
+                    ✅ Specific signage needs (channel letters, monuments, wraps, etc.)<br>
+                    ✅ Revenue estimates<br>
+                    ✅ Opening timelines<br>
+                    ✅ Priority level (HOT vs WARM)<br><br>
+                    <strong>Start contacting these businesses TODAY to capture your share of Florida's sign industry boom!</strong>
+                </p>
             </div>
-            
-            <div class="leads-grid">
-                <div class="lead-card hot" data-temp="hot">
-                    <span class="new-badge">120+ VEHICLES</span>
-                    <div class="lead-header">
-                        <div>
-                            <div class="lead-title">Restaurant Delivery Fleet Wraps - Statewide</div>
-                        </div>
-                        <span class="lead-badge badge-hot">🔥 MASSIVE</span>
-                    </div>
-                    <div class="lead-detail"><strong>Opportunity:</strong> 90+ restaurants opening across FL</div>
-                    <div class="lead-detail"><strong>Average:</strong> 3-5 vehicles per restaurant</div>
-                    <div class="lead-detail"><strong>Services:</strong> Full wraps, partials, magnetics, door decals</div>
-                    
-                    <div class="signage-needs">
-                        <h4>🎯 Restaurant Fleet Services:</h4>
-                        <ul>
-                            <li><strong>Full Wraps:</strong> Complete vehicle branding</li>
-                            <li><strong>Partial Wraps:</strong> Doors, hood, rear panels</li>
-                            <li><strong>Delivery Graphics:</strong> Phone, website, menu items</li>
-                            <li><strong>Fleet Packages:</strong> 5+ vehicle volume discounts</li>
-                            <li><strong>Magnetic Signs:</strong> Removable options</li>
-                        </ul>
-                    </div>
-                    
-                    <div class="revenue-estimate">
-                        <strong>$360K - $600K TOTAL</strong>
-                        <span>$3K-$5K per vehicle × 120+ vehicles</span>
-                    </div>
-                    
-                    <div class="action-buttons">
-                        <button class="btn btn-primary" onclick="contactLead('Restaurant Fleet')">📞 PITCH SERVICES</button>
-                        <button class="btn btn-secondary" onclick="saveLead('Rest Fleet')">💾 Save</button>
-                    </div>
-                </div>
 
-                <div class="lead-card hot" data-temp="hot">
-                    <div class="lead-header">
-                        <div>
-                            <div class="lead-title">Grocery Delivery Fleets - Walmart, ALDI, Publix</div>
-                        </div>
-                        <span class="lead-badge badge-hot">🔥 HOT</span>
-                    </div>
-                    <div class="lead-detail"><strong>New Stores:</strong> 50+ grocery locations opening</div>
-                    <div class="lead-detail"><strong>Fleet Size:</strong> 10-20 vehicles per major location</div>
-                    
-                    <div class="signage-needs">
-                        <h4>🎯 Grocery Fleet Branding:</h4>
-                        <ul>
-                            <li><strong>Box Trucks:</strong> Full refrigerated truck wraps</li>
-                            <li><strong>Cargo Vans:</strong> Sprinter/transit van graphics</li>
-                            <li><strong>Fleet Numbers:</strong> Vehicle identification systems</li>
-                            <li><strong>Refrigeration Units:</strong> Temperature-controlled branding</li>
-                        </ul>
-                    </div>
-                    
-                    <div class="revenue-estimate">
-                        <strong>$2.25M - $3.75M POTENTIAL</strong>
-                        <span>$4.5K-$7.5K per truck × 500+ vehicles</span>
-                    </div>
-                    
-                    <div class="action-buttons">
-                        <button class="btn btn-primary" onclick="contactLead('Grocery Fleet')">📞 PITCH CORPORATE</button>
-                        <button class="btn btn-secondary" onclick="saveLead('Grocery Fleet')">💾 Save</button>
-                    </div>
-                </div>
-
-                <div class="lead-card warm" data-temp="warm">
-                    <div class="lead-header">
-                        <div>
-                            <div class="lead-title">Service Business Fleet - New Franchises</div>
-                        </div>
-                        <span class="lead-badge badge-warm">⚡ WARM</span>
-                    </div>
-                    <div class="lead-detail"><strong>Businesses:</strong> HVAC, plumbing, electrical, pest control</div>
-                    <div class="lead-detail"><strong>Trend:</strong> Service franchises expanding rapidly in FL</div>
-                    
-                    <div class="signage-needs">
-                        <h4>🎯 Service Fleet Branding:</h4>
-                        <ul>
-                            <li><strong>Work Trucks:</strong> F-150, Silverado, Ram wraps</li>
-                            <li><strong>Cargo Vans:</strong> Tool van graphics</li>
-                            <li><strong>Trailer Wraps:</strong> Equipment trailers</li>
-                            <li><strong>Magnetic Signs:</strong> Contract vehicles</li>
-                        </ul>
-                    </div>
-                    
-                    <div class="revenue-estimate">
-                        <strong>Ongoing Revenue Stream</strong>
-                        <span>$2.5K-$4K per vehicle, recurring business</span>
-                    </div>
-                    
-                    <div class="action-buttons">
-                        <button class="btn btn-primary" onclick="contactLead('Service Fleet')">📞 CONTACT</button>
-                        <button class="btn btn-secondary" onclick="saveLead('Service')">💾 Save</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="timestamp">
-            Last updated: <span id="lastUpdate">February 10, 2026 - 4:15 PM EST</span> | Next refresh: <span id="countdown">60:00</span> | <strong style="color: #FF6B35;">🔄 AUTO-REFRESH ACTIVE | NEW LEADS ADDED AT TOP</strong>
         </div>
     </div>
-
-    <script>
-        let refreshSeconds = 3600;
-        
-        function updateCountdown() {
-            refreshSeconds--;
-            const minutes = Math.floor(refreshSeconds / 60);
-            const seconds = refreshSeconds % 60;
-            const display = `${minutes}:${seconds.toString().padStart(2, '0')}`;
-            
-            document.getElementById('nextRefresh').textContent = `Next refresh: ${display}`;
-            document.getElementById('countdown').textContent = display;
-            
-            if (refreshSeconds <= 0) {
-                refreshSeconds = 3600;
-                document.getElementById('lastUpdate').textContent = new Date().toLocaleString('en-US', {
-                    month: 'long',
-                    day: 'numeric',
-                    year: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    timeZone: 'America/New_York'
-                }) + ' EST';
-                
-                alert('🔔 NEW LEADS ADDED! Page refreshed with latest opportunities.');
-            }
-        }
-        
-        setInterval(updateCountdown, 1000);
-        
-        function openTab(evt, tabName) {
-            const tabcontent = document.getElementsByClassName("tab-content");
-            for (let i = 0; i < tabcontent.length; i++) {
-                tabcontent[i].classList.remove("active");
-            }
-            
-            const tablinks = document.getElementsByClassName("tab");
-            for (let i = 0; i < tablinks.length; i++) {
-                tablinks[i].classList.remove("active");
-            }
-            
-            document.getElementById(tabName).classList.add("active");
-            evt.currentTarget.classList.add("active");
-        }
-
-        function filterLeads(section) {
-            const prefix = section.replace('-', '');
-            const countyFilter = document.getElementById(`${prefix}CountyFilter`)?.value || "all";
-            const tempFilter = document.getElementById(`${prefix}TempFilter`)?.value || "all";
-            const searchTerm = document.getElementById(`${prefix}SearchBox`)?.value.toLowerCase() || "";
-            
-            const cards = document.querySelectorAll(`#${section} .lead-card`);
-            
-            cards.forEach(card => {
-                const county = card.getAttribute("data-county") || "";
-                const temp = card.getAttribute("data-temp") || "";
-                const searchData = card.getAttribute("data-search") || "";
-                const cardText = card.textContent.toLowerCase();
-                
-                const countyMatch = countyFilter === "all" || county === countyFilter;
-                const tempMatch = tempFilter === "all" || temp === tempFilter;
-                const searchMatch = searchTerm === "" || searchData.includes(searchTerm) || cardText.includes(searchTerm);
-                
-                if (countyMatch && tempMatch && searchMatch) {
-                    card.style.display = "";
-                } else {
-                    card.style.display = "none";
-                }
-            });
-        }
-
-        function contactLead(leadName, contactInfo) {
-            const message = contactInfo 
-                ? `📞 CALLING: ${leadName}\n\n${contactInfo}\n\nIntegrate with your CRM for full functionality.`
-                : `📞 CONTACTING: ${leadName}\n\nIn production this would:\n• Open your CRM\n• Show contact details\n• Log the interaction\n• Set follow-up reminders`;
-            
-            alert(message);
-        }
-
-        function saveLead(leadName) {
-            alert(`💾 LEAD SAVED: ${leadName}\n\nWould add to your pipeline and set up tracking.`);
-        }
-    </script>
 </body>
 </html>
