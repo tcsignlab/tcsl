@@ -76,9 +76,10 @@ button {
   <h1>🌍 MAPTAG ULTIMATE</h1>
   <p>Click as close as possible to the target city.</p>
   <p>Closer = more points. Build streaks 🔥</p>
+  <p id="loadingText">Loading world data...</p>
   <p id="highScore"></p>
   <p id="leaderboard"></p>
-  <button onclick="startGame()">Start Game</button>
+  <button id="startBtn" onclick="startGame()" disabled>Loading...</button>
 </div>
 
 <div id="resultPopup"></div>
@@ -88,6 +89,10 @@ const globe = Globe()(document.getElementById('globeViz'))
   .globeImageUrl('https://eoimages.gsfc.nasa.gov/images/imagerecords/57000/57730/land_ocean_ice_cloud_2048.jpg')
   .bumpImageUrl('https://unpkg.com/three-globe/example/img/earth-topology.png')
   .backgroundColor('#000');
+
+// ===== STATE =====
+let dataLoaded = false;
+let gameActive = false;
 
 // ===== COUNTRY BORDERS =====
 let countries = [];
@@ -120,9 +125,17 @@ let usedCities = JSON.parse(localStorage.getItem("usedCities")||"[]");
 let roundCities=[], index=0, score=0, streak=0;
 let timerInterval, timeLeft=10;
 
+// LOAD cities
 fetch('https://raw.githubusercontent.com/jetsetexpert/world-cities-json/master/data/cities.json')
 .then(r=>r.json())
-.then(d=> cities = d.filter(c=>c.population>100000));
+.then(d=>{
+  cities = d.filter(c=>c.population>100000);
+
+  dataLoaded = true;
+  document.getElementById("startBtn").disabled = false;
+  document.getElementById("startBtn").innerText = "Start Game";
+  document.getElementById("loadingText").innerText = "Ready!";
+});
 
 // ===== GET CITIES =====
 function getCities(){
@@ -152,9 +165,13 @@ function dist(a,b,c,d){
   return R*(2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x)));
 }
 
-// ===== GAME FLOW =====
+// ===== GAME =====
 function startGame(){
+  if(!dataLoaded) return;
+
+  gameActive = true;
   document.getElementById("center").style.display="none";
+
   score=0; streak=0; index=0;
   roundCities=getCities();
   next();
@@ -163,18 +180,20 @@ function startGame(){
 function restartGame(){
   score=0; streak=0; index=0;
   roundCities=getCities();
+  gameActive = true;
   updateUI();
   next();
 }
 
 function quitGame(){
+  gameActive = false;
   document.getElementById("center").style.display="block";
   globe.pointsData([]);
   globe.arcsData([]);
   clearInterval(timerInterval);
 }
 
-// ===== NEXT ROUND =====
+// ===== NEXT =====
 function next(){
   if(index>=5) return end();
 
@@ -184,7 +203,9 @@ function next(){
     "Find: "+c.name+", "+c.country;
 
   targetCountry = countries.find(ct =>
-    ct.properties.name === c.country
+    ct.properties.name &&
+    c.country &&
+    ct.properties.name.toLowerCase().includes(c.country.toLowerCase())
   );
 
   globe.pointOfView({lat:c.lat,lng:c.lng,altitude:2},1500);
@@ -201,6 +222,7 @@ function startTimer(){
   timerInterval=setInterval(()=>{
     timeLeft--;
     document.getElementById("timer").innerText="⏱️ "+timeLeft;
+
     if(timeLeft<=0){
       clearInterval(timerInterval);
       handleGuess(null);
@@ -244,10 +266,11 @@ function dropPin(lat, lng, color){
 
 // ===== CLICK =====
 globe.onGlobeClick(({lat,lng})=>{
+  if(!gameActive) return;
   handleGuess({lat,lng});
 });
 
-// ===== HANDLE GUESS =====
+// ===== GUESS =====
 function handleGuess(pos){
   clearInterval(timerInterval);
 
@@ -292,6 +315,8 @@ function showResult(d, pts){
 
 // ===== END =====
 function end(){
+  gameActive = false;
+
   let high = localStorage.getItem("highScore")||0;
   if(score>high) localStorage.setItem("highScore",score);
 
