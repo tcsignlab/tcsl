@@ -23,8 +23,6 @@ body { margin:0; background:#000; color:#fff; font-family:Arial; overflow:hidden
   transform:translate(-50%,-50%);
   text-align:center;
 }
-
-button { padding:10px; margin:5px; cursor:pointer; }
 </style>
 </head>
 
@@ -40,14 +38,13 @@ button { padding:10px; margin:5px; cursor:pointer; }
 
 <div id="center">
   <h1>🌍 GlobeTap</h1>
-  <p id="status">Loading...</p>
-  <button id="startBtn" disabled onclick="startGame()">Start Game</button>
+  <p id="status">Loading world data...</p>
 </div>
 
 <script>
-// ===== INIT GLOBE =====
 const globe = Globe()(document.getElementById('globeViz'))
   .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-dark.jpg')
+  .bumpImageUrl('https://unpkg.com/three-globe/example/img/earth-topology.png')
   .backgroundColor('#000');
 
 // ===== STATE =====
@@ -58,7 +55,7 @@ let score = 0;
 let gameActive = false;
 let timer;
 
-// ===== LOAD LIGHTWEIGHT BORDERS =====
+// ===== COUNTRY BORDERS (optimized) =====
 fetch('https://unpkg.com/world-atlas@2/countries-50m.json')
 .then(res => res.json())
 .then(data => {
@@ -69,15 +66,17 @@ fetch('https://unpkg.com/world-atlas@2/countries-50m.json')
     .polygonAltitude(0.003);
 });
 
-// ===== LOAD SMALLER CITY SET =====
+// ===== LOAD CITIES (optimized but still good spread) =====
 fetch('https://raw.githubusercontent.com/lutangar/cities.json/master/cities.json')
 .then(res => res.json())
 .then(data => {
-  // keep only major cities
-  cities = data.filter(c => Math.random() < 0.02);
 
-  document.getElementById("status").innerText = "Ready!";
-  document.getElementById("startBtn").disabled = false;
+  // smarter filter: medium + large cities only
+  cities = data.filter((c,i) => i % 20 === 0);
+
+  document.getElementById("status").innerText = "Starting...";
+  
+  setTimeout(startGame, 800); // auto start
 });
 
 // ===== DISTANCE =====
@@ -136,12 +135,12 @@ function startTimer(){
   },1000);
 }
 
-// ===== PIN DROP (OPTIMIZED) =====
+// ===== PIN DROP (smooth + safe) =====
 function dropPin(lat,lng,color){
   let altitude = 1;
 
   function animate(){
-    altitude -= 0.05;
+    altitude -= 0.06;
 
     globe.pointsData([{
       lat,lng,color,size:0.5, altitude:Math.max(altitude,0)
@@ -149,6 +148,21 @@ function dropPin(lat,lng,color){
 
     if(altitude > 0){
       requestAnimationFrame(animate);
+    } else {
+      // bounce
+      let bounce = 0.15;
+      function bounceAnim(){
+        bounce -= 0.02;
+
+        globe.pointsData([{
+          lat,lng,color,size:0.5, altitude:bounce
+        }]);
+
+        if(bounce > 0){
+          requestAnimationFrame(bounceAnim);
+        }
+      }
+      bounceAnim();
     }
   }
 
