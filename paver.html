@@ -1,0 +1,1170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ProPave Estimator — Paver & Pressure Wash Quoting Tool</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --orange: #F4611A;
+    --orange-dark: #C94D0A;
+    --orange-glow: rgba(244,97,26,0.18);
+    --charcoal: #1A1A1A;
+    --slate: #242424;
+    --panel: #2C2C2C;
+    --border: #3A3A3A;
+    --text: #EEEEEE;
+    --muted: #888;
+    --green: #3ED97A;
+    --blue: #4AA8FF;
+    --yellow: #FFD04A;
+    --red: #FF5E5E;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--charcoal);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── HEADER ── */
+  header {
+    background: var(--slate);
+    border-bottom: 2px solid var(--orange);
+    padding: 0 24px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    flex-shrink: 0;
+  }
+  .logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    letter-spacing: 2px;
+    color: var(--orange);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .logo span { color: var(--text); }
+  .logo-icon {
+    width: 32px; height: 32px;
+    background: var(--orange);
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+  }
+  .header-tagline {
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  /* ── LAYOUT ── */
+  .app {
+    display: flex;
+    flex: 1;
+    height: calc(100vh - 60px);
+    overflow: hidden;
+  }
+
+  /* ── LEFT PANEL ── */
+  .sidebar {
+    width: 360px;
+    flex-shrink: 0;
+    background: var(--panel);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .sidebar-scroll {
+    overflow-y: auto;
+    flex: 1;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .sidebar-scroll::-webkit-scrollbar { width: 4px; }
+  .sidebar-scroll::-webkit-scrollbar-track { background: transparent; }
+  .sidebar-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  .section-card {
+    background: var(--slate);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .section-header {
+    padding: 12px 16px;
+    background: rgba(244,97,26,0.08);
+    border-bottom: 1px solid var(--border);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--orange);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .section-body { padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; }
+
+  label {
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    display: block;
+    margin-bottom: 5px;
+  }
+  input[type="text"], input[type="number"], select, textarea {
+    width: 100%;
+    background: var(--charcoal);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 7px;
+    padding: 9px 12px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--orange); }
+  textarea { resize: vertical; min-height: 60px; }
+
+  .input-row { display: flex; gap: 8px; }
+  .input-row > * { flex: 1; }
+
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    padding: 10px 16px;
+    border-radius: 7px;
+    border: none; cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    transition: all 0.15s;
+    letter-spacing: 0.3px;
+  }
+  .btn-primary {
+    background: var(--orange);
+    color: #fff;
+  }
+  .btn-primary:hover { background: var(--orange-dark); transform: translateY(-1px); }
+  .btn-secondary {
+    background: var(--border);
+    color: var(--text);
+  }
+  .btn-secondary:hover { background: #4a4a4a; }
+  .btn-green { background: var(--green); color: #111; }
+  .btn-green:hover { opacity: 0.9; }
+  .btn-outline {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text);
+  }
+  .btn-outline:hover { border-color: var(--orange); color: var(--orange); }
+  .btn-full { width: 100%; }
+  .btn-sm { padding: 7px 12px; font-size: 12px; }
+  .btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+
+  /* ── AREA ITEMS ── */
+  .area-list { display: flex; flex-direction: column; gap: 8px; }
+  .area-item {
+    background: var(--charcoal);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .area-dot {
+    width: 12px; height: 12px;
+    border-radius: 3px;
+    flex-shrink: 0;
+  }
+  .area-info { flex: 1; }
+  .area-name { font-size: 13px; font-weight: 500; }
+  .area-sqft { font-size: 11px; color: var(--muted); font-family: 'DM Mono', monospace; }
+  .area-actions { display: flex; gap: 4px; }
+  .icon-btn {
+    width: 28px; height: 28px;
+    border-radius: 6px;
+    border: none;
+    background: var(--border);
+    color: var(--muted);
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px;
+    transition: all 0.15s;
+  }
+  .icon-btn:hover { background: var(--orange); color: #fff; }
+  .icon-btn.del:hover { background: var(--red); color: #fff; }
+
+  /* ── DRAW TOOLS ── */
+  .tool-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .tool-btn {
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--charcoal);
+    color: var(--text);
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.15s;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .tool-btn:hover { border-color: var(--orange); }
+  .tool-btn.active { border-color: var(--orange); background: var(--orange-glow); }
+  .tool-btn .tool-icon { font-size: 20px; display: block; margin-bottom: 4px; }
+  .tool-btn .tool-label { font-size: 11px; font-weight: 600; letter-spacing: 0.5px; }
+  .tool-btn .tool-color {
+    display: inline-block;
+    width: 8px; height: 8px;
+    border-radius: 2px;
+    margin-right: 4px;
+    vertical-align: middle;
+  }
+
+  /* ── PRICING ── */
+  .price-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+  }
+  .price-row:last-child { border-bottom: none; }
+  .price-label { color: var(--muted); }
+  .price-val { font-family: 'DM Mono', monospace; color: var(--text); }
+  .price-total {
+    font-size: 24px;
+    font-family: 'Bebas Neue', sans-serif;
+    letter-spacing: 1px;
+    color: var(--orange);
+  }
+
+  /* ── MAP AREA ── */
+  .map-container {
+    flex: 1;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+  #map {
+    flex: 1;
+    width: 100%;
+  }
+
+  /* MAP TOOLBAR */
+  .map-toolbar {
+    position: absolute;
+    top: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    background: var(--slate);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 6px 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.5);
+    flex-wrap: wrap;
+    max-width: 90%;
+  }
+  .map-toolbar-label {
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    white-space: nowrap;
+  }
+
+  /* MAP STATUS */
+  .map-status {
+    position: absolute;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--charcoal);
+    border: 1px solid var(--orange);
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-size: 12px;
+    color: var(--orange);
+    display: none;
+    z-index: 10;
+    white-space: nowrap;
+  }
+  .map-status.show { display: block; }
+
+  /* ── API KEY PROMPT ── */
+  .api-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(26,26,26,0.96);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    backdrop-filter: blur(4px);
+  }
+  .api-box {
+    background: var(--panel);
+    border: 1px solid var(--orange);
+    border-radius: 16px;
+    padding: 32px;
+    max-width: 460px;
+    width: 90%;
+    text-align: center;
+  }
+  .api-box h2 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 32px;
+    color: var(--orange);
+    margin-bottom: 12px;
+    letter-spacing: 2px;
+  }
+  .api-box p {
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.6;
+    margin-bottom: 20px;
+  }
+  .api-steps {
+    text-align: left;
+    background: var(--charcoal);
+    border-radius: 8px;
+    padding: 14px 16px;
+    margin-bottom: 20px;
+  }
+  .api-steps li {
+    font-size: 12px;
+    color: var(--text);
+    line-height: 1.8;
+    list-style: decimal;
+    margin-left: 16px;
+  }
+  .api-steps a { color: var(--orange); }
+  .api-input-row { display: flex; gap: 8px; margin-bottom: 12px; }
+  .api-input-row input { flex: 1; }
+
+  /* ── QUOTE MODAL ── */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.8);
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+    display: none;
+  }
+  .modal-overlay.show { display: flex; }
+  .modal {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    width: 90%;
+    max-width: 700px;
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative;
+  }
+  .modal::-webkit-scrollbar { width: 4px; }
+  .modal::-webkit-scrollbar-thumb { background: var(--border); }
+
+  /* ── QUOTE PREVIEW ── */
+  #quotePreview {
+    font-family: 'DM Sans', sans-serif;
+    background: #fff;
+    color: #111;
+    padding: 40px;
+  }
+  .q-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 32px;
+    padding-bottom: 24px;
+    border-bottom: 3px solid #F4611A;
+  }
+  .q-logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 36px;
+    color: #F4611A;
+    letter-spacing: 2px;
+  }
+  .q-logo-sub { font-size: 11px; color: #888; letter-spacing: 1px; text-transform: uppercase; }
+  .q-meta { text-align: right; font-size: 12px; color: #555; line-height: 1.7; }
+  .q-meta strong { font-size: 18px; color: #111; display: block; font-family: 'Bebas Neue', sans-serif; letter-spacing: 1px; }
+  .q-customer { margin-bottom: 24px; }
+  .q-customer h3 { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #888; margin-bottom: 6px; }
+  .q-customer p { font-size: 14px; line-height: 1.6; }
+  .q-section-title {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: #F4611A;
+    font-weight: 600;
+    margin-bottom: 10px;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+  }
+  .q-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 20px; }
+  .q-table th { background: #F4611A; color: #fff; padding: 8px 12px; text-align: left; font-size: 11px; letter-spacing: 0.8px; text-transform: uppercase; }
+  .q-table td { padding: 9px 12px; border-bottom: 1px solid #f0f0f0; }
+  .q-table tr:nth-child(even) td { background: #fafafa; }
+  .q-table .num { text-align: right; font-family: 'DM Mono', monospace; }
+  .q-totals { margin-left: auto; width: 260px; margin-bottom: 24px; }
+  .q-total-row { display: flex; justify-content: space-between; font-size: 13px; padding: 5px 0; border-bottom: 1px solid #eee; }
+  .q-total-final {
+    display: flex; justify-content: space-between;
+    font-size: 22px; font-family: 'Bebas Neue', sans-serif;
+    color: #F4611A; letter-spacing: 1px;
+    padding: 10px 0; border-top: 2px solid #F4611A; margin-top: 6px;
+  }
+  .q-terms { font-size: 11px; color: #888; line-height: 1.7; margin-top: 20px; border-top: 1px solid #eee; padding-top: 16px; }
+  .q-map-placeholder {
+    width: 100%;
+    height: 180px;
+    background: #f5f5f5;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #aaa;
+    font-size: 13px;
+    margin-bottom: 20px;
+    border: 1px solid #eee;
+    overflow: hidden;
+  }
+  .q-map-placeholder img { width: 100%; height: 100%; object-fit: cover; }
+  .q-sig-line {
+    display: flex; gap: 40px; margin-top: 30px;
+  }
+  .q-sig { flex: 1; border-top: 1px solid #ccc; padding-top: 6px; font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 0.8px; }
+
+  .modal-actions {
+    padding: 16px 20px;
+    background: var(--slate);
+    border-top: 1px solid var(--border);
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    position: sticky;
+    bottom: 0;
+  }
+
+  /* ── SUMMARY TOTALS ── */
+  .totals-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .total-chip {
+    background: var(--charcoal);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+  }
+  .total-chip-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 4px; }
+  .total-chip-val { font-size: 18px; font-family: 'Bebas Neue', sans-serif; letter-spacing: 1px; }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+  .badge-orange { background: var(--orange-glow); color: var(--orange); border: 1px solid var(--orange); }
+
+  .drawing-notice {
+    background: rgba(255,208,74,0.1);
+    border: 1px solid var(--yellow);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 12px;
+    color: var(--yellow);
+    display: none;
+  }
+  .drawing-notice.show { display: block; }
+
+  .no-areas {
+    text-align: center;
+    padding: 20px;
+    color: var(--muted);
+    font-size: 12px;
+  }
+
+  select option { background: var(--charcoal); }
+
+  @media print {
+    .modal-actions, header, .sidebar, .map-toolbar { display: none !important; }
+    .modal-overlay { position: static; background: none; }
+    .modal { border: none; border-radius: 0; max-height: none; max-width: none; width: 100%; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">🧱</div>
+    PRO<span>PAVE</span> ESTIMATOR
+  </div>
+  <div class="header-tagline">Paver Restoration & Pressure Washing — Instant Quote Generator</div>
+</header>
+
+<div class="app">
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-scroll">
+
+      <!-- CUSTOMER INFO -->
+      <div class="section-card">
+        <div class="section-header">👤 Customer Info</div>
+        <div class="section-body">
+          <div>
+            <label>Full Name</label>
+            <input type="text" id="custName" placeholder="Jane Smith">
+          </div>
+          <div>
+            <label>Phone</label>
+            <input type="text" id="custPhone" placeholder="(555) 555-5555">
+          </div>
+          <div>
+            <label>Email</label>
+            <input type="text" id="custEmail" placeholder="jane@email.com">
+          </div>
+          <div>
+            <label>Property Address</label>
+            <input type="text" id="addressInput" placeholder="123 Main St, City, FL">
+          </div>
+          <button class="btn btn-primary btn-full" onclick="geocodeAddress()">
+            📍 Find Property on Map
+          </button>
+        </div>
+      </div>
+
+      <!-- DRAW TOOLS -->
+      <div class="section-card">
+        <div class="section-header">✏️ Measure Areas</div>
+        <div class="section-body">
+          <p style="font-size:12px;color:var(--muted);line-height:1.6;">Select an area type, then click on the satellite map to draw a polygon. Double-click to finish.</p>
+          <div class="tool-grid">
+            <div class="tool-btn active" id="tool-driveway" onclick="selectTool('driveway')">
+              <span class="tool-icon">🚗</span>
+              <span class="tool-label"><span class="tool-color" style="background:#4AA8FF"></span>Driveway</span>
+            </div>
+            <div class="tool-btn" id="tool-patio" onclick="selectTool('patio')">
+              <span class="tool-icon">☀️</span>
+              <span class="tool-label"><span class="tool-color" style="background:#3ED97A"></span>Patio</span>
+            </div>
+            <div class="tool-btn" id="tool-walkway" onclick="selectTool('walkway')">
+              <span class="tool-icon">🚶</span>
+              <span class="tool-label"><span class="tool-color" style="background:#FFD04A"></span>Walkway</span>
+            </div>
+            <div class="tool-btn" id="tool-roof" onclick="selectTool('roof')">
+              <span class="tool-icon">🏠</span>
+              <span class="tool-label"><span class="tool-color" style="background:#FF5E5E"></span>Roof</span>
+            </div>
+          </div>
+          <div class="drawing-notice" id="drawingNotice">
+            📐 Drawing mode active — click map to place points, double-click to finish
+          </div>
+          <div style="display:flex;gap:8px;">
+            <button class="btn btn-outline btn-sm" onclick="startDrawing()" style="flex:1">▶ Start Drawing</button>
+            <button class="btn btn-outline btn-sm" onclick="cancelDrawing()" style="flex:1">✕ Cancel</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- MEASURED AREAS -->
+      <div class="section-card">
+        <div class="section-header">📐 Measured Areas</div>
+        <div class="section-body">
+          <div class="area-list" id="areaList">
+            <div class="no-areas">No areas drawn yet.<br>Use tools above to measure.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TOTALS -->
+      <div class="section-card">
+        <div class="section-header">📊 Area Summary</div>
+        <div class="section-body">
+          <div class="totals-grid">
+            <div class="total-chip">
+              <div class="total-chip-label">Paved Areas</div>
+              <div class="total-chip-val" id="totalPaved" style="color:var(--blue)">0 ft²</div>
+            </div>
+            <div class="total-chip">
+              <div class="total-chip-label">Roof Area</div>
+              <div class="total-chip-val" id="totalRoof" style="color:var(--red)">0 ft²</div>
+            </div>
+            <div class="total-chip" style="grid-column:1/-1">
+              <div class="total-chip-label">Total All Areas</div>
+              <div class="total-chip-val" id="totalAll" style="color:var(--orange)">0 ft²</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SERVICES & PRICING -->
+      <div class="section-card">
+        <div class="section-header">💰 Services & Pricing</div>
+        <div class="section-body">
+          <div class="price-row">
+            <span class="price-label">Paver Sealing ($/ft²)</span>
+            <input type="number" id="priceSealing" value="1.25" min="0" step="0.01" style="width:80px;text-align:right;" oninput="calcQuote()">
+          </div>
+          <div class="price-row">
+            <span class="price-label">Pressure Wash ($/ft²)</span>
+            <input type="number" id="priceWash" value="0.35" min="0" step="0.01" style="width:80px;text-align:right;" oninput="calcQuote()">
+          </div>
+          <div class="price-row">
+            <span class="price-label">Joint Sand Fill ($/ft²)</span>
+            <input type="number" id="priceSand" value="0.45" min="0" step="0.01" style="width:80px;text-align:right;" oninput="calcQuote()">
+          </div>
+          <div class="price-row">
+            <span class="price-label">Roof Soft Wash ($/ft²)</span>
+            <input type="number" id="priceRoof" value="0.55" min="0" step="0.01" style="width:80px;text-align:right;" oninput="calcQuote()">
+          </div>
+
+          <div style="margin-top:4px;">
+            <label>Services to Include</label>
+            <div style="display:flex;flex-direction:column;gap:6px;margin-top:6px;">
+              <label style="display:flex;align-items:center;gap:8px;text-transform:none;letter-spacing:0;font-size:13px;color:var(--text);">
+                <input type="checkbox" id="svcSealing" checked onchange="calcQuote()"> Paver Sealing
+              </label>
+              <label style="display:flex;align-items:center;gap:8px;text-transform:none;letter-spacing:0;font-size:13px;color:var(--text);">
+                <input type="checkbox" id="svcWash" checked onchange="calcQuote()"> Pressure Washing
+              </label>
+              <label style="display:flex;align-items:center;gap:8px;text-transform:none;letter-spacing:0;font-size:13px;color:var(--text);">
+                <input type="checkbox" id="svcSand" onchange="calcQuote()"> Joint Sand Re-fill
+              </label>
+              <label style="display:flex;align-items:center;gap:8px;text-transform:none;letter-spacing:0;font-size:13px;color:var(--text);">
+                <input type="checkbox" id="svcRoof" onchange="calcQuote()"> Roof Soft Wash
+              </label>
+            </div>
+          </div>
+
+          <div class="price-row" style="margin-top:8px;">
+            <span class="price-label">Discount (%)</span>
+            <input type="number" id="discount" value="0" min="0" max="100" style="width:80px;text-align:right;" oninput="calcQuote()">
+          </div>
+          <div style="border-top:1px solid var(--border);margin-top:8px;padding-top:12px;">
+            <div class="price-row">
+              <span class="price-label">Subtotal</span>
+              <span class="price-val" id="subtotalDisplay">$0.00</span>
+            </div>
+            <div class="price-row">
+              <span class="price-label">Discount</span>
+              <span class="price-val" id="discountDisplay" style="color:var(--green)">-$0.00</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding-top:10px;">
+              <span style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:1px;">TOTAL</span>
+              <span class="price-total" id="totalDisplay">$0.00</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- NOTES -->
+      <div class="section-card">
+        <div class="section-header">📝 Notes & Scope</div>
+        <div class="section-body">
+          <textarea id="quoteNotes" placeholder="Special conditions, extra services, material notes, access instructions..."></textarea>
+        </div>
+      </div>
+
+      <!-- GENERATE -->
+      <button class="btn btn-green btn-full" onclick="generateQuote()" style="font-size:15px;padding:14px;">
+        📄 Generate Quote
+      </button>
+      <div style="height:8px;"></div>
+
+    </div>
+  </div>
+
+  <!-- MAP -->
+  <div class="map-container">
+    <div id="map"></div>
+
+    <div class="map-toolbar">
+      <span class="map-toolbar-label">View:</span>
+      <button class="btn btn-secondary btn-sm" onclick="setMapType('satellite')">🛰 Satellite</button>
+      <button class="btn btn-secondary btn-sm" onclick="setMapType('hybrid')">🗺 Hybrid</button>
+      <button class="btn btn-secondary btn-sm" onclick="setMapType('roadmap')">📍 Road</button>
+      <span style="width:1px;background:var(--border);height:20px;display:inline-block;"></span>
+      <button class="btn btn-outline btn-sm" onclick="clearAll()">🗑 Clear All</button>
+    </div>
+
+    <div class="map-status" id="mapStatus"></div>
+
+    <!-- API KEY OVERLAY -->
+    <div class="api-overlay" id="apiOverlay">
+      <div class="api-box">
+        <div style="font-size:48px;margin-bottom:12px;">🗺️</div>
+        <h2>Google Maps API Key Required</h2>
+        <p>This tool uses Google Maps satellite imagery to measure paved areas and roofs. You need a free API key — Google gives $200 free credit/month (more than enough for business use).</p>
+        <div class="api-steps">
+          <ol>
+            <li>Go to <a href="https://console.cloud.google.com" target="_blank">console.cloud.google.com</a></li>
+            <li>Create a project → Enable <strong>Maps JavaScript API</strong> + <strong>Geocoding API</strong></li>
+            <li>Go to Credentials → Create API Key</li>
+            <li>Paste your key below and click Load Map</li>
+          </ol>
+        </div>
+        <div class="api-input-row">
+          <input type="text" id="apiKeyInput" placeholder="AIzaSyARAPToeKBhuk3hG1KUz46B5H1UDwWTers">
+          <button class="btn btn-primary" onclick="loadMapsWithKey()">Load Map</button>
+        </div>
+        <p style="font-size:11px;margin-top:8px;">Your key is stored locally in your browser and never sent anywhere.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- QUOTE MODAL -->
+<div class="modal-overlay" id="quoteModal">
+  <div class="modal">
+    <div id="quotePreview"></div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal()">✕ Close</button>
+      <button class="btn btn-outline" onclick="window.print()">🖨 Print</button>
+      <button class="btn btn-primary" onclick="downloadQuote()">⬇ Download PDF</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── STATE ───────────────────────────────────────────────────────
+let map = null;
+let drawingManager = null;
+let geocoder = null;
+let staticMapUrl = '';
+let areas = []; // { id, type, label, sqft, polygon }
+let currentTool = 'driveway';
+let isDrawing = false;
+let quoteNumber = 'PQ-' + Date.now().toString().slice(-6);
+
+const TOOL_COLORS = {
+  driveway: { fill: '#4AA8FF', stroke: '#2080E0', label: 'Driveway' },
+  patio:    { fill: '#3ED97A', stroke: '#22A050', label: 'Patio'    },
+  walkway:  { fill: '#FFD04A', stroke: '#CC9A00', label: 'Walkway'  },
+  roof:     { fill: '#FF5E5E', stroke: '#CC2020', label: 'Roof'     }
+};
+
+// ─── API KEY / MAP LOADING ────────────────────────────────────────
+function loadMapsWithKey() {
+  const key = document.getElementById('apiKeyInput').value.trim();
+  if (!key) { alert('Please enter your Google Maps API key.'); return; }
+  localStorage.setItem('gmaps_key', key);
+  injectMapsScript(key);
+}
+
+function injectMapsScript(key) {
+  const s = document.createElement('script');
+  s.src = `https://maps.googleapis.com/maps/api/js?key=${key}&libraries=drawing,geometry&callback=initMap`;
+  s.async = true; s.defer = true;
+  document.head.appendChild(s);
+}
+
+window.onload = () => {
+  const saved = localStorage.getItem('gmaps_key');
+  if (saved) {
+    document.getElementById('apiKeyInput').value = saved;
+    injectMapsScript(saved);
+  }
+};
+
+// ─── MAP INIT ────────────────────────────────────────────────────
+window.initMap = function() {
+  document.getElementById('apiOverlay').style.display = 'none';
+
+  map = new google.maps.Map(document.getElementById('map'), {
+    center: { lat: 27.33, lng: -80.35 }, // Port Saint Lucie default
+    zoom: 19,
+    mapTypeId: 'satellite',
+    tilt: 0,
+    disableDefaultUI: false,
+    mapTypeControl: false,
+    streetViewControl: false,
+    fullscreenControl: true,
+    styles: []
+  });
+
+  geocoder = new google.maps.Geocoder();
+
+  drawingManager = new google.maps.drawing.DrawingManager({
+    drawingMode: null,
+    drawingControl: false,
+    polygonOptions: {
+      fillColor: TOOL_COLORS[currentTool].fill,
+      fillOpacity: 0.35,
+      strokeColor: TOOL_COLORS[currentTool].stroke,
+      strokeWeight: 2,
+      editable: true,
+      draggable: true
+    }
+  });
+  drawingManager.setMap(map);
+
+  google.maps.event.addListener(drawingManager, 'polygoncomplete', function(polygon) {
+    finishPolygon(polygon);
+  });
+
+  showStatus('Map loaded! Enter an address and click "Find Property on Map"');
+};
+
+// ─── GEOCODING ───────────────────────────────────────────────────
+function geocodeAddress() {
+  if (!geocoder) { alert('Map not loaded yet. Please enter your API key first.'); return; }
+  const addr = document.getElementById('addressInput').value.trim();
+  if (!addr) { alert('Please enter a property address.'); return; }
+
+  geocoder.geocode({ address: addr }, function(results, status) {
+    if (status === 'OK') {
+      const loc = results[0].geometry.location;
+      map.setCenter(loc);
+      map.setZoom(20);
+      map.setMapTypeId('satellite');
+
+      // Build static map URL for quote PDF
+      const apiKey = localStorage.getItem('gmaps_key');
+      staticMapUrl = `https://maps.googleapis.com/maps/api/staticmap?center=${loc.lat()},${loc.lng()}&zoom=19&size=640x200&maptype=satellite&key=${apiKey}`;
+
+      showStatus(`📍 Showing: ${results[0].formatted_address}`);
+    } else {
+      alert('Address not found. Try adding the city and state.');
+    }
+  });
+}
+
+// ─── DRAWING ─────────────────────────────────────────────────────
+function selectTool(tool) {
+  currentTool = tool;
+  document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tool-' + tool).classList.add('active');
+
+  if (drawingManager) {
+    drawingManager.setOptions({
+      polygonOptions: {
+        fillColor: TOOL_COLORS[tool].fill,
+        fillOpacity: 0.35,
+        strokeColor: TOOL_COLORS[tool].stroke,
+        strokeWeight: 2,
+        editable: true,
+        draggable: true
+      }
+    });
+  }
+}
+
+function startDrawing() {
+  if (!map) { alert('Please load the map first.'); return; }
+  isDrawing = true;
+  drawingManager.setDrawingMode(google.maps.drawing.OverlayType.POLYGON);
+  document.getElementById('drawingNotice').classList.add('show');
+  showStatus('Click on the map to start drawing. Double-click to finish.');
+}
+
+function cancelDrawing() {
+  isDrawing = false;
+  drawingManager.setDrawingMode(null);
+  document.getElementById('drawingNotice').classList.remove('show');
+  clearStatus();
+}
+
+function finishPolygon(polygon) {
+  isDrawing = false;
+  drawingManager.setDrawingMode(null);
+  document.getElementById('drawingNotice').classList.remove('show');
+
+  const sqft = computeSqFt(polygon);
+  const id = Date.now();
+  const tool = TOOL_COLORS[currentTool];
+
+  const area = {
+    id, 
+    type: currentTool,
+    label: tool.label + ' #' + (areas.filter(a => a.type === currentTool).length + 1),
+    sqft,
+    polygon
+  };
+
+  // Attach listeners so edits recalc
+  polygon.getPaths().forEach(path => {
+    google.maps.event.addListener(path, 'set_at', () => updateAreaSqft(id, polygon));
+    google.maps.event.addListener(path, 'insert_at', () => updateAreaSqft(id, polygon));
+    google.maps.event.addListener(path, 'remove_at', () => updateAreaSqft(id, polygon));
+  });
+
+  areas.push(area);
+  renderAreaList();
+  calcQuote();
+  showStatus(`✅ ${area.label} measured: ${Math.round(sqft).toLocaleString()} ft²`);
+}
+
+function updateAreaSqft(id, polygon) {
+  const area = areas.find(a => a.id === id);
+  if (area) {
+    area.sqft = computeSqFt(polygon);
+    renderAreaList();
+    calcQuote();
+  }
+}
+
+function computeSqFt(polygon) {
+  const areaMeters = google.maps.geometry.spherical.computeArea(polygon.getPath());
+  return areaMeters * 10.7639; // m² to ft²
+}
+
+// ─── AREA LIST UI ────────────────────────────────────────────────
+function renderAreaList() {
+  const list = document.getElementById('areaList');
+  if (!areas.length) {
+    list.innerHTML = '<div class="no-areas">No areas drawn yet.<br>Use tools above to measure.</div>';
+    updateTotals();
+    return;
+  }
+
+  list.innerHTML = areas.map(area => {
+    const c = TOOL_COLORS[area.type];
+    return `
+      <div class="area-item">
+        <div class="area-dot" style="background:${c.fill};border:1px solid ${c.stroke}"></div>
+        <div class="area-info">
+          <div class="area-name">${area.label}</div>
+          <div class="area-sqft">${Math.round(area.sqft).toLocaleString()} ft²</div>
+        </div>
+        <div class="area-actions">
+          <button class="icon-btn del" onclick="deleteArea(${area.id})" title="Delete">✕</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  updateTotals();
+}
+
+function deleteArea(id) {
+  const idx = areas.findIndex(a => a.id === id);
+  if (idx !== -1) {
+    areas[idx].polygon.setMap(null);
+    areas.splice(idx, 1);
+    renderAreaList();
+    calcQuote();
+  }
+}
+
+function updateTotals() {
+  const pavedTypes = ['driveway','patio','walkway'];
+  const pavedSqft = areas.filter(a => pavedTypes.includes(a.type)).reduce((s, a) => s + a.sqft, 0);
+  const roofSqft  = areas.filter(a => a.type === 'roof').reduce((s, a) => s + a.sqft, 0);
+  const totalSqft = pavedSqft + roofSqft;
+
+  document.getElementById('totalPaved').textContent = Math.round(pavedSqft).toLocaleString() + ' ft²';
+  document.getElementById('totalRoof').textContent  = Math.round(roofSqft).toLocaleString() + ' ft²';
+  document.getElementById('totalAll').textContent   = Math.round(totalSqft).toLocaleString() + ' ft²';
+}
+
+// ─── QUOTE CALC ──────────────────────────────────────────────────
+function calcQuote() {
+  const pavedTypes = ['driveway','patio','walkway'];
+  const pavedSqft = areas.filter(a => pavedTypes.includes(a.type)).reduce((s, a) => s + a.sqft, 0);
+  const roofSqft  = areas.filter(a => a.type === 'roof').reduce((s, a) => s + a.sqft, 0);
+
+  const ps = parseFloat(document.getElementById('priceSealing').value) || 0;
+  const pw = parseFloat(document.getElementById('priceWash').value) || 0;
+  const psa= parseFloat(document.getElementById('priceSand').value) || 0;
+  const pr = parseFloat(document.getElementById('priceRoof').value) || 0;
+
+  let sub = 0;
+  if (document.getElementById('svcSealing').checked) sub += pavedSqft * ps;
+  if (document.getElementById('svcWash').checked)    sub += pavedSqft * pw;
+  if (document.getElementById('svcSand').checked)    sub += pavedSqft * psa;
+  if (document.getElementById('svcRoof').checked)    sub += roofSqft * pr;
+
+  const disc = Math.min(parseFloat(document.getElementById('discount').value) || 0, 100);
+  const discAmt = sub * (disc / 100);
+  const total = sub - discAmt;
+
+  document.getElementById('subtotalDisplay').textContent = '$' + sub.toFixed(2);
+  document.getElementById('discountDisplay').textContent = '-$' + discAmt.toFixed(2);
+  document.getElementById('totalDisplay').textContent    = '$' + total.toFixed(2);
+}
+
+// ─── MAP UTILS ───────────────────────────────────────────────────
+function setMapType(type) {
+  if (map) map.setMapTypeId(type);
+}
+
+function clearAll() {
+  if (!confirm('Clear all measured areas?')) return;
+  areas.forEach(a => a.polygon.setMap(null));
+  areas = [];
+  renderAreaList();
+  calcQuote();
+}
+
+function showStatus(msg) {
+  const el = document.getElementById('mapStatus');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 4000);
+}
+function clearStatus() {
+  document.getElementById('mapStatus').classList.remove('show');
+}
+
+// ─── QUOTE GENERATION ────────────────────────────────────────────
+function generateQuote() {
+  const pavedTypes = ['driveway','patio','walkway'];
+  const pavedSqft = areas.filter(a => pavedTypes.includes(a.type)).reduce((s, a) => s + a.sqft, 0);
+  const roofSqft  = areas.filter(a => a.type === 'roof').reduce((s, a) => s + a.sqft, 0);
+
+  const ps = parseFloat(document.getElementById('priceSealing').value) || 0;
+  const pw = parseFloat(document.getElementById('priceWash').value) || 0;
+  const psa= parseFloat(document.getElementById('priceSand').value) || 0;
+  const pr = parseFloat(document.getElementById('priceRoof').value) || 0;
+
+  const services = [];
+  if (document.getElementById('svcSealing').checked && pavedSqft > 0)
+    services.push({ name: 'Paver Sealing', sqft: pavedSqft, rate: ps, total: pavedSqft * ps });
+  if (document.getElementById('svcWash').checked && pavedSqft > 0)
+    services.push({ name: 'Pressure Washing (Paved)', sqft: pavedSqft, rate: pw, total: pavedSqft * pw });
+  if (document.getElementById('svcSand').checked && pavedSqft > 0)
+    services.push({ name: 'Polymeric Joint Sand Re-fill', sqft: pavedSqft, rate: psa, total: pavedSqft * psa });
+  if (document.getElementById('svcRoof').checked && roofSqft > 0)
+    services.push({ name: 'Roof Soft Wash', sqft: roofSqft, rate: pr, total: roofSqft * pr });
+
+  const sub = services.reduce((s, sv) => s + sv.total, 0);
+  const disc = Math.min(parseFloat(document.getElementById('discount').value) || 0, 100);
+  const discAmt = sub * (disc / 100);
+  const total = sub - discAmt;
+
+  const today = new Date().toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' });
+  const validUntil = new Date(Date.now() + 30*24*60*60*1000).toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' });
+
+  const name    = document.getElementById('custName').value || 'Valued Customer';
+  const phone   = document.getElementById('custPhone').value || '—';
+  const email   = document.getElementById('custEmail').value || '—';
+  const address = document.getElementById('addressInput').value || '—';
+  const notes   = document.getElementById('quoteNotes').value;
+
+  // Area breakdown rows
+  const areaRows = areas.map(a => {
+    const c = TOOL_COLORS[a.type];
+    return `<tr><td><span style="display:inline-block;width:10px;height:10px;background:${c.fill};border-radius:2px;margin-right:6px;"></span>${a.label}</td><td class="num">${Math.round(a.sqft).toLocaleString()}</td><td class="num">ft²</td></tr>`;
+  }).join('');
+
+  const serviceRows = services.map(sv =>
+    `<tr><td>${sv.name}</td><td class="num">${Math.round(sv.sqft).toLocaleString()} ft²</td><td class="num">$${sv.rate.toFixed(2)}/ft²</td><td class="num">$${sv.total.toFixed(2)}</td></tr>`
+  ).join('');
+
+  const mapImg = staticMapUrl
+    ? `<img src="${staticMapUrl}" alt="Property Satellite View" style="width:100%;height:100%;object-fit:cover;">`
+    : `🛰 Satellite map — ${address}`;
+
+  const html = `
+    <div style="font-family:'DM Sans',sans-serif;background:#fff;color:#111;padding:40px;">
+      <div class="q-header">
+        <div>
+          <div class="q-logo">PRO<span style="color:#111;">PAVE</span></div>
+          <div class="q-logo-sub">Paver Restoration & Pressure Washing</div>
+          <div style="font-size:11px;color:#aaa;margin-top:4px;">Licensed & Insured · Serving South Florida</div>
+        </div>
+        <div class="q-meta">
+          <strong>ESTIMATE #${quoteNumber}</strong>
+          Date: ${today}<br>
+          Valid Until: ${validUntil}<br>
+          Prepared by: ProPave Team
+        </div>
+      </div>
+
+      <div class="q-customer">
+        <h3>Prepared For</h3>
+        <p><strong style="font-size:16px;">${name}</strong><br>
+        ${address}<br>
+        📞 ${phone} &nbsp;|&nbsp; ✉️ ${email}</p>
+      </div>
+
+      <div class="q-map-placeholder">${mapImg}</div>
+
+      ${areaRows ? `
+      <div class="q-section-title">Measured Areas</div>
+      <table class="q-table" style="margin-bottom:20px;">
+        <thead><tr><th>Area</th><th class="num">Size</th><th class="num">Unit</th></tr></thead>
+        <tbody>${areaRows}</tbody>
+      </table>` : ''}
+
+      <div class="q-section-title">Scope of Work & Pricing</div>
+      <table class="q-table">
+        <thead><tr><th>Service</th><th class="num">Area</th><th class="num">Rate</th><th class="num">Amount</th></tr></thead>
+        <tbody>${serviceRows || '<tr><td colspan="4" style="color:#aaa;text-align:center;padding:20px;">No services selected</td></tr>'}</tbody>
+      </table>
+
+      <div class="q-totals">
+        <div class="q-total-row"><span>Subtotal</span><span style="font-family:monospace;">$${sub.toFixed(2)}</span></div>
+        ${disc > 0 ? `<div class="q-total-row" style="color:green;"><span>Discount (${disc}%)</span><span>-$${discAmt.toFixed(2)}</span></div>` : ''}
+        <div class="q-total-final"><span>TOTAL</span><span>$${total.toFixed(2)}</span></div>
+      </div>
+
+      ${notes ? `<div class="q-section-title">Notes & Special Conditions</div><p style="font-size:13px;line-height:1.7;color:#444;margin-bottom:20px;">${notes}</p>` : ''}
+
+      <div class="q-sig-line">
+        <div class="q-sig">Customer Signature &amp; Date</div>
+        <div class="q-sig">Authorized by ProPave</div>
+      </div>
+
+      <div class="q-terms">
+        <strong>Terms:</strong> Quote valid for 30 days. 50% deposit required to schedule. Balance due upon completion. 
+        Price based on measured square footage above. Additional charges may apply for severely stained or damaged surfaces. 
+        All work guaranteed for 12 months. We are fully licensed and insured.
+      </div>
+    </div>
+  `;
+
+  document.getElementById('quotePreview').innerHTML = html;
+  document.getElementById('quoteModal').classList.add('show');
+}
+
+function closeModal() {
+  document.getElementById('quoteModal').classList.remove('show');
+}
+
+function downloadQuote() {
+  window.print();
+}
+
+// Close modal on overlay click
+document.getElementById('quoteModal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+</script>
+
+</body>
+</html>
