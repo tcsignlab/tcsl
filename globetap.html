@@ -41,10 +41,13 @@
       left: 50%;
       transform: translate(-50%, -50%);
       text-align: center;
-      pointer-events: none;
       transition: opacity 1s ease;
+      /* FIXED: removed pointer-events:none so buttons work */
     }
-    #center.hidden { opacity: 0; pointer-events: none; }
+    #center.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
     h1 { margin: 0 0 16px; font-size: 3.6rem; }
 
     /* Difficulty & Game Over Menu */
@@ -53,6 +56,7 @@
       flex-direction: column;
       align-items: center;
       gap: 12px;
+      pointer-events: auto; /* FIXED: allows clicks on buttons */
     }
     button {
       background: rgba(255,255,255,0.08);
@@ -147,15 +151,16 @@ fetch('https://unpkg.com/world-atlas@2/countries-50m.json')
       .polygonAltitude(0.004);
   });
 
-// =============== LOAD CITIES ===============
+// =============== LOAD CITIES (FIXED: menu now shows reliably) ===============
 fetch('https://raw.githubusercontent.com/lutangar/cities.json/master/cities.json')
   .then(r => r.json())
   .then(data => {
-    cities = data.filter((_, i) => i % 16 === 0); // ~1800 cities – perfect balance
+    cities = data.filter((_, i) => i % 16 === 0);
     document.getElementById('status').textContent = 'Choose difficulty to start';
+    showDifficultyMenu();           // ← FIXED: show menu immediately when ready
   })
   .catch(() => {
-    document.getElementById('status').textContent = 'Error loading cities – refresh page';
+    document.getElementById('status').innerHTML = '❌ Error loading cities<br>Refresh the page';
   });
 
 // =============== DISTANCE ===============
@@ -169,7 +174,7 @@ function haversine(lat1, lon1, lat2, lon2) {
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-// =============== PIN DROP (smooth animation) ===============
+// =============== PIN DROP ===============
 function dropPin(lat, lng, color) {
   const pin = { lat, lng, color, altitude: 1.45 };
   pins.push(pin);
@@ -180,10 +185,8 @@ function dropPin(lat, lng, color) {
     alt -= 0.092;
     pin.altitude = Math.max(alt, 0.028);
     globe.pointsData(pins);
-    if (alt > 0.028) {
-      requestAnimationFrame(animate);
-    } else {
-      // bounce
+    if (alt > 0.028) requestAnimationFrame(animate);
+    else {
       let bounce = 0.055;
       function bounceAnim() {
         bounce -= 0.0055;
@@ -197,9 +200,10 @@ function dropPin(lat, lng, color) {
   animate();
 }
 
-// =============== DIFFICULTY MENU ===============
+// =============== MENU & START (FIXED) ===============
 function showDifficultyMenu() {
-  document.getElementById('center').classList.remove('hidden');
+  const center = document.getElementById('center');
+  center.classList.remove('hidden');
   document.getElementById('difficulty-menu').style.display = 'flex';
   document.getElementById('game-over').style.display = 'none';
 }
@@ -214,7 +218,6 @@ function startWithDifficulty(level) {
   currentDiff = configs[level];
   document.getElementById('center').classList.add('hidden');
 
-  // Reset everything
   pins = [];
   globe.pointsData([]);
   score = 0;
@@ -228,7 +231,6 @@ function startWithDifficulty(level) {
 
   document.getElementById('score').textContent = 'Score: 0';
   document.getElementById('round-info').textContent = `Round 1 / ${currentDiff.rounds}`;
-  
   nextRound();
 }
 
@@ -258,7 +260,6 @@ function startTimer() {
   }, 1000);
 }
 
-// =============== GUESS HANDLER ===============
 function handleGuess(pos) {
   if (!gameActive) return;
   if (timerId) clearInterval(timerId);
@@ -271,8 +272,8 @@ function handleGuess(pos) {
 
   document.getElementById('score').textContent = `Score: ${score}`;
 
-  if (pos) dropPin(pos.lat, pos.lng, '#ff3366');        // player guess
-  dropPin(target.lat, target.lng, '#33ff99');           // correct answer
+  if (pos) dropPin(pos.lat, pos.lng, '#ff3366');
+  dropPin(target.lat, target.lng, '#33ff99');
 
   index++;
   setTimeout(nextRound, 2300);
@@ -289,16 +290,11 @@ function endGame() {
   document.getElementById('center').classList.remove('hidden');
 }
 
-// =============== EVENT LISTENERS ===============
+// =============== BUTTONS ===============
 document.getElementById('easy-btn').addEventListener('click', () => startWithDifficulty('easy'));
 document.getElementById('medium-btn').addEventListener('click', () => startWithDifficulty('medium'));
 document.getElementById('hard-btn').addEventListener('click', () => startWithDifficulty('hard'));
 document.getElementById('play-again-btn').addEventListener('click', showDifficultyMenu);
-
-// Auto-show menu when cities are ready
-setTimeout(() => {
-  if (cities.length > 0) showDifficultyMenu();
-}, 800);
 </script>
 </body>
 </html>
