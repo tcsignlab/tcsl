@@ -1,31 +1,84 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>GlobeTap</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GlobeTap – Guess the City</title>
 
-<script src="https://unpkg.com/three"></script>
-<script src="https://unpkg.com/globe.gl"></script>
-<script src="https://unpkg.com/topojson-client@3"></script>
+  <script src="https://unpkg.com/three"></script>
+  <script src="https://unpkg.com/globe.gl"></script>
+  <script src="https://unpkg.com/topojson-client@3"></script>
 
-<style>
-body { margin:0; background:#000; color:#fff; font-family:Arial; overflow:hidden;}
-#globeViz { position:absolute; width:100%; height:100%; }
+  <style>
+    body {
+      margin: 0;
+      background: #000;
+      color: #fff;
+      font-family: Arial, Helvetica, sans-serif;
+      overflow: hidden;
+    }
+    #globeViz {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+    }
+    #ui {
+      position: absolute;
+      top: 16px;
+      left: 16px;
+      background: rgba(0,0,0,0.7);
+      padding: 12px 18px;
+      border-radius: 12px;
+      font-size: 1.15rem;
+      pointer-events: none;
+      user-select: none;
+      line-height: 1.4;
+    }
+    #ui div { margin: 5px 0; }
+    #center {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      pointer-events: none;
+      transition: opacity 1s ease;
+    }
+    #center.hidden { opacity: 0; pointer-events: none; }
+    h1 { margin: 0 0 16px; font-size: 3.6rem; }
 
-#ui {
-  position:absolute; top:15px; left:15px;
-  background:rgba(0,0,0,0.6);
-  padding:12px; border-radius:10px;
-}
+    /* Difficulty & Game Over Menu */
+    .menu {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+    button {
+      background: rgba(255,255,255,0.08);
+      border: 2px solid #00ddff;
+      color: #fff;
+      padding: 16px 36px;
+      font-size: 1.25rem;
+      border-radius: 14px;
+      cursor: pointer;
+      transition: all 0.25s;
+      width: 320px;
+    }
+    button:hover {
+      background: #00ddff;
+      color: #000;
+      transform: scale(1.08);
+    }
+    .small { font-size: 0.95rem; opacity: 0.85; margin-top: 4px; display: block; }
 
-#center {
-  position:absolute; top:50%; left:50%;
-  transform:translate(-50%,-50%);
-  text-align:center;
-}
-</style>
+    /* Game Over */
+    #game-over p {
+      font-size: 2rem;
+      margin: 12px 0;
+    }
+  </style>
 </head>
-
 <body>
 
 <div id="globeViz"></div>
@@ -33,174 +86,219 @@ body { margin:0; background:#000; color:#fff; font-family:Arial; overflow:hidden
 <div id="ui">
   <div id="score">Score: 0</div>
   <div id="target"></div>
-  <div id="timer">⏱️ 10</div>
+  <div id="round-info">Round 1 / 5</div>
+  <div id="timer">⏱ 10</div>
 </div>
 
 <div id="center">
   <h1>🌍 GlobeTap</h1>
-  <p id="status">Loading world data...</p>
+  
+  <!-- Difficulty Menu -->
+  <div id="difficulty-menu" class="menu">
+    <p id="status">Loading world data…</p>
+    <button id="easy-btn">Easy<br><span class="small">15 seconds • 5 rounds</span></button>
+    <button id="medium-btn">Medium<br><span class="small">10 seconds • 7 rounds</span></button>
+    <button id="hard-btn">Hard<br><span class="small">7 seconds • 10 rounds</span></button>
+  </div>
+
+  <!-- Game Over Screen -->
+  <div id="game-over" class="menu" style="display:none;">
+    <p id="final-score">Final Score: 0</p>
+    <button id="play-again-btn">Play Again</button>
+  </div>
 </div>
 
 <script>
-const globe = Globe()(document.getElementById('globeViz'))
-  .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-dark.jpg')
-  .bumpImageUrl('https://unpkg.com/three-globe/example/img/earth-topology.png')
-  .backgroundColor('#000');
+// =============== GLOBE SETUP ===============
+const globe = Globe()
+  (document.getElementById('globeViz'))
+  .globeImageUrl('//unpkg.com/three-globe/example/img/earth-dark.jpg')
+  .bumpImageUrl('//unpkg.com/three-globe/example/img/earth-topology.png')
+  .backgroundColor('#0a0a1f')
+  .pointOfView({ lat: 20, lng: 0, altitude: 2.6 })
+  .pointAltitude('altitude')
+  .pointColor('color')
+  .pointRadius(0.42)
+  .pointMerge(true)
+  .onGlobeClick(({ lat, lng }) => {
+    if (!gameActive) return;
+    handleGuess({ lat, lng });
+  });
 
-// ===== STATE =====
+// =============== STATE ===============
 let cities = [];
 let roundCities = [];
+let pins = [];
 let index = 0;
 let score = 0;
 let gameActive = false;
-let timer;
+let timerId = null;
 
-// ===== COUNTRY BORDERS (optimized) =====
+let currentDiff = { name: 'medium', time: 10, rounds: 7, multiplier: 1.3 };
+
+// =============== COUNTRY BORDERS ===============
 fetch('https://unpkg.com/world-atlas@2/countries-50m.json')
-.then(res => res.json())
-.then(data => {
-  const countries = topojson.feature(data, data.objects.countries).features;
+  .then(r => r.json())
+  .then(world => {
+    const countries = topojson.feature(world, world.objects.countries).features;
+    globe.polygonsData(countries)
+      .polygonStrokeColor(() => '#3388ff')
+      .polygonStrokeWidth(0.65)
+      .polygonAltitude(0.004);
+  });
 
-  globe.polygonsData(countries)
-    .polygonStrokeColor(() => "#00aaff")
-    .polygonAltitude(0.003);
-});
-
-// ===== LOAD CITIES (optimized but still good spread) =====
+// =============== LOAD CITIES ===============
 fetch('https://raw.githubusercontent.com/lutangar/cities.json/master/cities.json')
-.then(res => res.json())
-.then(data => {
+  .then(r => r.json())
+  .then(data => {
+    cities = data.filter((_, i) => i % 16 === 0); // ~1800 cities – perfect balance
+    document.getElementById('status').textContent = 'Choose difficulty to start';
+  })
+  .catch(() => {
+    document.getElementById('status').textContent = 'Error loading cities – refresh page';
+  });
 
-  // smarter filter: medium + large cities only
-  cities = data.filter((c,i) => i % 20 === 0);
-
-  document.getElementById("status").innerText = "Starting...";
-  
-  setTimeout(startGame, 800); // auto start
-});
-
-// ===== DISTANCE =====
-function dist(a,b,c,d){
-  const R=6371;
-  const dLat=(c-a)*Math.PI/180;
-  const dLon=(d-b)*Math.PI/180;
-  const x=Math.sin(dLat/2)**2 +
-    Math.cos(a*Math.PI/180)*Math.cos(c*Math.PI/180)*
-    Math.sin(dLon/2)**2;
-  return R*(2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x)));
+// =============== DISTANCE ===============
+function haversine(lat1, lon1, lat2, lon2) {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = Math.sin(dLat/2)**2 +
+            Math.cos(lat1 * Math.PI/180) * Math.cos(lat2 * Math.PI/180) *
+            Math.sin(dLon/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-// ===== START =====
-function startGame(){
-  gameActive = true;
-  document.getElementById("center").style.display="none";
+// =============== PIN DROP (smooth animation) ===============
+function dropPin(lat, lng, color) {
+  const pin = { lat, lng, color, altitude: 1.45 };
+  pins.push(pin);
+  globe.pointsData(pins);
 
-  score = 0;
-  index = 0;
-  roundCities = [];
-
-  for(let i=0;i<5;i++){
-    roundCities.push(cities[Math.floor(Math.random()*cities.length)]);
-  }
-
-  next();
-}
-
-// ===== NEXT =====
-function next(){
-  if(index>=5) return end();
-
-  let c = roundCities[index];
-
-  document.getElementById("target").innerText =
-    "Find: " + c.name + ", " + c.country;
-
-  startTimer();
-}
-
-// ===== TIMER =====
-function startTimer(){
-  let time = 10;
-  document.getElementById("timer").innerText = "⏱️ " + time;
-
-  clearInterval(timer);
-  timer = setInterval(()=>{
-    time--;
-    document.getElementById("timer").innerText = "⏱️ " + time;
-
-    if(time<=0){
-      clearInterval(timer);
-      handleGuess(null);
-    }
-  },1000);
-}
-
-// ===== PIN DROP (smooth + safe) =====
-function dropPin(lat,lng,color){
-  let altitude = 1;
-
-  function animate(){
-    altitude -= 0.06;
-
-    globe.pointsData([{
-      lat,lng,color,size:0.5, altitude:Math.max(altitude,0)
-    }]);
-
-    if(altitude > 0){
+  let alt = 1.45;
+  function animate() {
+    alt -= 0.092;
+    pin.altitude = Math.max(alt, 0.028);
+    globe.pointsData(pins);
+    if (alt > 0.028) {
       requestAnimationFrame(animate);
     } else {
       // bounce
-      let bounce = 0.15;
-      function bounceAnim(){
-        bounce -= 0.02;
-
-        globe.pointsData([{
-          lat,lng,color,size:0.5, altitude:bounce
-        }]);
-
-        if(bounce > 0){
-          requestAnimationFrame(bounceAnim);
-        }
+      let bounce = 0.055;
+      function bounceAnim() {
+        bounce -= 0.0055;
+        pin.altitude = Math.max(bounce, 0.028);
+        globe.pointsData(pins);
+        if (bounce > 0.028) requestAnimationFrame(bounceAnim);
       }
       bounceAnim();
     }
   }
-
   animate();
 }
 
-// ===== CLICK =====
-globe.onGlobeClick(({lat,lng})=>{
-  if(!gameActive) return;
-  handleGuess({lat,lng});
-});
+// =============== DIFFICULTY MENU ===============
+function showDifficultyMenu() {
+  document.getElementById('center').classList.remove('hidden');
+  document.getElementById('difficulty-menu').style.display = 'flex';
+  document.getElementById('game-over').style.display = 'none';
+}
 
-// ===== GUESS =====
-function handleGuess(pos){
-  clearInterval(timer);
+function startWithDifficulty(level) {
+  const configs = {
+    easy:   { name: 'Easy',   time: 15, rounds: 5,  multiplier: 1.0 },
+    medium: { name: 'Medium', time: 10, rounds: 7,  multiplier: 1.3 },
+    hard:   { name: 'Hard',   time: 7,  rounds: 10, multiplier: 1.85 }
+  };
 
-  let c = roundCities[index];
-  let d = pos ? dist(pos.lat,pos.lng,c.lat,c.lng) : 20000;
+  currentDiff = configs[level];
+  document.getElementById('center').classList.add('hidden');
 
-  let pts = Math.max(0,5000 - d*10);
-  score += Math.round(pts);
+  // Reset everything
+  pins = [];
+  globe.pointsData([]);
+  score = 0;
+  index = 0;
+  gameActive = true;
 
-  if(pos) dropPin(pos.lat,pos.lng,'red');
-  dropPin(c.lat,c.lng,'lime');
+  roundCities = [];
+  for (let i = 0; i < currentDiff.rounds; i++) {
+    roundCities.push(cities[Math.floor(Math.random() * cities.length)]);
+  }
 
-  document.getElementById("score").innerText = "Score: " + score;
+  document.getElementById('score').textContent = 'Score: 0';
+  document.getElementById('round-info').textContent = `Round 1 / ${currentDiff.rounds}`;
+  
+  nextRound();
+}
+
+// =============== GAME FLOW ===============
+function nextRound() {
+  if (index >= currentDiff.rounds) return endGame();
+
+  const city = roundCities[index];
+  document.getElementById('target').textContent = `Find: ${city.name}, ${city.country}`;
+  document.getElementById('round-info').textContent = `Round ${index + 1} / ${currentDiff.rounds}`;
+
+  startTimer();
+}
+
+function startTimer() {
+  if (timerId) clearInterval(timerId);
+  let timeLeft = currentDiff.time;
+  document.getElementById('timer').textContent = `⏱ ${timeLeft}`;
+
+  timerId = setInterval(() => {
+    timeLeft--;
+    document.getElementById('timer').textContent = `⏱ ${timeLeft}`;
+    if (timeLeft <= 0) {
+      clearInterval(timerId);
+      handleGuess(null);
+    }
+  }, 1000);
+}
+
+// =============== GUESS HANDLER ===============
+function handleGuess(pos) {
+  if (!gameActive) return;
+  if (timerId) clearInterval(timerId);
+
+  const target = roundCities[index];
+  const distance = pos ? haversine(pos.lat, pos.lng, target.lat, target.lng) : 35000;
+  let points = Math.max(0, Math.round(5200 - distance * 7.5));
+  points = Math.round(points * currentDiff.multiplier);
+  score += points;
+
+  document.getElementById('score').textContent = `Score: ${score}`;
+
+  if (pos) dropPin(pos.lat, pos.lng, '#ff3366');        // player guess
+  dropPin(target.lat, target.lng, '#33ff99');           // correct answer
 
   index++;
-  setTimeout(next,2000);
+  setTimeout(nextRound, 2300);
 }
 
-// ===== END =====
-function end(){
+function endGame() {
   gameActive = false;
-  document.getElementById("center").style.display="block";
-  document.getElementById("status").innerText = "Final Score: " + score;
+  document.getElementById('final-score').innerHTML = `
+    Final Score: <strong>${score}</strong><br>
+    <small>Difficulty: ${currentDiff.name}</small>
+  `;
+  document.getElementById('difficulty-menu').style.display = 'none';
+  document.getElementById('game-over').style.display = 'flex';
+  document.getElementById('center').classList.remove('hidden');
 }
-</script>
 
+// =============== EVENT LISTENERS ===============
+document.getElementById('easy-btn').addEventListener('click', () => startWithDifficulty('easy'));
+document.getElementById('medium-btn').addEventListener('click', () => startWithDifficulty('medium'));
+document.getElementById('hard-btn').addEventListener('click', () => startWithDifficulty('hard'));
+document.getElementById('play-again-btn').addEventListener('click', showDifficultyMenu);
+
+// Auto-show menu when cities are ready
+setTimeout(() => {
+  if (cities.length > 0) showDifficultyMenu();
+}, 800);
+</script>
 </body>
 </html>
