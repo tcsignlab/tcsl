@@ -29,7 +29,7 @@
         #globe-container {
             width: 100%;
             height: 100%;
-            cursor: crosshair;
+            cursor: grab;
         }
 
         #globe-container.dragging {
@@ -104,7 +104,7 @@
     <script type="text/babel">
         const { useState, useEffect, useRef } = React;
 
-        // Fallback cities database (will be replaced by API data)
+        // Fallback cities database
         const FALLBACK_CITIES = [
             { name: "Tokyo", country: "Japan", lat: 35.6762, lng: 139.6503 },
             { name: "Delhi", country: "India", lat: 28.7041, lng: 77.1025 },
@@ -250,7 +250,6 @@
                 const container = document.querySelector('.stars');
                 if (!container) return;
 
-                // Create 200 stars
                 for (let i = 0; i < 200; i++) {
                     const star = document.createElement('div');
                     star.className = 'star';
@@ -293,27 +292,22 @@
             const markersRef = useRef([]);
             const clickStartPosRef = useRef(null);
 
-            // Load cities from public API on mount
             useEffect(() => {
                 const loadCities = async () => {
                     try {
-                        // Using SimpleMaps free world cities database
                         const response = await fetch('https://raw.githubusercontent.com/datasets/world-cities/master/data/world-cities.csv');
                         const text = await response.text();
                         
-                        // Parse CSV
-                        const lines = text.split('\n').slice(1); // Skip header
+                        const lines = text.split('\n').slice(1);
                         const cities = [];
                         
                         for (let line of lines) {
                             if (!line.trim()) continue;
                             
-                            // Simple CSV parsing (handles quoted fields)
                             const match = line.match(/^"([^"]*)","([^"]*)","([^"]*)","([^"]*)",([^,]*),([^,]*)/);
                             if (match) {
                                 const [, name, country, subcountry, , lat, lng] = match;
                                 
-                                // Filter for cities with population > 500k or capitals
                                 if (name && lat && lng) {
                                     cities.push({
                                         name: name,
@@ -325,7 +319,6 @@
                             }
                         }
                         
-                        // Shuffle and take 500 cities
                         const shuffled = cities.sort(() => Math.random() - 0.5);
                         const selected = shuffled.slice(0, Math.min(500, shuffled.length));
                         
@@ -396,29 +389,30 @@
                 rendererRef.current = renderer;
 
                 // Lighting
-                const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+                const ambientLight = new THREE.AmbientLight(0xffffff, 1.0);
                 scene.add(ambientLight);
 
-                const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+                const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
                 directionalLight.position.set(5, 3, 5);
                 scene.add(directionalLight);
 
-                // Create Earth globe
+                // Create Earth globe with natural colors
                 const geometry = new THREE.SphereGeometry(1, 64, 64);
                 const material = new THREE.MeshPhongMaterial({
-                    color: 0x2233ff,
-                    emissive: 0x112244,
-                    shininess: 10
+                    color: 0x88aa66,  // Natural greenish-brown
+                    emissive: 0x001100,
+                    shininess: 5,
+                    specular: 0x333333
                 });
                 
                 const globe = new THREE.Mesh(geometry, material);
                 globeRef.current = globe;
                 scene.add(globe);
 
-                // Load texture
+                // Load natural earth texture
                 const textureLoader = new THREE.TextureLoader();
                 textureLoader.load(
-                    'https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg',
+                    'https://unpkg.com/three-globe/example/img/earth-day.jpg',
                     (texture) => {
                         globe.material.map = texture;
                         globe.material.needsUpdate = true;
@@ -453,19 +447,30 @@
                     globeRef.current.rotation.y += moveX * 0.005;
                     globeRef.current.rotation.x += moveY * 0.005;
 
+                    // Clamp X rotation to prevent flipping
+                    globeRef.current.rotation.x = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, globeRef.current.rotation.x));
+
                     previousMousePositionRef.current = { x: e.clientX, y: e.clientY };
                 };
 
                 const handleMouseUp = (e) => {
                     container.classList.remove('dragging');
                     
-                    // Only process click if not dragging
                     if (!isDraggingRef.current && clickStartPosRef.current) {
                         handleGlobeClick(e);
                     }
                     
                     isDraggingRef.current = false;
                     clickStartPosRef.current = null;
+                };
+
+                const handleWheel = (e) => {
+                    e.preventDefault();
+                    const zoomSpeed = 0.001;
+                    const zoomDelta = e.deltaY * zoomSpeed;
+                    
+                    camera.position.z += zoomDelta;
+                    camera.position.z = Math.max(1.5, Math.min(5, camera.position.z));
                 };
 
                 const handleTouchStart = (e) => {
@@ -501,6 +506,8 @@
 
                     globeRef.current.rotation.y += moveX * 0.005;
                     globeRef.current.rotation.x += moveY * 0.005;
+                    
+                    globeRef.current.rotation.x = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, globeRef.current.rotation.x));
 
                     previousMousePositionRef.current = {
                         x: e.touches[0].clientX,
@@ -525,9 +532,7 @@
                 };
 
                 const handleGlobeClick = (e) => {
-                    // Check if we can process this click
                     if (currentRound >= gameCities.length || currentGuess || !globeRef.current) {
-                        console.log('Click ignored:', { currentRound, hasGuess: !!currentGuess, hasGlobe: !!globeRef.current });
                         return;
                     }
 
@@ -543,12 +548,10 @@
                     if (intersects.length > 0) {
                         const point = intersects[0].point;
                         
-                        // Convert 3D point to lat/lng
                         const radius = Math.sqrt(point.x * point.x + point.y * point.y + point.z * point.z);
                         const lat = 90 - (Math.acos(point.y / radius) * 180 / Math.PI);
                         const lng = ((270 + (Math.atan2(point.x, point.z)) * 180 / Math.PI) % 360) - 180;
 
-                        console.log('Click registered:', { lat, lng });
                         handleGuess(lat, lng);
                     }
                 };
@@ -556,12 +559,12 @@
                 canvas.addEventListener('mousedown', handleMouseDown);
                 canvas.addEventListener('mousemove', handleMouseMove);
                 canvas.addEventListener('mouseup', handleMouseUp);
+                canvas.addEventListener('wheel', handleWheel, { passive: false });
                 
                 canvas.addEventListener('touchstart', handleTouchStart, { passive: false });
                 canvas.addEventListener('touchmove', handleTouchMove, { passive: false });
                 canvas.addEventListener('touchend', handleTouchEnd);
 
-                // Handle window resize
                 const handleResize = () => {
                     if (!container || !camera || !renderer) return;
                     const newWidth = container.clientWidth;
@@ -572,13 +575,9 @@
                 };
                 window.addEventListener('resize', handleResize);
 
-                // Animation loop
+                // Animation loop (NO AUTO-ROTATION)
                 const animate = () => {
                     animationIdRef.current = requestAnimationFrame(animate);
-                    
-                    if (globeRef.current && !clickStartPosRef.current) {
-                        globeRef.current.rotation.y += 0.001;
-                    }
                     
                     if (renderer && scene && camera) {
                         renderer.render(scene, camera);
@@ -598,40 +597,71 @@
                 return new THREE.Vector3(x, y, z);
             };
 
-            const addMarker = (lat, lng, color) => {
+            const createPin = (lat, lng, color) => {
                 if (!sceneRef.current) return;
                 
-                const markerGeometry = new THREE.SphereGeometry(0.02, 16, 16);
-                const markerMaterial = new THREE.MeshBasicMaterial({ color });
-                const marker = new THREE.Mesh(markerGeometry, markerMaterial);
+                const pinGroup = new THREE.Group();
                 
-                const position = latLngToVector3(lat, lng, 1.01);
-                marker.position.copy(position);
+                // Pin head (sphere)
+                const headGeometry = new THREE.SphereGeometry(0.025, 16, 16);
+                const headMaterial = new THREE.MeshPhongMaterial({ 
+                    color: color,
+                    emissive: color,
+                    emissiveIntensity: 0.3,
+                    shininess: 30
+                });
+                const head = new THREE.Mesh(headGeometry, headMaterial);
+                head.position.y = 0.04;
+                pinGroup.add(head);
                 
-                sceneRef.current.add(marker);
-                markersRef.current.push(marker);
+                // Pin shaft (cylinder)
+                const shaftGeometry = new THREE.CylinderGeometry(0.005, 0.005, 0.08, 8);
+                const shaftMaterial = new THREE.MeshPhongMaterial({ 
+                    color: color,
+                    emissive: color,
+                    emissiveIntensity: 0.2
+                });
+                const shaft = new THREE.Mesh(shaftGeometry, shaftMaterial);
+                shaft.position.y = 0;
+                pinGroup.add(shaft);
                 
-                return marker;
+                // Position pin on globe
+                const position = latLngToVector3(lat, lng, 1.0);
+                pinGroup.position.copy(position);
+                
+                // Point pin outward from globe center
+                pinGroup.lookAt(0, 0, 0);
+                pinGroup.rotateX(Math.PI);
+                
+                sceneRef.current.add(pinGroup);
+                markersRef.current.push(pinGroup);
+                
+                return pinGroup;
             };
 
             const addLine = (lat1, lng1, lat2, lng2) => {
                 if (!sceneRef.current) return;
                 
-                const start = latLngToVector3(lat1, lng1, 1.01);
-                const end = latLngToVector3(lat2, lng2, 1.01);
+                const start = latLngToVector3(lat1, lng1, 1.02);
+                const end = latLngToVector3(lat2, lng2, 1.02);
                 
                 const points = [];
-                const segments = 50;
+                const segments = 100;
                 
                 for (let i = 0; i <= segments; i++) {
                     const t = i / segments;
                     const interpolated = new THREE.Vector3().lerpVectors(start, end, t);
-                    interpolated.normalize().multiplyScalar(1.02);
+                    interpolated.normalize().multiplyScalar(1.03);
                     points.push(interpolated);
                 }
                 
                 const geometry = new THREE.BufferGeometry().setFromPoints(points);
-                const material = new THREE.LineBasicMaterial({ color: 0xfbbf24, linewidth: 2 });
+                const material = new THREE.LineBasicMaterial({ 
+                    color: 0xff8800,
+                    linewidth: 3,
+                    transparent: true,
+                    opacity: 0.9
+                });
                 const line = new THREE.Line(geometry, material);
                 
                 sceneRef.current.add(line);
@@ -645,8 +675,16 @@
                 
                 markersRef.current.forEach(marker => {
                     sceneRef.current.remove(marker);
-                    if (marker.geometry) marker.geometry.dispose();
-                    if (marker.material) marker.material.dispose();
+                    marker.traverse((child) => {
+                        if (child.geometry) child.geometry.dispose();
+                        if (child.material) {
+                            if (Array.isArray(child.material)) {
+                                child.material.forEach(mat => mat.dispose());
+                            } else {
+                                child.material.dispose();
+                            }
+                        }
+                    });
                 });
                 markersRef.current = [];
             };
@@ -669,21 +707,16 @@
             };
 
             const handleGuess = (lat, lng) => {
-                if (currentGuess) {
-                    console.log('Already have a guess, ignoring');
-                    return;
-                }
+                if (currentGuess) return;
 
                 const currentCity = gameCities[currentRound];
                 const distance = calculateDistance(lat, lng, currentCity.lat, currentCity.lng);
                 const score = calculateScore(distance);
 
-                console.log('Processing guess:', { distance, score });
-
-                // Add markers
-                addMarker(lat, lng, 0xff4444); // Red for guess
-                addMarker(currentCity.lat, currentCity.lng, 0x10b981); // Green for actual
-                addLine(lat, lng, currentCity.lat, currentCity.lng);
+                // Add physical pins and line
+                createPin(lat, lng, 0xff4444); // Red pin for guess
+                createPin(currentCity.lat, currentCity.lng, 0x10ff10); // Green pin for actual
+                addLine(lat, lng, currentCity.lat, currentCity.lng); // Orange line showing distance
 
                 const newGuess = {
                     city: currentCity,
@@ -857,7 +890,7 @@
                                     }}>
                                         <div style={{ marginBottom: '1rem', display: 'flex', gap: '1rem' }}>
                                             <span style={{ color: '#fbbf24', fontSize: '1.5rem' }}>1.</span>
-                                            <span>Click on the globe where you think the city is located</span>
+                                            <span>Drag to rotate, scroll to zoom, click to place your guess</span>
                                         </div>
                                         <div style={{ marginBottom: '1rem', display: 'flex', gap: '1rem' }}>
                                             <span style={{ color: '#fbbf24', fontSize: '1.5rem' }}>2.</span>
