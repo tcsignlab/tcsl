@@ -13,17 +13,29 @@
     body { margin:0; background:#000; color:#fff; font-family:Arial,Helvetica,sans-serif; overflow:hidden; }
     #globeViz { position:absolute; width:100%; height:100%; z-index:1; }
     #ui {
-      position:absolute; top:16px; left:16px; z-index:2;
-      background:rgba(0,0,0,0.7); padding:12px 18px; border-radius:12px;
-      font-size:1.15rem; pointer-events:none; user-select:none;
+      position:absolute; top:16px; left:16px; z-index:10;
+      background:rgba(0,0,0,0.75); padding:12px 18px; border-radius:12px;
+      font-size:1.15rem; pointer-events:none; user-select:none; line-height:1.4;
     }
-    #ui div { margin:5px 0; }
+    #ui div { margin:4px 0; }
     #center {
       position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
-      text-align:center; z-index:10; pointer-events:auto;
+      text-align:center; z-index:20; pointer-events:auto;
       transition:opacity 1s ease;
     }
     #center.hidden { opacity:0; pointer-events:none; }
+
+    /* Game Over */
+    .menu {
+      display:flex; flex-direction:column; align-items:center; gap:14px;
+      background:rgba(0,0,0,0.85); padding:30px 40px; border-radius:16px;
+    }
+    button {
+      background:rgba(255,255,255,0.1); border:2px solid #00ddff; color:#fff;
+      padding:14px 40px; font-size:1.3rem; border-radius:12px; cursor:pointer;
+      transition:all .25s;
+    }
+    button:hover { background:#00ddff; color:#000; transform:scale(1.05); }
   </style>
 </head>
 <body>
@@ -32,31 +44,30 @@
 
 <div id="ui">
   <div id="score">Score: 0</div>
-  <div id="target"></div>
+  <div id="target" style="font-size:1.35rem; font-weight:bold; color:#00ffcc;">Find: ...</div>
   <div id="round-info">Round 1 / 5</div>
   <div id="timer">⏱ 10</div>
 </div>
 
 <div id="center">
-  <!-- Title removed so nothing blocks the game start -->
   <div id="game-over" class="menu" style="display:none;">
-    <p id="final-score">Final Score: 0</p>
+    <p id="final-score" style="font-size:2.2rem; margin:0;">Final Score: 0</p>
     <button id="play-again-btn">Play Again</button>
   </div>
 </div>
 
 <script>
-// =============== GLOBE (with atmosphere so it's NOT darkened out) ===============
+// =============== GLOBE – FIXED (bright colorful earth + strong atmosphere) ===============
 const globe = Globe()(document.getElementById('globeViz'))
-  .globeImageUrl('//unpkg.com/three-globe/example/img/earth-dark.jpg')
-  .bumpImageUrl('//unpkg.com/three-globe/example/img/earth-topology.png')
-  .backgroundColor('#0a0a1f')
-  .atmosphereColor('#88ccff')
-  .atmosphereAltitude(0.25)
-  .pointOfView({ lat: 20, lng: 0, altitude: 2.6 })
+  .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-day.jpg')   /* ← CHANGED: bright day texture */
+  .bumpImageUrl('https://unpkg.com/three-globe/example/img/earth-topology.png')
+  .backgroundColor('#000011')
+  .atmosphereColor('#77aaff')
+  .atmosphereAltitude(0.35)
+  .pointOfView({ lat: 25, lng: 10, altitude: 2.8 })
   .pointAltitude('altitude')
   .pointColor('color')
-  .pointRadius(0.42)
+  .pointRadius(0.45)
   .pointMerge(true)
   .onGlobeClick(({ lat, lng }) => { if (gameActive) handleGuess({ lat, lng }); });
 
@@ -73,41 +84,22 @@ let cities = [
   {name:"Sydney",country:"Australia",lat:-33.8688,lng:151.2093},
   {name:"Moscow",country:"Russia",lat:55.7558,lng:37.6173},
   {name:"Beijing",country:"China",lat:39.9042,lng:116.4074},
-  {name:"Cairo",country:"Egypt",lat:30.0444,lng:31.2357},
   {name:"Rio de Janeiro",country:"Brazil",lat:-22.9068,lng:-43.1729},
+  {name:"Cairo",country:"Egypt",lat:30.0444,lng:31.2357},
   {name:"Cape Town",country:"South Africa",lat:-33.9249,lng:18.4241},
   {name:"Mexico City",country:"Mexico",lat:19.4326,lng:-99.1332},
   {name:"Mumbai",country:"India",lat:19.0760,lng:72.8777},
-  {name:"Berlin",country:"Germany",lat:52.5200,lng:13.4049},
   {name:"Bangkok",country:"Thailand",lat:13.7563,lng:100.5018},
   {name:"Istanbul",country:"Turkey",lat:41.0082,lng:28.9784},
   {name:"Toronto",country:"Canada",lat:43.6532,lng:-79.3832},
   {name:"Seoul",country:"South Korea",lat:37.5665,lng:126.9780},
-  {name:"Lagos",country:"Nigeria",lat:6.5244,lng:3.3792},
   {name:"Buenos Aires",country:"Argentina",lat:-34.6037,lng:-58.3816},
   {name:"Jakarta",country:"Indonesia",lat:-6.2088,lng:106.8456},
   {name:"Madrid",country:"Spain",lat:40.4168,lng:-3.7038},
   {name:"Rome",country:"Italy",lat:41.9028,lng:12.4964},
   {name:"Dubai",country:"United Arab Emirates",lat:25.2048,lng:55.2708},
-  {name:"Singapore",country:"Singapore",lat:1.3521,lng:103.8198},
-  {name:"Los Angeles",country:"United States",lat:34.0522,lng:-118.2437},
-  {name:"Chicago",country:"United States",lat:41.8781,lng:-87.6298},
-  {name:"Shanghai",country:"China",lat:31.2304,lng:121.4737},
-  {name:"Hong Kong",country:"China",lat:22.3193,lng:114.1694},
-  {name:"Melbourne",country:"Australia",lat:-37.8136,lng:144.9631},
-  {name:"Johannesburg",country:"South Africa",lat:-26.2041,lng:28.0473},
-  {name:"Lima",country:"Peru",lat:-12.0464,lng:-77.0428},
-  {name:"Bogota",country:"Colombia",lat:4.7109,lng:-74.0721},
-  {name:"Hanoi",country:"Vietnam",lat:21.0285,lng:105.8048},
-  {name:"Kuala Lumpur",country:"Malaysia",lat:3.1390,lng:101.6869},
-  {name:"Athens",country:"Greece",lat:37.9838,lng:23.7275}
+  {name:"Singapore",country:"Singapore",lat:1.3521,lng:103.8198}
 ];
-
-// Optional bigger list
-fetch('https://raw.githubusercontent.com/lutangar/cities.json/master/cities.json')
-  .then(r => r.json())
-  .then(data => { cities = data.filter((_, i) => i % 16 === 0); })
-  .catch(() => {});
 
 // =============== COUNTRY BORDERS ===============
 fetch('https://unpkg.com/world-atlas@2/countries-50m.json')
@@ -115,9 +107,9 @@ fetch('https://unpkg.com/world-atlas@2/countries-50m.json')
   .then(world => {
     const countries = topojson.feature(world, world.objects.countries).features;
     globe.polygonsData(countries)
-      .polygonStrokeColor(() => '#3388ff')
-      .polygonStrokeWidth(0.65)
-      .polygonAltitude(0.004);
+      .polygonStrokeColor(() => '#44aaff')
+      .polygonStrokeWidth(0.8)
+      .polygonAltitude(0.005);
   });
 
 // =============== STATE ===============
@@ -137,24 +129,24 @@ function haversine(lat1, lon1, lat2, lon2) {
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 }
 
-// =============== PIN ===============
+// =============== PIN (bright & visible) ===============
 function dropPin(lat, lng, color) {
-  const pin = {lat, lng, color, altitude:1.45};
+  const pin = {lat, lng, color, altitude:1.5};
   pins.push(pin);
   globe.pointsData(pins);
-  let alt = 1.45;
+  let alt = 1.5;
   function animate() {
-    alt -= 0.092;
-    pin.altitude = Math.max(alt, 0.028);
+    alt -= 0.095;
+    pin.altitude = Math.max(alt, 0.03);
     globe.pointsData(pins);
-    if (alt > 0.028) requestAnimationFrame(animate);
+    if (alt > 0.03) requestAnimationFrame(animate);
     else {
-      let bounce = 0.055;
+      let bounce = 0.07;
       function bounceAnim() {
-        bounce -= 0.0055;
-        pin.altitude = Math.max(bounce, 0.028);
+        bounce -= 0.006;
+        pin.altitude = Math.max(bounce, 0.03);
         globe.pointsData(pins);
-        if (bounce > 0.028) requestAnimationFrame(bounceAnim);
+        if (bounce > 0.03) requestAnimationFrame(bounceAnim);
       }
       bounceAnim();
     }
@@ -164,7 +156,7 @@ function dropPin(lat, lng, color) {
 
 // =============== GAME ===============
 function startGame() {
-  pins = []; 
+  pins = [];
   globe.pointsData([]);
   score = 0;
   index = 0;
@@ -176,17 +168,10 @@ function startGame() {
   }
 
   document.getElementById('score').textContent = 'Score: 0';
+  document.getElementById('target').textContent = `Find: ${roundCities[0].name}, ${roundCities[0].country}`;
   document.getElementById('round-info').textContent = `Round 1 / ${TOTAL_ROUNDS}`;
   document.getElementById('center').classList.add('hidden');
 
-  nextRound();
-}
-
-function nextRound() {
-  if (index >= TOTAL_ROUNDS) return endGame();
-  const city = roundCities[index];
-  document.getElementById('target').textContent = `Find: ${city.name}, ${city.country}`;
-  document.getElementById('round-info').textContent = `Round ${index + 1} / ${TOTAL_ROUNDS}`;
   startTimer();
 }
 
@@ -194,6 +179,7 @@ function startTimer() {
   if (timerId) clearInterval(timerId);
   let timeLeft = TIME_PER_ROUND;
   document.getElementById('timer').textContent = `⏱ ${timeLeft}`;
+
   timerId = setInterval(() => {
     timeLeft--;
     document.getElementById('timer').textContent = `⏱ ${timeLeft}`;
@@ -215,10 +201,16 @@ function handleGuess(pos) {
 
   document.getElementById('score').textContent = `Score: ${score}`;
   if (pos) dropPin(pos.lat, pos.lng, '#ff3366');
-  dropPin(target.lat, target.lng, '#33ff99');
+  dropPin(target.lat, target.lng, '#00ff88');
 
   index++;
-  setTimeout(nextRound, 2300);
+  if (index < TOTAL_ROUNDS) {
+    document.getElementById('target').textContent = `Find: ${roundCities[index].name}, ${roundCities[index].country}`;
+    document.getElementById('round-info').textContent = `Round ${index + 1} / ${TOTAL_ROUNDS}`;
+    startTimer();
+  } else {
+    endGame();
+  }
 }
 
 function endGame() {
@@ -234,8 +226,8 @@ document.getElementById('play-again-btn').addEventListener('click', () => {
   startGame();
 });
 
-// =============== AUTO START (delayed so globe finishes initializing) ===============
-setTimeout(startGame, 800);
+// =============== AUTO START (after globe fully renders) ===============
+setTimeout(startGame, 1200);
 </script>
 </body>
 </html>
