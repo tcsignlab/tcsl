@@ -24,15 +24,6 @@
       transition:opacity 1s ease;
     }
     #center.hidden { opacity:0; pointer-events:none; }
-    h1 { margin:0 0 16px; font-size:3.6rem; }
-
-    .menu { display:flex; flex-direction:column; align-items:center; gap:12px; pointer-events:auto; }
-    button {
-      background:rgba(255,255,255,0.08); border:2px solid #00ddff; color:#fff;
-      padding:16px 36px; font-size:1.25rem; border-radius:14px; cursor:pointer;
-      transition:all .25s; width:320px;
-    }
-    button:hover { background:#00ddff; color:#000; transform:scale(1.08); }
   </style>
 </head>
 <body>
@@ -47,9 +38,7 @@
 </div>
 
 <div id="center">
-  <h1>🌍 GlobeTap</h1>
-  
-  <!-- Game Over Screen -->
+  <!-- Title removed so nothing blocks the game start -->
   <div id="game-over" class="menu" style="display:none;">
     <p id="final-score">Final Score: 0</p>
     <button id="play-again-btn">Play Again</button>
@@ -57,20 +46,25 @@
 </div>
 
 <script>
-// =============== GLOBE ===============
+// =============== GLOBE (with atmosphere so it's NOT darkened out) ===============
 const globe = Globe()(document.getElementById('globeViz'))
   .globeImageUrl('//unpkg.com/three-globe/example/img/earth-dark.jpg')
   .bumpImageUrl('//unpkg.com/three-globe/example/img/earth-topology.png')
   .backgroundColor('#0a0a1f')
+  .atmosphereColor('#88ccff')
+  .atmosphereAltitude(0.25)
   .pointOfView({ lat: 20, lng: 0, altitude: 2.6 })
-  .pointAltitude('altitude').pointColor('color').pointRadius(0.42).pointMerge(true)
+  .pointAltitude('altitude')
+  .pointColor('color')
+  .pointRadius(0.42)
+  .pointMerge(true)
   .onGlobeClick(({ lat, lng }) => { if (gameActive) handleGuess({ lat, lng }); });
 
-// =============== FIXED SETTINGS (no difficulty) ===============
+// =============== SETTINGS ===============
 const TOTAL_ROUNDS = 5;
 const TIME_PER_ROUND = 10;
 
-// =============== CITIES (built-in + upgrade) ===============
+// =============== CITIES (always ready) ===============
 let cities = [
   {name:"New York",country:"United States",lat:40.7128,lng:-74.0060},
   {name:"London",country:"United Kingdom",lat:51.5074,lng:-0.1278},
@@ -109,19 +103,11 @@ let cities = [
   {name:"Athens",country:"Greece",lat:37.9838,lng:23.7275}
 ];
 
-// Try to load bigger list in background
+// Optional bigger list
 fetch('https://raw.githubusercontent.com/lutangar/cities.json/master/cities.json')
   .then(r => r.json())
   .then(data => { cities = data.filter((_, i) => i % 16 === 0); })
   .catch(() => {});
-
-// =============== STATE ===============
-let roundCities = [];
-let pins = [];
-let index = 0;
-let score = 0;
-let gameActive = false;
-let timerId = null;
 
 // =============== COUNTRY BORDERS ===============
 fetch('https://unpkg.com/world-atlas@2/countries-50m.json')
@@ -133,6 +119,14 @@ fetch('https://unpkg.com/world-atlas@2/countries-50m.json')
       .polygonStrokeWidth(0.65)
       .polygonAltitude(0.004);
   });
+
+// =============== STATE ===============
+let roundCities = [];
+let pins = [];
+let index = 0;
+let score = 0;
+let gameActive = false;
+let timerId = null;
 
 // =============== DISTANCE ===============
 function haversine(lat1, lon1, lat2, lon2) {
@@ -168,7 +162,7 @@ function dropPin(lat, lng, color) {
   animate();
 }
 
-// =============== GAME FUNCTIONS ===============
+// =============== GAME ===============
 function startGame() {
   pins = []; 
   globe.pointsData([]);
@@ -190,11 +184,9 @@ function startGame() {
 
 function nextRound() {
   if (index >= TOTAL_ROUNDS) return endGame();
-
   const city = roundCities[index];
   document.getElementById('target').textContent = `Find: ${city.name}, ${city.country}`;
   document.getElementById('round-info').textContent = `Round ${index + 1} / ${TOTAL_ROUNDS}`;
-
   startTimer();
 }
 
@@ -202,7 +194,6 @@ function startTimer() {
   if (timerId) clearInterval(timerId);
   let timeLeft = TIME_PER_ROUND;
   document.getElementById('timer').textContent = `⏱ ${timeLeft}`;
-
   timerId = setInterval(() => {
     timeLeft--;
     document.getElementById('timer').textContent = `⏱ ${timeLeft}`;
@@ -243,8 +234,8 @@ document.getElementById('play-again-btn').addEventListener('click', () => {
   startGame();
 });
 
-// =============== AUTO START ===============
-startGame();
+// =============== AUTO START (delayed so globe finishes initializing) ===============
+setTimeout(startGame, 800);
 </script>
 </body>
 </html>
