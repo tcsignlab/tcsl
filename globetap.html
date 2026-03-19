@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GlobeTag - Geographic Challenge Game</title>
+    <title>MapTag - Geographic Challenge Game</title>
     
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
@@ -18,6 +18,7 @@
         body {
             overflow: hidden;
             font-family: 'Bebas Neue', Impact, sans-serif;
+            background: #000;
         }
 
         #root {
@@ -28,11 +29,30 @@
         #globe-container {
             width: 100%;
             height: 100%;
-            cursor: grab;
+            cursor: crosshair;
         }
 
-        #globe-container:active {
+        #globe-container.dragging {
             cursor: grabbing;
+        }
+
+        .stars {
+            position: absolute;
+            inset: 0;
+            background: #000;
+            overflow: hidden;
+        }
+
+        .star {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            animation: twinkle linear infinite;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
         }
 
         @keyframes fadeIn {
@@ -84,8 +104,8 @@
     <script type="text/babel">
         const { useState, useEffect, useRef } = React;
 
-        // Comprehensive world cities database
-        const CITIES_DATABASE = [
+        // Fallback cities database (will be replaced by API data)
+        const FALLBACK_CITIES = [
             { name: "Tokyo", country: "Japan", lat: 35.6762, lng: 139.6503 },
             { name: "Delhi", country: "India", lat: 28.7041, lng: 77.1025 },
             { name: "Shanghai", country: "China", lat: 31.2304, lng: 121.4737 },
@@ -224,6 +244,32 @@
             { name: "Nice", country: "France", lat: 43.7102, lng: 7.2620 },
         ];
 
+        // Stars background component
+        const StarsBackground = () => {
+            useEffect(() => {
+                const container = document.querySelector('.stars');
+                if (!container) return;
+
+                // Create 200 stars
+                for (let i = 0; i < 200; i++) {
+                    const star = document.createElement('div');
+                    star.className = 'star';
+                    
+                    const size = Math.random() * 2 + 1;
+                    star.style.width = `${size}px`;
+                    star.style.height = `${size}px`;
+                    star.style.left = `${Math.random() * 100}%`;
+                    star.style.top = `${Math.random() * 100}%`;
+                    star.style.animationDuration = `${Math.random() * 3 + 2}s`;
+                    star.style.animationDelay = `${Math.random() * 3}s`;
+                    
+                    container.appendChild(star);
+                }
+            }, []);
+
+            return <div className="stars" />;
+        };
+
         const MapTagGame = () => {
             const [gameState, setGameState] = useState('intro');
             const [currentRound, setCurrentRound] = useState(0);
@@ -233,6 +279,8 @@
             const [highScore, setHighScore] = useState(0);
             const [usedCities, setUsedCities] = useState([]);
             const [currentGuess, setCurrentGuess] = useState(null);
+            const [citiesDatabase, setCitiesDatabase] = useState(FALLBACK_CITIES);
+            const [loadingCities, setLoadingCities] = useState(true);
             
             const globeContainerRef = useRef(null);
             const sceneRef = useRef(null);
@@ -243,8 +291,58 @@
             const isDraggingRef = useRef(false);
             const previousMousePositionRef = useRef({ x: 0, y: 0 });
             const markersRef = useRef([]);
+            const clickStartPosRef = useRef(null);
 
+            // Load cities from public API on mount
             useEffect(() => {
+                const loadCities = async () => {
+                    try {
+                        // Using SimpleMaps free world cities database
+                        const response = await fetch('https://raw.githubusercontent.com/datasets/world-cities/master/data/world-cities.csv');
+                        const text = await response.text();
+                        
+                        // Parse CSV
+                        const lines = text.split('\n').slice(1); // Skip header
+                        const cities = [];
+                        
+                        for (let line of lines) {
+                            if (!line.trim()) continue;
+                            
+                            // Simple CSV parsing (handles quoted fields)
+                            const match = line.match(/^"([^"]*)","([^"]*)","([^"]*)","([^"]*)",([^,]*),([^,]*)/);
+                            if (match) {
+                                const [, name, country, subcountry, , lat, lng] = match;
+                                
+                                // Filter for cities with population > 500k or capitals
+                                if (name && lat && lng) {
+                                    cities.push({
+                                        name: name,
+                                        country: country,
+                                        lat: parseFloat(lat),
+                                        lng: parseFloat(lng)
+                                    });
+                                }
+                            }
+                        }
+                        
+                        // Shuffle and take 500 cities
+                        const shuffled = cities.sort(() => Math.random() - 0.5);
+                        const selected = shuffled.slice(0, Math.min(500, shuffled.length));
+                        
+                        if (selected.length > 0) {
+                            setCitiesDatabase(selected);
+                            console.log(`Loaded ${selected.length} cities from public database`);
+                        }
+                    } catch (error) {
+                        console.error('Failed to load cities, using fallback:', error);
+                        setCitiesDatabase(FALLBACK_CITIES);
+                    } finally {
+                        setLoadingCities(false);
+                    }
+                };
+
+                loadCities();
+
                 const savedHighScore = localStorage.getItem('maptag-highscore');
                 const savedUsedCities = localStorage.getItem('maptag-used-cities');
                 
@@ -261,15 +359,23 @@
                     if (animationIdRef.current) {
                         cancelAnimationFrame(animationIdRef.current);
                     }
-                    if (rendererRef.current && globeContainerRef.current && globeContainerRef.current.contains(rendererRef.current.domElement)) {
-                        globeContainerRef.current.removeChild(rendererRef.current.domElement);
+                    if (rendererRef.current && globeContainerRef.current) {
+                        const canvas = rendererRef.current.domElement;
+                        if (canvas && canvas.parentNode) {
+                            canvas.parentNode.removeChild(canvas);
+                        }
                         rendererRef.current.dispose();
+                        rendererRef.current = null;
                     }
+                    sceneRef.current = null;
+                    globeRef.current = null;
                 };
             }, [gameState]);
 
             const initGlobe = () => {
                 const container = globeContainerRef.current;
+                if (!container) return;
+                
                 const width = container.clientWidth;
                 const height = container.clientHeight;
 
@@ -290,90 +396,111 @@
                 rendererRef.current = renderer;
 
                 // Lighting
-                const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+                const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
                 scene.add(ambientLight);
 
-                const directionalLight = new THREE.DirectionalLight(0xffffff, 0.6);
+                const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
                 directionalLight.position.set(5, 3, 5);
                 scene.add(directionalLight);
 
-                // Create Earth globe with unlabeled texture
+                // Create Earth globe
                 const geometry = new THREE.SphereGeometry(1, 64, 64);
+                const material = new THREE.MeshPhongMaterial({
+                    color: 0x2233ff,
+                    emissive: 0x112244,
+                    shininess: 10
+                });
                 
-                // Load earth texture without labels from NASA
+                const globe = new THREE.Mesh(geometry, material);
+                globeRef.current = globe;
+                scene.add(globe);
+
+                // Load texture
                 const textureLoader = new THREE.TextureLoader();
                 textureLoader.load(
                     'https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg',
                     (texture) => {
-                        const material = new THREE.MeshPhongMaterial({
-                            map: texture,
-                            bumpScale: 0.05,
-                            shininess: 5
-                        });
-                        
-                        const globe = new THREE.Mesh(geometry, material);
-                        globeRef.current = globe;
-                        scene.add(globe);
-                    },
-                    undefined,
-                    (error) => {
-                        console.error('Error loading texture:', error);
-                        // Fallback to a basic blue/green globe
-                        const material = new THREE.MeshPhongMaterial({
-                            color: 0x2233ff,
-                            emissive: 0x112244,
-                            shininess: 5
-                        });
-                        const globe = new THREE.Mesh(geometry, material);
-                        globeRef.current = globe;
-                        scene.add(globe);
+                        globe.material.map = texture;
+                        globe.material.needsUpdate = true;
                     }
                 );
 
-                // Mouse controls
+                // Mouse/Touch controls
                 const canvas = renderer.domElement;
                 
                 const handleMouseDown = (e) => {
-                    isDraggingRef.current = true;
+                    isDraggingRef.current = false;
+                    clickStartPosRef.current = { x: e.clientX, y: e.clientY };
                     previousMousePositionRef.current = { x: e.clientX, y: e.clientY };
+                    container.classList.add('dragging');
                 };
 
                 const handleMouseMove = (e) => {
-                    if (!isDraggingRef.current || !globeRef.current) return;
+                    if (!clickStartPosRef.current) return;
+                    
+                    const deltaX = Math.abs(e.clientX - clickStartPosRef.current.x);
+                    const deltaY = Math.abs(e.clientY - clickStartPosRef.current.y);
+                    
+                    if (deltaX > 5 || deltaY > 5) {
+                        isDraggingRef.current = true;
+                    }
 
-                    const deltaX = e.clientX - previousMousePositionRef.current.x;
-                    const deltaY = e.clientY - previousMousePositionRef.current.y;
+                    if (!globeRef.current) return;
 
-                    globeRef.current.rotation.y += deltaX * 0.005;
-                    globeRef.current.rotation.x += deltaY * 0.005;
+                    const moveX = e.clientX - previousMousePositionRef.current.x;
+                    const moveY = e.clientY - previousMousePositionRef.current.y;
+
+                    globeRef.current.rotation.y += moveX * 0.005;
+                    globeRef.current.rotation.x += moveY * 0.005;
 
                     previousMousePositionRef.current = { x: e.clientX, y: e.clientY };
                 };
 
-                const handleMouseUp = () => {
+                const handleMouseUp = (e) => {
+                    container.classList.remove('dragging');
+                    
+                    // Only process click if not dragging
+                    if (!isDraggingRef.current && clickStartPosRef.current) {
+                        handleGlobeClick(e);
+                    }
+                    
                     isDraggingRef.current = false;
+                    clickStartPosRef.current = null;
                 };
 
                 const handleTouchStart = (e) => {
-                    e.preventDefault();
                     if (e.touches.length === 1) {
-                        isDraggingRef.current = true;
+                        isDraggingRef.current = false;
+                        clickStartPosRef.current = {
+                            x: e.touches[0].clientX,
+                            y: e.touches[0].clientY
+                        };
                         previousMousePositionRef.current = {
                             x: e.touches[0].clientX,
                             y: e.touches[0].clientY
                         };
+                        container.classList.add('dragging');
                     }
                 };
 
                 const handleTouchMove = (e) => {
                     e.preventDefault();
-                    if (!isDraggingRef.current || !globeRef.current || e.touches.length !== 1) return;
+                    if (e.touches.length !== 1 || !clickStartPosRef.current) return;
 
-                    const deltaX = e.touches[0].clientX - previousMousePositionRef.current.x;
-                    const deltaY = e.touches[0].clientY - previousMousePositionRef.current.y;
+                    const deltaX = Math.abs(e.touches[0].clientX - clickStartPosRef.current.x);
+                    const deltaY = Math.abs(e.touches[0].clientY - clickStartPosRef.current.y);
+                    
+                    if (deltaX > 5 || deltaY > 5) {
+                        isDraggingRef.current = true;
+                    }
 
-                    globeRef.current.rotation.y += deltaX * 0.005;
-                    globeRef.current.rotation.x += deltaY * 0.005;
+                    if (!globeRef.current) return;
+
+                    const moveX = e.touches[0].clientX - previousMousePositionRef.current.x;
+                    const moveY = e.touches[0].clientY - previousMousePositionRef.current.y;
+
+                    globeRef.current.rotation.y += moveX * 0.005;
+                    globeRef.current.rotation.x += moveY * 0.005;
 
                     previousMousePositionRef.current = {
                         x: e.touches[0].clientX,
@@ -381,14 +508,30 @@
                     };
                 };
 
-                const handleTouchEnd = () => {
+                const handleTouchEnd = (e) => {
+                    container.classList.remove('dragging');
+                    
+                    if (!isDraggingRef.current && clickStartPosRef.current && e.changedTouches.length > 0) {
+                        const touch = e.changedTouches[0];
+                        handleGlobeClick({ 
+                            clientX: touch.clientX, 
+                            clientY: touch.clientY,
+                            target: canvas 
+                        });
+                    }
+                    
                     isDraggingRef.current = false;
+                    clickStartPosRef.current = null;
                 };
 
                 const handleGlobeClick = (e) => {
-                    if (currentRound >= gameCities.length || currentGuess) return;
+                    // Check if we can process this click
+                    if (currentRound >= gameCities.length || currentGuess || !globeRef.current) {
+                        console.log('Click ignored:', { currentRound, hasGuess: !!currentGuess, hasGlobe: !!globeRef.current });
+                        return;
+                    }
 
-                    const rect = e.target.getBoundingClientRect();
+                    const rect = canvas.getBoundingClientRect();
                     const x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
                     const y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
 
@@ -400,10 +543,12 @@
                     if (intersects.length > 0) {
                         const point = intersects[0].point;
                         
-                        // Convert 3D point back to lat/lng
-                        const lat = 90 - (Math.acos(point.y / Math.sqrt(point.x * point.x + point.y * point.y + point.z * point.z)) * 180 / Math.PI);
+                        // Convert 3D point to lat/lng
+                        const radius = Math.sqrt(point.x * point.x + point.y * point.y + point.z * point.z);
+                        const lat = 90 - (Math.acos(point.y / radius) * 180 / Math.PI);
                         const lng = ((270 + (Math.atan2(point.x, point.z)) * 180 / Math.PI) % 360) - 180;
 
+                        console.log('Click registered:', { lat, lng });
                         handleGuess(lat, lng);
                     }
                 };
@@ -411,7 +556,6 @@
                 canvas.addEventListener('mousedown', handleMouseDown);
                 canvas.addEventListener('mousemove', handleMouseMove);
                 canvas.addEventListener('mouseup', handleMouseUp);
-                canvas.addEventListener('click', handleGlobeClick);
                 
                 canvas.addEventListener('touchstart', handleTouchStart, { passive: false });
                 canvas.addEventListener('touchmove', handleTouchMove, { passive: false });
@@ -419,6 +563,7 @@
 
                 // Handle window resize
                 const handleResize = () => {
+                    if (!container || !camera || !renderer) return;
                     const newWidth = container.clientWidth;
                     const newHeight = container.clientHeight;
                     camera.aspect = newWidth / newHeight;
@@ -431,11 +576,13 @@
                 const animate = () => {
                     animationIdRef.current = requestAnimationFrame(animate);
                     
-                    if (globeRef.current && !isDraggingRef.current) {
+                    if (globeRef.current && !clickStartPosRef.current) {
                         globeRef.current.rotation.y += 0.001;
                     }
                     
-                    renderer.render(scene, camera);
+                    if (renderer && scene && camera) {
+                        renderer.render(scene, camera);
+                    }
                 };
                 animate();
             };
@@ -452,6 +599,8 @@
             };
 
             const addMarker = (lat, lng, color) => {
+                if (!sceneRef.current) return;
+                
                 const markerGeometry = new THREE.SphereGeometry(0.02, 16, 16);
                 const markerMaterial = new THREE.MeshBasicMaterial({ color });
                 const marker = new THREE.Mesh(markerGeometry, markerMaterial);
@@ -466,6 +615,8 @@
             };
 
             const addLine = (lat1, lng1, lat2, lng2) => {
+                if (!sceneRef.current) return;
+                
                 const start = latLngToVector3(lat1, lng1, 1.01);
                 const end = latLngToVector3(lat2, lng2, 1.01);
                 
@@ -490,6 +641,8 @@
             };
 
             const clearMarkers = () => {
+                if (!sceneRef.current) return;
+                
                 markersRef.current.forEach(marker => {
                     sceneRef.current.remove(marker);
                     if (marker.geometry) marker.geometry.dispose();
@@ -516,9 +669,16 @@
             };
 
             const handleGuess = (lat, lng) => {
+                if (currentGuess) {
+                    console.log('Already have a guess, ignoring');
+                    return;
+                }
+
                 const currentCity = gameCities[currentRound];
                 const distance = calculateDistance(lat, lng, currentCity.lat, currentCity.lng);
                 const score = calculateScore(distance);
+
+                console.log('Processing guess:', { distance, score });
 
                 // Add markers
                 addMarker(lat, lng, 0xff4444); // Red for guess
@@ -536,7 +696,8 @@
                 setCurrentGuess(newGuess);
                 const updatedGuesses = [...guesses, newGuess];
                 setGuesses(updatedGuesses);
-                setTotalScore(totalScore + score);
+                const newTotalScore = totalScore + score;
+                setTotalScore(newTotalScore);
 
                 setTimeout(() => {
                     setCurrentGuess(null);
@@ -545,19 +706,19 @@
                     if (currentRound < gameCities.length - 1) {
                         setCurrentRound(currentRound + 1);
                     } else {
-                        endGame(totalScore + score, updatedGuesses);
+                        endGame(newTotalScore, updatedGuesses);
                     }
                 }, 2500);
             };
 
             const selectRandomCities = () => {
-                let availableCities = CITIES_DATABASE.filter(
+                let availableCities = citiesDatabase.filter(
                     city => !usedCities.includes(city.name)
                 );
 
                 if (availableCities.length < 5) {
                     setUsedCities([]);
-                    availableCities = [...CITIES_DATABASE];
+                    availableCities = [...citiesDatabase];
                 }
 
                 const shuffled = [...availableCities].sort(() => Math.random() - 0.5);
@@ -594,6 +755,7 @@
                         globeContainerRef.current.innerHTML = '';
                     }
                     sceneRef.current = null;
+                    globeRef.current = null;
                 }
             };
 
@@ -611,17 +773,12 @@
                 <div style={{
                     width: '100vw',
                     height: '100vh',
-                    background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%)',
+                    background: '#000',
                     fontFamily: '"Bebas Neue", "Impact", sans-serif',
                     overflow: 'hidden',
                     position: 'relative'
                 }}>
-                    <div style={{
-                        position: 'absolute',
-                        inset: 0,
-                        backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
-                        opacity: 0.4
-                    }} />
+                    <StarsBackground />
 
                     {gameState === 'intro' && (
                         <div style={{
@@ -644,7 +801,7 @@
                                         background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%)',
                                         WebkitBackgroundClip: 'text',
                                         WebkitTextFillColor: 'transparent',
-                                        textShadow: '0 4px 20px rgba(251, 191, 36, 0.3)',
+                                        filter: 'drop-shadow(0 0 20px rgba(251, 191, 36, 0.5))',
                                         marginBottom: '0.5rem'
                                     }}>
                                         MAPTAG
@@ -666,7 +823,8 @@
                                     borderRadius: '12px',
                                     padding: '1.5rem',
                                     marginBottom: '2rem',
-                                    animation: 'fadeIn 1s ease-out 0.3s backwards'
+                                    animation: 'fadeIn 1s ease-out 0.3s backwards',
+                                    boxShadow: '0 0 30px rgba(251, 191, 36, 0.2)'
                                 }}>
                                     <div style={{ fontSize: '1rem', color: '#fbbf24', letterSpacing: '0.2em', marginBottom: '0.5rem' }}>
                                         HIGH SCORE
@@ -699,7 +857,7 @@
                                     }}>
                                         <div style={{ marginBottom: '1rem', display: 'flex', gap: '1rem' }}>
                                             <span style={{ color: '#fbbf24', fontSize: '1.5rem' }}>1.</span>
-                                            <span>Spin the globe and click where you think the city is located</span>
+                                            <span>Click on the globe where you think the city is located</span>
                                         </div>
                                         <div style={{ marginBottom: '1rem', display: 'flex', gap: '1rem' }}>
                                             <span style={{ color: '#fbbf24', fontSize: '1.5rem' }}>2.</span>
@@ -711,37 +869,52 @@
                                         </div>
                                         <div style={{ display: 'flex', gap: '1rem' }}>
                                             <span style={{ color: '#fbbf24', fontSize: '1.5rem' }}>4.</span>
-                                            <span>All cities appear once before repeating</span>
+                                            <span>Fresh cities loaded from public database each session</span>
                                         </div>
                                     </div>
                                 </div>
 
+                                {loadingCities ? (
+                                    <div style={{ color: '#fbbf24', fontSize: '1.2rem', marginBottom: '2rem' }}>
+                                        Loading cities database...
+                                    </div>
+                                ) : (
+                                    <div style={{ color: '#10b981', fontSize: '1rem', marginBottom: '1rem' }}>
+                                        ✓ {citiesDatabase.length} cities loaded
+                                    </div>
+                                )}
+
                                 <button
                                     onClick={startNewGame}
+                                    disabled={loadingCities}
                                     style={{
                                         fontSize: 'clamp(1.5rem, 4vw, 2rem)',
                                         fontWeight: 900,
                                         letterSpacing: '0.2em',
                                         padding: '1.5rem 4rem',
-                                        background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
-                                        color: '#0f172a',
+                                        background: loadingCities ? '#666' : 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
+                                        color: loadingCities ? '#999' : '#0f172a',
                                         border: 'none',
                                         borderRadius: '12px',
-                                        cursor: 'pointer',
-                                        boxShadow: '0 8px 32px rgba(251, 191, 36, 0.4)',
+                                        cursor: loadingCities ? 'not-allowed' : 'pointer',
+                                        boxShadow: loadingCities ? 'none' : '0 8px 32px rgba(251, 191, 36, 0.4)',
                                         transition: 'all 0.3s ease',
-                                        animation: 'pulse 2s ease-in-out infinite'
+                                        animation: loadingCities ? 'none' : 'pulse 2s ease-in-out infinite'
                                     }}
                                     onMouseEnter={(e) => {
-                                        e.target.style.transform = 'translateY(-4px) scale(1.05)';
-                                        e.target.style.boxShadow = '0 12px 48px rgba(251, 191, 36, 0.6)';
+                                        if (!loadingCities) {
+                                            e.target.style.transform = 'translateY(-4px) scale(1.05)';
+                                            e.target.style.boxShadow = '0 12px 48px rgba(251, 191, 36, 0.6)';
+                                        }
                                     }}
                                     onMouseLeave={(e) => {
-                                        e.target.style.transform = 'translateY(0) scale(1)';
-                                        e.target.style.boxShadow = '0 8px 32px rgba(251, 191, 36, 0.4)';
+                                        if (!loadingCities) {
+                                            e.target.style.transform = 'translateY(0) scale(1)';
+                                            e.target.style.boxShadow = '0 8px 32px rgba(251, 191, 36, 0.4)';
+                                        }
                                     }}
                                 >
-                                    START GAME
+                                    {loadingCities ? 'LOADING...' : 'START GAME'}
                                 </button>
                             </div>
                         </div>
@@ -750,7 +923,7 @@
                     {gameState === 'playing' && (
                         <div style={{ position: 'relative', height: '100%', display: 'flex', flexDirection: 'column' }}>
                             <div style={{
-                                background: 'rgba(15, 23, 42, 0.95)',
+                                background: 'rgba(0, 0, 0, 0.8)',
                                 backdropFilter: 'blur(10px)',
                                 padding: 'clamp(1rem, 2vw, 1.5rem) clamp(1rem, 3vw, 2rem)',
                                 display: 'flex',
@@ -759,7 +932,8 @@
                                 borderBottom: '2px solid #fbbf24',
                                 zIndex: 1000,
                                 flexWrap: 'wrap',
-                                gap: '1rem'
+                                gap: '1rem',
+                                boxShadow: '0 0 30px rgba(251, 191, 36, 0.2)'
                             }}>
                                 <div style={{ display: 'flex', gap: 'clamp(1rem, 3vw, 2rem)', alignItems: 'center' }}>
                                     <div>
@@ -780,7 +954,8 @@
                                     background: 'rgba(251, 191, 36, 0.1)',
                                     border: '2px solid #fbbf24',
                                     borderRadius: '8px',
-                                    padding: 'clamp(0.75rem, 2vw, 1rem) clamp(1rem, 3vw, 2rem)'
+                                    padding: 'clamp(0.75rem, 2vw, 1rem) clamp(1rem, 3vw, 2rem)',
+                                    boxShadow: '0 0 20px rgba(251, 191, 36, 0.3)'
                                 }}>
                                     <div style={{ fontSize: 'clamp(0.8rem, 2vw, 0.9rem)', color: '#fbbf24', letterSpacing: '0.1em', marginBottom: '0.25rem' }}>
                                         FIND THIS CITY
@@ -833,7 +1008,7 @@
                                     bottom: '2rem',
                                     left: '50%',
                                     transform: 'translateX(-50%)',
-                                    background: 'rgba(15, 23, 42, 0.98)',
+                                    background: 'rgba(0, 0, 0, 0.95)',
                                     backdropFilter: 'blur(20px)',
                                     border: '2px solid #fbbf24',
                                     borderRadius: '16px',
@@ -841,7 +1016,7 @@
                                     minWidth: 'clamp(250px, 50vw, 400px)',
                                     textAlign: 'center',
                                     animation: 'slideUp 0.5s ease-out',
-                                    boxShadow: '0 20px 60px rgba(0, 0, 0, 0.5)',
+                                    boxShadow: '0 0 60px rgba(251, 191, 36, 0.4)',
                                     zIndex: 1000
                                 }}>
                                     <div style={{ fontSize: 'clamp(0.9rem, 2vw, 1rem)', color: '#94a3b8', letterSpacing: '0.1em', marginBottom: '0.5rem' }}>
@@ -880,7 +1055,8 @@
                                     fontWeight: 900,
                                     letterSpacing: '0.1em',
                                     color: '#fbbf24',
-                                    marginBottom: '2rem'
+                                    marginBottom: '2rem',
+                                    filter: 'drop-shadow(0 0 20px rgba(251, 191, 36, 0.5))'
                                 }}>
                                     GAME COMPLETE!
                                 </div>
@@ -890,7 +1066,8 @@
                                     border: '3px solid #fbbf24',
                                     borderRadius: '16px',
                                     padding: '2rem',
-                                    marginBottom: '2rem'
+                                    marginBottom: '2rem',
+                                    boxShadow: '0 0 40px rgba(251, 191, 36, 0.3)'
                                 }}>
                                     <div style={{ fontSize: 'clamp(1rem, 2.5vw, 1.2rem)', color: '#fbbf24', letterSpacing: '0.2em', marginBottom: '1rem' }}>
                                         FINAL SCORE
@@ -898,7 +1075,7 @@
                                     <div style={{ fontSize: 'clamp(3rem, 8vw, 5rem)', fontWeight: 900, color: 'white', marginBottom: '1rem' }}>
                                         {totalScore.toLocaleString()}
                                     </div>
-                                    {totalScore >= highScore && (
+                                    {totalScore >= highScore && totalScore > 0 && (
                                         <div style={{ fontSize: 'clamp(1.2rem, 3vw, 1.5rem)', color: '#10b981', letterSpacing: '0.1em' }}>
                                             🏆 NEW HIGH SCORE! 🏆
                                         </div>
@@ -964,7 +1141,7 @@
                                             letterSpacing: '0.1em',
                                             padding: 'clamp(1rem, 2vw, 1.25rem) clamp(2rem, 4vw, 3rem)',
                                             background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
-                                            color: '#0f172a',
+                                            color: '#000',
                                             border: 'none',
                                             borderRadius: '12px',
                                             cursor: 'pointer',
@@ -1000,6 +1177,7 @@
                                                 globeContainerRef.current.innerHTML = '';
                                             }
                                             sceneRef.current = null;
+                                            globeRef.current = null;
                                         }}
                                         style={{
                                             fontSize: 'clamp(1.2rem, 3vw, 1.5rem)',
