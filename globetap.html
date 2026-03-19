@@ -1,1092 +1,326 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MapTag - Geographic Challenge Game</title>
-    
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
-    
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+<meta charset="UTF-8">
+<title>MapTag Ultimate</title>
 
-        body {
-            overflow: hidden;
-            font-family: 'Bebas Neue', Impact, sans-serif;
-            background: #000;
-        }
+<script src="https://unpkg.com/three"></script>
+<script src="https://unpkg.com/globe.gl"></script>
+<script src="https://unpkg.com/topojson-client@3"></script>
 
-        #root {
-            width: 100vw;
-            height: 100vh;
-        }
+<style>
+body { margin:0; font-family:Arial; background:#000; overflow:hidden; color:#fff;}
+#globeViz { position:absolute; width:100%; height:100%; }
 
-        #globe-container {
-            width: 100%;
-            height: 100%;
-            cursor: grab;
-        }
+.glass {
+  background:rgba(255,255,255,0.08);
+  backdrop-filter: blur(12px);
+  border-radius:12px;
+  padding:12px;
+}
 
-        #globe-container.dragging {
-            cursor: grabbing;
-        }
+#ui { position:absolute; top:15px; left:15px; z-index:10; }
 
-        .stars {
-            position: absolute;
-            inset: 0;
-            background: #000;
-            overflow: hidden;
-        }
+#controls {
+  position:absolute; bottom:20px; left:50%;
+  transform:translateX(-50%);
+  display:flex; gap:10px;
+}
 
-        .star {
-            position: absolute;
-            background: white;
-            border-radius: 50%;
-            animation: twinkle linear infinite;
-        }
+button {
+  padding:10px 14px;
+  border:none;
+  border-radius:8px;
+  cursor:pointer;
+  font-weight:bold;
+}
 
-        @keyframes twinkle {
-            0%, 100% { opacity: 0.3; }
-            50% { opacity: 1; }
-        }
+#center {
+  position:absolute; top:50%; left:50%;
+  transform:translate(-50%,-50%);
+  text-align:center;
+}
 
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
+#timer { font-size:22px; margin-top:5px; }
 
-        @keyframes slideDown {
-            from {
-                opacity: 0;
-                transform: translateY(-50px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateX(-50%) translateY(50px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(-50%) translateY(0);
-            }
-        }
-
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.02); }
-        }
-    </style>
+#resultPopup {
+  position:absolute;
+  top:20%;
+  left:50%;
+  transform:translateX(-50%);
+  font-size:28px;
+  font-weight:bold;
+  display:none;
+}
+</style>
 </head>
+
 <body>
-    <div id="root"></div>
-
-    <!-- React and ReactDOM -->
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    
-    <!-- Babel Standalone for JSX -->
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    
-    <!-- Three.js -->
-    <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
-
-    <script type="text/babel">
-        const { useState, useEffect, useRef } = React;
-
-        // Fallback cities database
-        const FALLBACK_CITIES = [
-            { name: "Tokyo", country: "Japan", lat: 35.6762, lng: 139.6503 },
-            { name: "Delhi", country: "India", lat: 28.7041, lng: 77.1025 },
-            { name: "Shanghai", country: "China", lat: 31.2304, lng: 121.4737 },
-            { name: "São Paulo", country: "Brazil", lat: -23.5505, lng: -46.6333 },
-            { name: "Mexico City", country: "Mexico", lat: 19.4326, lng: -99.1332 },
-            { name: "Cairo", country: "Egypt", lat: 30.0444, lng: 31.2357 },
-            { name: "Mumbai", country: "India", lat: 19.0760, lng: 72.8777 },
-            { name: "Beijing", country: "China", lat: 39.9042, lng: 116.4074 },
-            { name: "New York City", country: "USA", lat: 40.7128, lng: -74.0060 },
-            { name: "London", country: "UK", lat: 51.5074, lng: -0.1278 },
-            { name: "Paris", country: "France", lat: 48.8566, lng: 2.3522 },
-            { name: "Moscow", country: "Russia", lat: 55.7558, lng: 37.6173 },
-            { name: "Sydney", country: "Australia", lat: -33.8688, lng: 151.2093 },
-            { name: "Rio de Janeiro", country: "Brazil", lat: -22.9068, lng: -43.1729 },
-            { name: "Los Angeles", country: "USA", lat: 34.0522, lng: -118.2437 },
-        ];
-
-        // Stars background component
-        const StarsBackground = () => {
-            useEffect(() => {
-                const container = document.querySelector('.stars');
-                if (!container) return;
-
-                for (let i = 0; i < 200; i++) {
-                    const star = document.createElement('div');
-                    star.className = 'star';
-                    
-                    const size = Math.random() * 2 + 1;
-                    star.style.width = `${size}px`;
-                    star.style.height = `${size}px`;
-                    star.style.left = `${Math.random() * 100}%`;
-                    star.style.top = `${Math.random() * 100}%`;
-                    star.style.animationDuration = `${Math.random() * 3 + 2}s`;
-                    star.style.animationDelay = `${Math.random() * 3}s`;
-                    
-                    container.appendChild(star);
-                }
-            }, []);
-
-            return <div className="stars" />;
-        };
-
-        const MapTagGame = () => {
-            const [gameState, setGameState] = useState('intro');
-            const [currentRound, setCurrentRound] = useState(0);
-            const [gameCities, setGameCities] = useState([]);
-            const [guesses, setGuesses] = useState([]);
-            const [totalScore, setTotalScore] = useState(0);
-            const [highScore, setHighScore] = useState(0);
-            const [usedCities, setUsedCities] = useState([]);
-            const [currentGuess, setCurrentGuess] = useState(null);
-            const [citiesDatabase, setCitiesDatabase] = useState(FALLBACK_CITIES);
-            const [loadingCities, setLoadingCities] = useState(false);
-            
-            const globeContainerRef = useRef(null);
-            const sceneRef = useRef(null);
-            const cameraRef = useRef(null);
-            const rendererRef = useRef(null);
-            const globeRef = useRef(null);
-            const animationIdRef = useRef(null);
-            const isDraggingRef = useRef(false);
-            const previousMousePositionRef = useRef({ x: 0, y: 0 });
-            const markersRef = useRef([]);
-            const clickStartPosRef = useRef(null);
-
-            useEffect(() => {
-                const savedHighScore = localStorage.getItem('maptag-highscore');
-                const savedUsedCities = localStorage.getItem('maptag-used-cities');
-                
-                if (savedHighScore) setHighScore(parseInt(savedHighScore));
-                if (savedUsedCities) setUsedCities(JSON.parse(savedUsedCities));
-            }, []);
-
-            useEffect(() => {
-                if (gameState === 'playing' && globeContainerRef.current && !sceneRef.current) {
-                    initGlobe();
-                }
-
-                return () => {
-                    if (animationIdRef.current) {
-                        cancelAnimationFrame(animationIdRef.current);
-                    }
-                    if (rendererRef.current && globeContainerRef.current) {
-                        const canvas = rendererRef.current.domElement;
-                        if (canvas && canvas.parentNode) {
-                            canvas.parentNode.removeChild(canvas);
-                        }
-                        rendererRef.current.dispose();
-                        rendererRef.current = null;
-                    }
-                    sceneRef.current = null;
-                    globeRef.current = null;
-                };
-            }, [gameState]);
-
-            const initGlobe = () => {
-                const container = globeContainerRef.current;
-                if (!container) return;
-                
-                const width = container.clientWidth;
-                const height = container.clientHeight;
-
-                // Scene
-                const scene = new THREE.Scene();
-                sceneRef.current = scene;
-
-                // Camera
-                const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
-                camera.position.z = 3;
-                cameraRef.current = camera;
-
-                // Renderer
-                const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-                renderer.setSize(width, height);
-                renderer.setPixelRatio(window.devicePixelRatio);
-                container.appendChild(renderer.domElement);
-                rendererRef.current = renderer;
-
-                // Lighting
-                const ambientLight = new THREE.AmbientLight(0xffffff, 1.2);
-                scene.add(ambientLight);
-
-                const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-                directionalLight.position.set(5, 3, 5);
-                scene.add(directionalLight);
-
-                // Create Earth globe with natural colors
-                const geometry = new THREE.SphereGeometry(1, 64, 64);
-                const material = new THREE.MeshPhongMaterial({
-                    color: 0x88aa66,
-                    emissive: 0x223311,
-                    shininess: 5,
-                    specular: 0x333333
-                });
-                
-                const globe = new THREE.Mesh(geometry, material);
-                globeRef.current = globe;
-                scene.add(globe);
-
-                // Load natural earth texture
-                const textureLoader = new THREE.TextureLoader();
-                textureLoader.load(
-                    'https://unpkg.com/three-globe/example/img/earth-day.jpg',
-                    (texture) => {
-                        globe.material.map = texture;
-                        globe.material.needsUpdate = true;
-                        console.log('Earth texture loaded');
-                    },
-                    undefined,
-                    (error) => {
-                        console.log('Using fallback colors for globe');
-                    }
-                );
-
-                // Mouse/Touch controls
-                const canvas = renderer.domElement;
-                
-                const handleMouseDown = (e) => {
-                    isDraggingRef.current = false;
-                    clickStartPosRef.current = { x: e.clientX, y: e.clientY };
-                    previousMousePositionRef.current = { x: e.clientX, y: e.clientY };
-                    container.classList.add('dragging');
-                };
-
-                const handleMouseMove = (e) => {
-                    if (!clickStartPosRef.current) return;
-                    
-                    const deltaX = Math.abs(e.clientX - clickStartPosRef.current.x);
-                    const deltaY = Math.abs(e.clientY - clickStartPosRef.current.y);
-                    
-                    if (deltaX > 5 || deltaY > 5) {
-                        isDraggingRef.current = true;
-                    }
-
-                    if (!globeRef.current) return;
-
-                    const moveX = e.clientX - previousMousePositionRef.current.x;
-                    const moveY = e.clientY - previousMousePositionRef.current.y;
-
-                    globeRef.current.rotation.y += moveX * 0.005;
-                    globeRef.current.rotation.x += moveY * 0.005;
-                    globeRef.current.rotation.x = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, globeRef.current.rotation.x));
-
-                    previousMousePositionRef.current = { x: e.clientX, y: e.clientY };
-                };
-
-                const handleMouseUp = (e) => {
-                    container.classList.remove('dragging');
-                    
-                    if (!isDraggingRef.current && clickStartPosRef.current) {
-                        handleGlobeClick(e);
-                    }
-                    
-                    isDraggingRef.current = false;
-                    clickStartPosRef.current = null;
-                };
-
-                const handleWheel = (e) => {
-                    e.preventDefault();
-                    const zoomSpeed = 0.001;
-                    const zoomDelta = e.deltaY * zoomSpeed;
-                    
-                    camera.position.z += zoomDelta;
-                    camera.position.z = Math.max(1.5, Math.min(5, camera.position.z));
-                };
-
-                const handleTouchStart = (e) => {
-                    if (e.touches.length === 1) {
-                        isDraggingRef.current = false;
-                        clickStartPosRef.current = {
-                            x: e.touches[0].clientX,
-                            y: e.touches[0].clientY
-                        };
-                        previousMousePositionRef.current = {
-                            x: e.touches[0].clientX,
-                            y: e.touches[0].clientY
-                        };
-                        container.classList.add('dragging');
-                    }
-                };
-
-                const handleTouchMove = (e) => {
-                    e.preventDefault();
-                    if (e.touches.length !== 1 || !clickStartPosRef.current) return;
-
-                    const deltaX = Math.abs(e.touches[0].clientX - clickStartPosRef.current.x);
-                    const deltaY = Math.abs(e.touches[0].clientY - clickStartPosRef.current.y);
-                    
-                    if (deltaX > 5 || deltaY > 5) {
-                        isDraggingRef.current = true;
-                    }
-
-                    if (!globeRef.current) return;
-
-                    const moveX = e.touches[0].clientX - previousMousePositionRef.current.x;
-                    const moveY = e.touches[0].clientY - previousMousePositionRef.current.y;
-
-                    globeRef.current.rotation.y += moveX * 0.005;
-                    globeRef.current.rotation.x += moveY * 0.005;
-                    globeRef.current.rotation.x = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, globeRef.current.rotation.x));
-
-                    previousMousePositionRef.current = {
-                        x: e.touches[0].clientX,
-                        y: e.touches[0].clientY
-                    };
-                };
-
-                const handleTouchEnd = (e) => {
-                    container.classList.remove('dragging');
-                    
-                    if (!isDraggingRef.current && clickStartPosRef.current && e.changedTouches.length > 0) {
-                        const touch = e.changedTouches[0];
-                        handleGlobeClick({ 
-                            clientX: touch.clientX, 
-                            clientY: touch.clientY,
-                            target: canvas 
-                        });
-                    }
-                    
-                    isDraggingRef.current = false;
-                    clickStartPosRef.current = null;
-                };
-
-                const handleGlobeClick = (e) => {
-                    if (currentRound >= gameCities.length || currentGuess || !globeRef.current) {
-                        console.log('Click blocked:', { currentRound, gameCitiesLength: gameCities.length, hasGuess: !!currentGuess });
-                        return;
-                    }
-
-                    const rect = canvas.getBoundingClientRect();
-                    const x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
-                    const y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
-
-                    const raycaster = new THREE.Raycaster();
-                    raycaster.setFromCamera(new THREE.Vector2(x, y), cameraRef.current);
-
-                    const intersects = raycaster.intersectObject(globeRef.current);
-
-                    if (intersects.length > 0) {
-                        const point = intersects[0].point;
-                        
-                        const radius = Math.sqrt(point.x * point.x + point.y * point.y + point.z * point.z);
-                        const lat = 90 - (Math.acos(point.y / radius) * 180 / Math.PI);
-                        const lng = ((270 + (Math.atan2(point.x, point.z)) * 180 / Math.PI) % 360) - 180;
-
-                        console.log('Globe clicked at:', { lat, lng, point });
-                        handleGuess(lat, lng);
-                    } else {
-                        console.log('No intersection with globe');
-                    }
-                };
-                
-                canvas.addEventListener('mousedown', handleMouseDown);
-                canvas.addEventListener('mousemove', handleMouseMove);
-                canvas.addEventListener('mouseup', handleMouseUp);
-                canvas.addEventListener('wheel', handleWheel, { passive: false });
-                
-                canvas.addEventListener('touchstart', handleTouchStart, { passive: false });
-                canvas.addEventListener('touchmove', handleTouchMove, { passive: false });
-                canvas.addEventListener('touchend', handleTouchEnd);
-
-                const handleResize = () => {
-                    if (!container || !camera || !renderer) return;
-                    const newWidth = container.clientWidth;
-                    const newHeight = container.clientHeight;
-                    camera.aspect = newWidth / newHeight;
-                    camera.updateProjectionMatrix();
-                    renderer.setSize(newWidth, newHeight);
-                };
-                window.addEventListener('resize', handleResize);
-
-                // Animation loop (NO AUTO-ROTATION)
-                const animate = () => {
-                    animationIdRef.current = requestAnimationFrame(animate);
-                    
-                    if (renderer && scene && camera) {
-                        renderer.render(scene, camera);
-                    }
-                };
-                animate();
-                
-                console.log('Globe initialized');
-            };
-
-            const latLngToVector3 = (lat, lng, radius = 1) => {
-                const phi = (90 - lat) * (Math.PI / 180);
-                const theta = (lng + 180) * (Math.PI / 180);
-
-                const x = -(radius * Math.sin(phi) * Math.cos(theta));
-                const y = radius * Math.cos(phi);
-                const z = radius * Math.sin(phi) * Math.sin(theta);
-
-                return new THREE.Vector3(x, y, z);
-            };
-
-            const createPin = (lat, lng, color, label) => {
-                if (!sceneRef.current) {
-                    console.log('Scene not available for pin creation');
-                    return;
-                }
-                
-                console.log(`Creating ${label} pin at lat: ${lat}, lng: ${lng}`);
-                
-                const pinGroup = new THREE.Group();
-                
-                // Larger pin head (sphere)
-                const headGeometry = new THREE.SphereGeometry(0.04, 16, 16);
-                const headMaterial = new THREE.MeshBasicMaterial({ 
-                    color: color
-                });
-                const head = new THREE.Mesh(headGeometry, headMaterial);
-                head.position.y = 0.06;
-                pinGroup.add(head);
-                
-                // Pin shaft (cylinder)
-                const shaftGeometry = new THREE.CylinderGeometry(0.008, 0.008, 0.12, 8);
-                const shaftMaterial = new THREE.MeshBasicMaterial({ 
-                    color: color
-                });
-                const shaft = new THREE.Mesh(shaftGeometry, shaftMaterial);
-                shaft.position.y = 0;
-                pinGroup.add(shaft);
-                
-                // Position pin on globe
-                const position = latLngToVector3(lat, lng, 1.0);
-                pinGroup.position.copy(position);
-                
-                // Point pin outward from globe center
-                pinGroup.lookAt(0, 0, 0);
-                pinGroup.rotateX(Math.PI);
-                
-                sceneRef.current.add(pinGroup);
-                markersRef.current.push(pinGroup);
-                
-                console.log(`${label} pin created and added to scene`);
-                return pinGroup;
-            };
-
-            const addLine = (lat1, lng1, lat2, lng2) => {
-                if (!sceneRef.current) {
-                    console.log('Scene not available for line creation');
-                    return;
-                }
-                
-                console.log(`Creating line from (${lat1}, ${lng1}) to (${lat2}, ${lng2})`);
-                
-                const start = latLngToVector3(lat1, lng1, 1.04);
-                const end = latLngToVector3(lat2, lng2, 1.04);
-                
-                const points = [];
-                const segments = 100;
-                
-                for (let i = 0; i <= segments; i++) {
-                    const t = i / segments;
-                    const interpolated = new THREE.Vector3().lerpVectors(start, end, t);
-                    interpolated.normalize().multiplyScalar(1.05);
-                    points.push(interpolated);
-                }
-                
-                const geometry = new THREE.BufferGeometry().setFromPoints(points);
-                const material = new THREE.LineBasicMaterial({ 
-                    color: 0xffaa00,
-                    linewidth: 5
-                });
-                const line = new THREE.Line(geometry, material);
-                
-                sceneRef.current.add(line);
-                markersRef.current.push(line);
-                
-                console.log('Line created and added to scene');
-                return line;
-            };
-
-            const clearMarkers = () => {
-                if (!sceneRef.current) return;
-                
-                console.log(`Clearing ${markersRef.current.length} markers`);
-                
-                markersRef.current.forEach(marker => {
-                    sceneRef.current.remove(marker);
-                    marker.traverse((child) => {
-                        if (child.geometry) child.geometry.dispose();
-                        if (child.material) {
-                            if (Array.isArray(child.material)) {
-                                child.material.forEach(mat => mat.dispose());
-                            } else {
-                                child.material.dispose();
-                            }
-                        }
-                    });
-                });
-                markersRef.current = [];
-            };
-
-            const calculateDistance = (lat1, lng1, lat2, lng2) => {
-                const R = 6371;
-                const dLat = (lat2 - lat1) * Math.PI / 180;
-                const dLng = (lng2 - lng1) * Math.PI / 180;
-                const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-                          Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-                          Math.sin(dLng/2) * Math.sin(dLng/2);
-                const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-                return R * c;
-            };
-
-            const calculateScore = (distance) => {
-                const maxScore = 1000;
-                const score = Math.max(50, Math.round(maxScore / (1 + distance / 100)));
-                return score;
-            };
-
-            const handleGuess = (lat, lng) => {
-                if (currentGuess) {
-                    console.log('Already processing a guess');
-                    return;
-                }
-
-                const currentCity = gameCities[currentRound];
-                console.log('Processing guess for city:', currentCity.name);
-                
-                const distance = calculateDistance(lat, lng, currentCity.lat, currentCity.lng);
-                const score = calculateScore(distance);
-
-                console.log('Distance:', distance, 'Score:', score);
-
-                // Add physical pins and line
-                createPin(lat, lng, 0xff0000, 'GUESS (RED)');
-                createPin(currentCity.lat, currentCity.lng, 0x00ff00, 'CORRECT (GREEN)');
-                addLine(lat, lng, currentCity.lat, currentCity.lng);
-
-                const newGuess = {
-                    city: currentCity,
-                    guessLat: lat,
-                    guessLng: lng,
-                    distance: Math.round(distance),
-                    score: score
-                };
-
-                console.log('New guess:', newGuess);
-
-                setCurrentGuess(newGuess);
-                const updatedGuesses = [...guesses, newGuess];
-                setGuesses(updatedGuesses);
-                const newTotalScore = totalScore + score;
-                setTotalScore(newTotalScore);
-
-                console.log('Updated total score:', newTotalScore);
-
-                setTimeout(() => {
-                    console.log('Clearing guess and markers');
-                    setCurrentGuess(null);
-                    clearMarkers();
-                    
-                    if (currentRound < gameCities.length - 1) {
-                        console.log('Moving to next round');
-                        setCurrentRound(currentRound + 1);
-                    } else {
-                        console.log('Game complete');
-                        endGame(newTotalScore, updatedGuesses);
-                    }
-                }, 3000);
-            };
-
-            const selectRandomCities = () => {
-                let availableCities = citiesDatabase.filter(
-                    city => !usedCities.includes(city.name)
-                );
-
-                if (availableCities.length < 5) {
-                    setUsedCities([]);
-                    availableCities = [...citiesDatabase];
-                }
-
-                const shuffled = [...availableCities].sort(() => Math.random() - 0.5);
-                return shuffled.slice(0, 5);
-            };
-
-            const startNewGame = () => {
-                const selectedCities = selectRandomCities();
-                console.log('Starting new game with cities:', selectedCities);
-                setGameCities(selectedCities);
-                setCurrentRound(0);
-                setGuesses([]);
-                setTotalScore(0);
-                setCurrentGuess(null);
-                setGameState('playing');
-            };
-
-            const endGame = (finalScore, finalGuesses) => {
-                setGameState('results');
-                
-                if (finalScore > highScore) {
-                    setHighScore(finalScore);
-                    localStorage.setItem('maptag-highscore', finalScore.toString());
-                }
-
-                const newUsedCities = [...usedCities, ...gameCities.map(c => c.name)];
-                setUsedCities(newUsedCities);
-                localStorage.setItem('maptag-used-cities', JSON.stringify(newUsedCities));
-            };
-
-            const quitGame = () => {
-                if (confirm('Are you sure you want to quit? Your progress will be lost.')) {
-                    setGameState('intro');
-                    if (globeContainerRef.current) {
-                        globeContainerRef.current.innerHTML = '';
-                    }
-                    sceneRef.current = null;
-                    globeRef.current = null;
-                }
-            };
-
-            const shareScore = () => {
-                const text = `I scored ${totalScore} points in MapTag! Can you beat my score? 🌍`;
-                if (navigator.share) {
-                    navigator.share({ text });
-                } else {
-                    navigator.clipboard.writeText(text);
-                    alert('Score copied to clipboard!');
-                }
-            };
-
-            return (
-                <div style={{
-                    width: '100vw',
-                    height: '100vh',
-                    background: '#000',
-                    fontFamily: '"Bebas Neue", "Impact", sans-serif',
-                    overflow: 'hidden',
-                    position: 'relative'
-                }}>
-                    <StarsBackground />
-
-                    {gameState === 'intro' && (
-                        <div style={{
-                            position: 'relative',
-                            zIndex: 10,
-                            height: '100%',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            padding: '2rem',
-                            color: 'white'
-                        }}>
-                            <div style={{ textAlign: 'center', maxWidth: '800px', animation: 'fadeIn 1s ease-out' }}>
-                                <div style={{ marginBottom: '2rem', animation: 'slideDown 0.8s ease-out' }}>
-                                    <div style={{
-                                        fontSize: 'clamp(3rem, 10vw, 6rem)',
-                                        fontWeight: 900,
-                                        letterSpacing: '0.1em',
-                                        background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%)',
-                                        WebkitBackgroundClip: 'text',
-                                        WebkitTextFillColor: 'transparent',
-                                        filter: 'drop-shadow(0 0 20px rgba(251, 191, 36, 0.5))',
-                                        marginBottom: '0.5rem'
-                                    }}>
-                                        MAPTAG
-                                    </div>
-                                    <div style={{
-                                        fontSize: 'clamp(1rem, 3vw, 1.5rem)',
-                                        color: '#94a3b8',
-                                        letterSpacing: '0.3em',
-                                        fontFamily: 'monospace',
-                                        fontWeight: 300
-                                    }}>
-                                        GEOGRAPHIC CHALLENGE
-                                    </div>
-                                </div>
-
-                                <div style={{
-                                    background: 'rgba(251, 191, 36, 0.1)',
-                                    border: '2px solid #fbbf24',
-                                    borderRadius: '12px',
-                                    padding: '1.5rem',
-                                    marginBottom: '2rem',
-                                    animation: 'fadeIn 1s ease-out 0.3s backwards',
-                                    boxShadow: '0 0 30px rgba(251, 191, 36, 0.2)'
-                                }}>
-                                    <div style={{ fontSize: '1rem', color: '#fbbf24', letterSpacing: '0.2em', marginBottom: '0.5rem' }}>
-                                        HIGH SCORE
-                                    </div>
-                                    <div style={{ fontSize: 'clamp(2rem, 6vw, 3rem)', fontWeight: 900, color: '#fbbf24' }}>
-                                        {highScore.toLocaleString()}
-                                    </div>
-                                </div>
-
-                                <div style={{
-                                    background: 'rgba(255, 255, 255, 0.05)',
-                                    backdropFilter: 'blur(10px)',
-                                    border: '1px solid rgba(255, 255, 255, 0.1)',
-                                    borderRadius: '16px',
-                                    padding: '2rem',
-                                    marginBottom: '2rem',
-                                    textAlign: 'left',
-                                    animation: 'fadeIn 1s ease-out 0.5s backwards'
-                                }}>
-                                    <h3 style={{ fontSize: 'clamp(1.5rem, 4vw, 2rem)', marginBottom: '1.5rem', color: '#fbbf24', letterSpacing: '0.1em' }}>
-                                        HOW TO PLAY
-                                    </h3>
-                                    <div style={{
-                                        fontSize: 'clamp(1rem, 2.5vw, 1.2rem)',
-                                        lineHeight: '2',
-                                        color: '#cbd5e1',
-                                        fontFamily: '"Segoe UI", sans-serif',
-                                        fontWeight: 300,
-                                        letterSpacing: '0.05em'
-                                    }}>
-                                        <div style={{ marginBottom: '1rem', display: 'flex', gap: '1rem' }}>
-                                            <span style={{ color: '#fbbf24', fontSize: '1.5rem' }}>1.</span>
-                                            <span>Drag to rotate, scroll to zoom, click to place your guess</span>
-                                        </div>
-                                        <div style={{ marginBottom: '1rem', display: 'flex', gap: '1rem' }}>
-                                            <span style={{ color: '#fbbf24', fontSize: '1.5rem' }}>2.</span>
-                                            <span>Red pin = your guess, Green pin = correct location</span>
-                                        </div>
-                                        <div style={{ marginBottom: '1rem', display: 'flex', gap: '1rem' }}>
-                                            <span style={{ color: '#fbbf24', fontSize: '1.5rem' }}>3.</span>
-                                            <span>Orange line shows your distance error</span>
-                                        </div>
-                                        <div style={{ display: 'flex', gap: '1rem' }}>
-                                            <span style={{ color: '#fbbf24', fontSize: '1.5rem' }}>4.</span>
-                                            <span>Closer = more points. Beat your high score!</span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <button
-                                    onClick={startNewGame}
-                                    style={{
-                                        fontSize: 'clamp(1.5rem, 4vw, 2rem)',
-                                        fontWeight: 900,
-                                        letterSpacing: '0.2em',
-                                        padding: '1.5rem 4rem',
-                                        background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
-                                        color: '#0f172a',
-                                        border: 'none',
-                                        borderRadius: '12px',
-                                        cursor: 'pointer',
-                                        boxShadow: '0 8px 32px rgba(251, 191, 36, 0.4)',
-                                        transition: 'all 0.3s ease',
-                                        animation: 'pulse 2s ease-in-out infinite'
-                                    }}
-                                    onMouseEnter={(e) => {
-                                        e.target.style.transform = 'translateY(-4px) scale(1.05)';
-                                        e.target.style.boxShadow = '0 12px 48px rgba(251, 191, 36, 0.6)';
-                                    }}
-                                    onMouseLeave={(e) => {
-                                        e.target.style.transform = 'translateY(0) scale(1)';
-                                        e.target.style.boxShadow = '0 8px 32px rgba(251, 191, 36, 0.4)';
-                                    }}
-                                >
-                                    START GAME
-                                </button>
-                            </div>
-                        </div>
-                    )}
-
-                    {gameState === 'playing' && (
-                        <div style={{ position: 'relative', height: '100%', display: 'flex', flexDirection: 'column' }}>
-                            <div style={{
-                                background: 'rgba(0, 0, 0, 0.8)',
-                                backdropFilter: 'blur(10px)',
-                                padding: 'clamp(1rem, 2vw, 1.5rem) clamp(1rem, 3vw, 2rem)',
-                                display: 'flex',
-                                justifyContent: 'space-between',
-                                alignItems: 'center',
-                                borderBottom: '2px solid #fbbf24',
-                                zIndex: 1000,
-                                flexWrap: 'wrap',
-                                gap: '1rem',
-                                boxShadow: '0 0 30px rgba(251, 191, 36, 0.2)'
-                            }}>
-                                <div style={{ display: 'flex', gap: 'clamp(1rem, 3vw, 2rem)', alignItems: 'center' }}>
-                                    <div>
-                                        <div style={{ fontSize: 'clamp(0.8rem, 2vw, 0.9rem)', color: '#94a3b8', letterSpacing: '0.1em' }}>ROUND</div>
-                                        <div style={{ fontSize: 'clamp(1.5rem, 4vw, 2rem)', color: '#fbbf24', fontWeight: 900 }}>
-                                            {currentRound + 1} / 5
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <div style={{ fontSize: 'clamp(0.8rem, 2vw, 0.9rem)', color: '#94a3b8', letterSpacing: '0.1em' }}>SCORE</div>
-                                        <div style={{ fontSize: 'clamp(1.5rem, 4vw, 2rem)', color: '#10b981', fontWeight: 900 }}>
-                                            {totalScore.toLocaleString()}
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div style={{
-                                    background: 'rgba(251, 191, 36, 0.1)',
-                                    border: '2px solid #fbbf24',
-                                    borderRadius: '8px',
-                                    padding: 'clamp(0.75rem, 2vw, 1rem) clamp(1rem, 3vw, 2rem)',
-                                    boxShadow: '0 0 20px rgba(251, 191, 36, 0.3)'
-                                }}>
-                                    <div style={{ fontSize: 'clamp(0.8rem, 2vw, 0.9rem)', color: '#fbbf24', letterSpacing: '0.1em', marginBottom: '0.25rem' }}>
-                                        FIND THIS CITY
-                                    </div>
-                                    <div style={{ fontSize: 'clamp(1.5rem, 4vw, 2.5rem)', color: 'white', fontWeight: 900 }}>
-                                        {gameCities[currentRound]?.name}
-                                    </div>
-                                    <div style={{ fontSize: 'clamp(1rem, 2.5vw, 1.2rem)', color: '#94a3b8', fontFamily: 'monospace' }}>
-                                        {gameCities[currentRound]?.country}
-                                    </div>
-                                </div>
-
-                                <button
-                                    onClick={quitGame}
-                                    style={{
-                                        fontSize: 'clamp(0.9rem, 2vw, 1rem)',
-                                        letterSpacing: '0.1em',
-                                        padding: '0.75rem 1.5rem',
-                                        background: 'transparent',
-                                        color: '#ef4444',
-                                        border: '2px solid #ef4444',
-                                        borderRadius: '8px',
-                                        cursor: 'pointer',
-                                        transition: 'all 0.3s ease',
-                                        fontFamily: 'inherit',
-                                        fontWeight: 700
-                                    }}
-                                    onMouseEnter={(e) => {
-                                        e.target.style.background = '#ef4444';
-                                        e.target.style.color = 'white';
-                                    }}
-                                    onMouseLeave={(e) => {
-                                        e.target.style.background = 'transparent';
-                                        e.target.style.color = '#ef4444';
-                                    }}
-                                >
-                                    QUIT
-                                </button>
-                            </div>
-
-                            <div 
-                                ref={globeContainerRef}
-                                id="globe-container"
-                                style={{ flex: 1, position: 'relative' }}
-                            />
-
-                            {currentGuess && (
-                                <div style={{
-                                    position: 'absolute',
-                                    bottom: '2rem',
-                                    left: '50%',
-                                    transform: 'translateX(-50%)',
-                                    background: 'rgba(0, 0, 0, 0.95)',
-                                    backdropFilter: 'blur(20px)',
-                                    border: '2px solid #fbbf24',
-                                    borderRadius: '16px',
-                                    padding: 'clamp(1rem, 3vw, 2rem)',
-                                    minWidth: 'clamp(250px, 50vw, 400px)',
-                                    textAlign: 'center',
-                                    animation: 'slideUp 0.5s ease-out',
-                                    boxShadow: '0 0 60px rgba(251, 191, 36, 0.4)',
-                                    zIndex: 1000
-                                }}>
-                                    <div style={{ fontSize: 'clamp(0.9rem, 2vw, 1rem)', color: '#94a3b8', letterSpacing: '0.1em', marginBottom: '0.5rem' }}>
-                                        DISTANCE
-                                    </div>
-                                    <div style={{ fontSize: 'clamp(2rem, 6vw, 3rem)', color: '#fbbf24', fontWeight: 900, marginBottom: '1rem' }}>
-                                        {currentGuess.distance.toLocaleString()} km
-                                    </div>
-                                    <div style={{ fontSize: 'clamp(0.9rem, 2vw, 1rem)', color: '#94a3b8', letterSpacing: '0.1em', marginBottom: '0.5rem' }}>
-                                        POINTS EARNED
-                                    </div>
-                                    <div style={{ fontSize: 'clamp(1.5rem, 5vw, 2.5rem)', color: '#10b981', fontWeight: 900 }}>
-                                        +{currentGuess.score.toLocaleString()}
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-                    )}
-
-                    {gameState === 'results' && (
-                        <div style={{
-                            position: 'relative',
-                            zIndex: 10,
-                            height: '100%',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            padding: '2rem',
-                            color: 'white',
-                            overflowY: 'auto'
-                        }}>
-                            <div style={{ textAlign: 'center', maxWidth: '800px', width: '100%' }}>
-                                <div style={{
-                                    fontSize: 'clamp(2rem, 6vw, 3rem)',
-                                    fontWeight: 900,
-                                    letterSpacing: '0.1em',
-                                    color: '#fbbf24',
-                                    marginBottom: '2rem',
-                                    filter: 'drop-shadow(0 0 20px rgba(251, 191, 36, 0.5))'
-                                }}>
-                                    GAME COMPLETE!
-                                </div>
-
-                                <div style={{
-                                    background: 'linear-gradient(135deg, rgba(251, 191, 36, 0.2) 0%, rgba(245, 158, 11, 0.1) 100%)',
-                                    border: '3px solid #fbbf24',
-                                    borderRadius: '16px',
-                                    padding: '2rem',
-                                    marginBottom: '2rem',
-                                    boxShadow: '0 0 40px rgba(251, 191, 36, 0.3)'
-                                }}>
-                                    <div style={{ fontSize: 'clamp(1rem, 2.5vw, 1.2rem)', color: '#fbbf24', letterSpacing: '0.2em', marginBottom: '1rem' }}>
-                                        FINAL SCORE
-                                    </div>
-                                    <div style={{ fontSize: 'clamp(3rem, 8vw, 5rem)', fontWeight: 900, color: 'white', marginBottom: '1rem' }}>
-                                        {totalScore.toLocaleString()}
-                                    </div>
-                                    {totalScore >= highScore && totalScore > 0 && (
-                                        <div style={{ fontSize: 'clamp(1.2rem, 3vw, 1.5rem)', color: '#10b981', letterSpacing: '0.1em' }}>
-                                            🏆 NEW HIGH SCORE! 🏆
-                                        </div>
-                                    )}
-                                </div>
-
-                                <div style={{
-                                    background: 'rgba(255, 255, 255, 0.05)',
-                                    backdropFilter: 'blur(10px)',
-                                    border: '1px solid rgba(255, 255, 255, 0.1)',
-                                    borderRadius: '16px',
-                                    padding: '2rem',
-                                    marginBottom: '2rem',
-                                    textAlign: 'left'
-                                }}>
-                                    <h3 style={{
-                                        fontSize: 'clamp(1.2rem, 3vw, 1.5rem)',
-                                        marginBottom: '1.5rem',
-                                        color: '#fbbf24',
-                                        letterSpacing: '0.1em'
-                                    }}>
-                                        ROUND BREAKDOWN
-                                    </h3>
-                                    {guesses.map((guess, idx) => (
-                                        <div key={idx} style={{
-                                            display: 'flex',
-                                            justifyContent: 'space-between',
-                                            padding: '1rem',
-                                            borderBottom: idx < guesses.length - 1 ? '1px solid rgba(255, 255, 255, 0.1)' : 'none',
-                                            fontFamily: '"Segoe UI", sans-serif',
-                                            flexWrap: 'wrap',
-                                            gap: '0.5rem'
-                                        }}>
-                                            <div style={{ flex: '1 1 200px' }}>
-                                                <div style={{ fontSize: 'clamp(1rem, 2.5vw, 1.2rem)', color: 'white', fontWeight: 600 }}>
-                                                    {guess.city.name}, {guess.city.country}
-                                                </div>
-                                            </div>
-                                            <div style={{ display: 'flex', gap: 'clamp(1rem, 3vw, 2rem)', alignItems: 'center' }}>
-                                                <div style={{ textAlign: 'right' }}>
-                                                    <div style={{ fontSize: 'clamp(0.8rem, 2vw, 0.9rem)', color: '#94a3b8' }}>Distance</div>
-                                                    <div style={{ fontSize: 'clamp(1rem, 2.5vw, 1.2rem)', color: '#fbbf24' }}>
-                                                        {guess.distance.toLocaleString()} km
-                                                    </div>
-                                                </div>
-                                                <div style={{ textAlign: 'right' }}>
-                                                    <div style={{ fontSize: 'clamp(0.8rem, 2vw, 0.9rem)', color: '#94a3b8' }}>Points</div>
-                                                    <div style={{ fontSize: 'clamp(1rem, 2.5vw, 1.2rem)', color: '#10b981', fontWeight: 700 }}>
-                                                        {guess.score.toLocaleString()}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-
-                                <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
-                                    <button
-                                        onClick={startNewGame}
-                                        style={{
-                                            fontSize: 'clamp(1.2rem, 3vw, 1.5rem)',
-                                            fontWeight: 900,
-                                            letterSpacing: '0.1em',
-                                            padding: 'clamp(1rem, 2vw, 1.25rem) clamp(2rem, 4vw, 3rem)',
-                                            background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
-                                            color: '#000',
-                                            border: 'none',
-                                            borderRadius: '12px',
-                                            cursor: 'pointer',
-                                            boxShadow: '0 8px 32px rgba(251, 191, 36, 0.4)',
-                                            transition: 'all 0.3s ease'
-                                        }}
-                                    >
-                                        PLAY AGAIN
-                                    </button>
-
-                                    <button
-                                        onClick={shareScore}
-                                        style={{
-                                            fontSize: 'clamp(1.2rem, 3vw, 1.5rem)',
-                                            fontWeight: 900,
-                                            letterSpacing: '0.1em',
-                                            padding: 'clamp(1rem, 2vw, 1.25rem) clamp(2rem, 4vw, 3rem)',
-                                            background: 'transparent',
-                                            color: '#10b981',
-                                            border: '2px solid #10b981',
-                                            borderRadius: '12px',
-                                            cursor: 'pointer',
-                                            transition: 'all 0.3s ease'
-                                        }}
-                                    >
-                                        SHARE 🌍
-                                    </button>
-
-                                    <button
-                                        onClick={() => {
-                                            setGameState('intro');
-                                            if (globeContainerRef.current) {
-                                                globeContainerRef.current.innerHTML = '';
-                                            }
-                                            sceneRef.current = null;
-                                            globeRef.current = null;
-                                        }}
-                                        style={{
-                                            fontSize: 'clamp(1.2rem, 3vw, 1.5rem)',
-                                            fontWeight: 900,
-                                            letterSpacing: '0.1em',
-                                            padding: 'clamp(1rem, 2vw, 1.25rem) clamp(2rem, 4vw, 3rem)',
-                                            background: 'transparent',
-                                            color: '#94a3b8',
-                                            border: '2px solid #94a3b8',
-                                            borderRadius: '12px',
-                                            cursor: 'pointer',
-                                            transition: 'all 0.3s ease'
-                                        }}
-                                    >
-                                        MAIN MENU
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-                </div>
-            );
-        };
-
-        ReactDOM.render(<MapTagGame />, document.getElementById('root'));
-    </script>
+
+<div id="globeViz"></div>
+
+<div id="ui" class="glass">
+  <div id="score">Score: 0</div>
+  <div id="streak">Streak: 0 🔥</div>
+  <div id="target"></div>
+  <div id="timer">⏱️ 10</div>
+</div>
+
+<div id="controls">
+  <button onclick="restartGame()">🔄 Restart</button>
+  <button onclick="quitGame()">❌ Quit</button>
+  <button onclick="share()">📤 Share</button>
+</div>
+
+<div id="center">
+  <h1>🌍 MAPTAG ULTIMATE</h1>
+  <p>Click as close as possible to the target city.</p>
+  <p>Closer = more points. Build streaks 🔥</p>
+  <p id="highScore"></p>
+  <p id="leaderboard"></p>
+  <button onclick="startGame()">Start Game</button>
+</div>
+
+<div id="resultPopup"></div>
+
+<script>
+const globe = Globe()(document.getElementById('globeViz'))
+  .globeImageUrl('https://eoimages.gsfc.nasa.gov/images/imagerecords/57000/57730/land_ocean_ice_cloud_2048.jpg')
+  .bumpImageUrl('https://unpkg.com/three-globe/example/img/earth-topology.png')
+  .backgroundColor('#000');
+
+// ===== COUNTRY BORDERS =====
+let countries = [];
+let hoveredCountry = null;
+let targetCountry = null;
+
+fetch('https://unpkg.com/world-atlas@2/countries-110m.json')
+.then(res => res.json())
+.then(worldData => {
+  countries = topojson.feature(worldData, worldData.objects.countries).features;
+
+  globe
+    .polygonsData(countries)
+    .polygonCapColor(d => {
+      if (d === targetCountry) return "rgba(0,255,100,0.6)";
+      if (d === hoveredCountry) return "rgba(255,255,255,0.3)";
+      return "rgba(0,0,0,0)";
+    })
+    .polygonSideColor(() => "rgba(0,100,255,0.15)")
+    .polygonStrokeColor(() => "#00aaff")
+    .polygonAltitude(d => d === hoveredCountry ? 0.02 : 0.005);
+});
+
+globe.onPolygonHover(d => hoveredCountry = d);
+
+// ===== CITY DATA =====
+let cities = [];
+let usedCities = JSON.parse(localStorage.getItem("usedCities")||"[]");
+
+let roundCities=[], index=0, score=0, streak=0;
+let timerInterval, timeLeft=10;
+
+fetch('https://raw.githubusercontent.com/jetsetexpert/world-cities-json/master/data/cities.json')
+.then(r=>r.json())
+.then(d=> cities = d.filter(c=>c.population>100000));
+
+// ===== GET CITIES =====
+function getCities(){
+  let available = cities.filter(c=>!usedCities.includes(c.name));
+  if(available.length<5){ usedCities=[]; available=cities;}
+
+  let sel=[];
+  while(sel.length<5){
+    let r = available[Math.floor(Math.random()*available.length)];
+    if(!sel.includes(r)) sel.push(r);
+  }
+
+  usedCities.push(...sel.map(c=>c.name));
+  localStorage.setItem("usedCities", JSON.stringify(usedCities));
+
+  return sel;
+}
+
+// ===== DISTANCE =====
+function dist(a,b,c,d){
+  const R=6371;
+  const dLat=(c-a)*Math.PI/180;
+  const dLon=(d-b)*Math.PI/180;
+  const x=Math.sin(dLat/2)**2 +
+    Math.cos(a*Math.PI/180)*Math.cos(c*Math.PI/180)*
+    Math.sin(dLon/2)**2;
+  return R*(2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x)));
+}
+
+// ===== GAME FLOW =====
+function startGame(){
+  document.getElementById("center").style.display="none";
+  score=0; streak=0; index=0;
+  roundCities=getCities();
+  next();
+}
+
+function restartGame(){
+  score=0; streak=0; index=0;
+  roundCities=getCities();
+  updateUI();
+  next();
+}
+
+function quitGame(){
+  document.getElementById("center").style.display="block";
+  globe.pointsData([]);
+  globe.arcsData([]);
+  clearInterval(timerInterval);
+}
+
+// ===== NEXT ROUND =====
+function next(){
+  if(index>=5) return end();
+
+  let c=roundCities[index];
+
+  document.getElementById("target").innerText =
+    "Find: "+c.name+", "+c.country;
+
+  targetCountry = countries.find(ct =>
+    ct.properties.name === c.country
+  );
+
+  globe.pointOfView({lat:c.lat,lng:c.lng,altitude:2},1500);
+
+  startTimer();
+}
+
+// ===== TIMER =====
+function startTimer(){
+  clearInterval(timerInterval);
+  timeLeft=10;
+  document.getElementById("timer").innerText="⏱️ "+timeLeft;
+
+  timerInterval=setInterval(()=>{
+    timeLeft--;
+    document.getElementById("timer").innerText="⏱️ "+timeLeft;
+    if(timeLeft<=0){
+      clearInterval(timerInterval);
+      handleGuess(null);
+    }
+  },1000);
+}
+
+// ===== PIN DROP =====
+function dropPin(lat, lng, color){
+  let altitude = 1;
+
+  let fall = setInterval(()=>{
+    altitude -= 0.08;
+
+    globe.pointsData([{
+      lat, lng,
+      size: 0.5,
+      color,
+      altitude: Math.max(altitude,0)
+    }]);
+
+    if(altitude <= 0){
+      clearInterval(fall);
+
+      let bounce = 0.15;
+      let b = setInterval(()=>{
+        bounce -= 0.02;
+
+        globe.pointsData([{
+          lat, lng,
+          size: 0.5,
+          color,
+          altitude: bounce
+        }]);
+
+        if(bounce <= 0) clearInterval(b);
+      },20);
+    }
+  },20);
+}
+
+// ===== CLICK =====
+globe.onGlobeClick(({lat,lng})=>{
+  handleGuess({lat,lng});
+});
+
+// ===== HANDLE GUESS =====
+function handleGuess(pos){
+  clearInterval(timerInterval);
+
+  let c=roundCities[index];
+  let d = pos ? dist(pos.lat,pos.lng,c.lat,c.lng) : 20000;
+
+  let pts = Math.max(0,5000 - d*10);
+
+  if(d<500) streak++; else streak=0;
+  score += Math.round(pts + streak*200);
+
+  if(pos) dropPin(pos.lat,pos.lng,'red');
+  dropPin(c.lat,c.lng,'lime');
+
+  if(pos){
+    globe.arcsData([{
+      startLat:pos.lat,startLng:pos.lng,
+      endLat:c.lat,endLng:c.lng
+    }]);
+  }
+
+  showResult(Math.round(d), Math.round(pts));
+
+  index++;
+  updateUI();
+
+  setTimeout(next,2500);
+}
+
+// ===== UI =====
+function updateUI(){
+  document.getElementById("score").innerText="Score: "+score;
+  document.getElementById("streak").innerText="Streak: "+streak+" 🔥";
+}
+
+function showResult(d, pts){
+  let el=document.getElementById("resultPopup");
+  el.style.display="block";
+  el.innerText = d+" km | +"+pts+" pts";
+  setTimeout(()=> el.style.display="none",2000);
+}
+
+// ===== END =====
+function end(){
+  let high = localStorage.getItem("highScore")||0;
+  if(score>high) localStorage.setItem("highScore",score);
+
+  let board = JSON.parse(localStorage.getItem("scores")||"[]");
+  board.push(score);
+  board.sort((a,b)=>b-a);
+  board=board.slice(0,5);
+
+  localStorage.setItem("scores", JSON.stringify(board));
+
+  document.getElementById("leaderboard").innerText =
+    "Top: "+board.join(", ");
+
+  document.getElementById("highScore").innerText =
+    "High Score: "+localStorage.getItem("highScore");
+
+  document.getElementById("center").style.display="block";
+}
+
+// ===== SHARE =====
+function share(){
+  navigator.clipboard.writeText("I scored "+score+" 🌍");
+  alert("Copied!");
+}
+
+// INIT
+document.getElementById("highScore").innerText =
+  "High Score: "+(localStorage.getItem("highScore")||0);
+</script>
+
 </body>
 </html>
