@@ -14,10 +14,11 @@
     #globeViz { position:absolute; width:100%; height:100%; z-index:1; }
     #ui {
       position:absolute; top:16px; left:16px; z-index:10;
-      background:rgba(0,0,0,0.75); padding:12px 18px; border-radius:12px;
-      font-size:1.15rem; pointer-events:none; user-select:none; line-height:1.4;
+      background:rgba(0,0,0,0.75); padding:14px 20px; border-radius:12px;
+      font-size:1.2rem; pointer-events:none; user-select:none; line-height:1.4;
     }
-    #ui div { margin:4px 0; }
+    #ui div { margin:5px 0; }
+    #target { font-size:1.45rem; font-weight:bold; color:#00ffcc; }
     #center {
       position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
       text-align:center; z-index:20; pointer-events:auto;
@@ -25,7 +26,6 @@
     }
     #center.hidden { opacity:0; pointer-events:none; }
 
-    /* Game Over */
     .menu {
       display:flex; flex-direction:column; align-items:center; gap:14px;
       background:rgba(0,0,0,0.85); padding:30px 40px; border-radius:16px;
@@ -44,7 +44,7 @@
 
 <div id="ui">
   <div id="score">Score: 0</div>
-  <div id="target" style="font-size:1.35rem; font-weight:bold; color:#00ffcc;">Find: ...</div>
+  <div id="target">Find: ...</div>
   <div id="round-info">Round 1 / 5</div>
   <div id="timer">⏱ 10</div>
 </div>
@@ -57,9 +57,9 @@
 </div>
 
 <script>
-// =============== GLOBE – FIXED (bright colorful earth + strong atmosphere) ===============
+// =============== GLOBE (bright + interactive) ===============
 const globe = Globe()(document.getElementById('globeViz'))
-  .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-day.jpg')   /* ← CHANGED: bright day texture */
+  .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-day.jpg')
   .bumpImageUrl('https://unpkg.com/three-globe/example/img/earth-topology.png')
   .backgroundColor('#000011')
   .atmosphereColor('#77aaff')
@@ -67,15 +67,14 @@ const globe = Globe()(document.getElementById('globeViz'))
   .pointOfView({ lat: 25, lng: 10, altitude: 2.8 })
   .pointAltitude('altitude')
   .pointColor('color')
-  .pointRadius(0.45)
+  .pointRadius(0.5)
   .pointMerge(true)
   .onGlobeClick(({ lat, lng }) => { if (gameActive) handleGuess({ lat, lng }); });
 
-// =============== SETTINGS ===============
+// =============== SETTINGS + CITIES ===============
 const TOTAL_ROUNDS = 5;
 const TIME_PER_ROUND = 10;
 
-// =============== CITIES (always ready) ===============
 let cities = [
   {name:"New York",country:"United States",lat:40.7128,lng:-74.0060},
   {name:"London",country:"United Kingdom",lat:51.5074,lng:-0.1278},
@@ -101,6 +100,13 @@ let cities = [
   {name:"Singapore",country:"Singapore",lat:1.3521,lng:103.8198}
 ];
 
+let roundCities = [];
+let pins = [];
+let index = 0;
+let score = 0;
+let gameActive = false;
+let timerId = null;
+
 // =============== COUNTRY BORDERS ===============
 fetch('https://unpkg.com/world-atlas@2/countries-50m.json')
   .then(r => r.json())
@@ -112,14 +118,6 @@ fetch('https://unpkg.com/world-atlas@2/countries-50m.json')
       .polygonAltitude(0.005);
   });
 
-// =============== STATE ===============
-let roundCities = [];
-let pins = [];
-let index = 0;
-let score = 0;
-let gameActive = false;
-let timerId = null;
-
 // =============== DISTANCE ===============
 function haversine(lat1, lon1, lat2, lon2) {
   const R = 6371;
@@ -129,24 +127,24 @@ function haversine(lat1, lon1, lat2, lon2) {
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 }
 
-// =============== PIN (bright & visible) ===============
+// =============== PIN (big & bright) ===============
 function dropPin(lat, lng, color) {
-  const pin = {lat, lng, color, altitude:1.5};
+  const pin = {lat, lng, color, altitude:1.6};
   pins.push(pin);
   globe.pointsData(pins);
-  let alt = 1.5;
+  let alt = 1.6;
   function animate() {
     alt -= 0.095;
-    pin.altitude = Math.max(alt, 0.03);
+    pin.altitude = Math.max(alt, 0.04);
     globe.pointsData(pins);
-    if (alt > 0.03) requestAnimationFrame(animate);
+    if (alt > 0.04) requestAnimationFrame(animate);
     else {
-      let bounce = 0.07;
+      let bounce = 0.08;
       function bounceAnim() {
         bounce -= 0.006;
-        pin.altitude = Math.max(bounce, 0.03);
+        pin.altitude = Math.max(bounce, 0.04);
         globe.pointsData(pins);
-        if (bounce > 0.03) requestAnimationFrame(bounceAnim);
+        if (bounce > 0.04) requestAnimationFrame(bounceAnim);
       }
       bounceAnim();
     }
@@ -226,8 +224,8 @@ document.getElementById('play-again-btn').addEventListener('click', () => {
   startGame();
 });
 
-// =============== AUTO START (after globe fully renders) ===============
-setTimeout(startGame, 1200);
+// =============== START GAME IMMEDIATELY ===============
+startGame();
 </script>
 </body>
 </html>
