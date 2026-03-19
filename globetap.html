@@ -2,37 +2,20 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>MapTag Ultimate</title>
+<title>GlobeTap</title>
 
 <script src="https://unpkg.com/three"></script>
 <script src="https://unpkg.com/globe.gl"></script>
 <script src="https://unpkg.com/topojson-client@3"></script>
 
 <style>
-body { margin:0; font-family:Arial; background:#000; overflow:hidden; color:#fff;}
+body { margin:0; background:#000; color:#fff; font-family:Arial; overflow:hidden;}
 #globeViz { position:absolute; width:100%; height:100%; }
 
-.glass {
-  background:rgba(255,255,255,0.08);
-  backdrop-filter: blur(12px);
-  border-radius:12px;
-  padding:12px;
-}
-
-#ui { position:absolute; top:15px; left:15px; z-index:10; }
-
-#controls {
-  position:absolute; bottom:20px; left:50%;
-  transform:translateX(-50%);
-  display:flex; gap:10px;
-}
-
-button {
-  padding:10px 14px;
-  border:none;
-  border-radius:8px;
-  cursor:pointer;
-  font-weight:bold;
+#ui {
+  position:absolute; top:15px; left:15px;
+  background:rgba(0,0,0,0.6);
+  padding:12px; border-radius:10px;
 }
 
 #center {
@@ -41,17 +24,7 @@ button {
   text-align:center;
 }
 
-#timer { font-size:22px; margin-top:5px; }
-
-#resultPopup {
-  position:absolute;
-  top:20%;
-  left:50%;
-  transform:translateX(-50%);
-  font-size:28px;
-  font-weight:bold;
-  display:none;
-}
+button { padding:10px; margin:5px; cursor:pointer; }
 </style>
 </head>
 
@@ -59,100 +32,53 @@ button {
 
 <div id="globeViz"></div>
 
-<div id="ui" class="glass">
+<div id="ui">
   <div id="score">Score: 0</div>
-  <div id="streak">Streak: 0 🔥</div>
   <div id="target"></div>
   <div id="timer">⏱️ 10</div>
 </div>
 
-<div id="controls">
-  <button onclick="restartGame()">🔄 Restart</button>
-  <button onclick="quitGame()">❌ Quit</button>
-  <button onclick="share()">📤 Share</button>
-</div>
-
 <div id="center">
-  <h1>🌍 MAPTAG ULTIMATE</h1>
-  <p>Click as close as possible to the target city.</p>
-  <p>Closer = more points. Build streaks 🔥</p>
-  <p id="loadingText">Loading world data...</p>
-  <p id="highScore"></p>
-  <p id="leaderboard"></p>
-  <button id="startBtn" onclick="startGame()" disabled>Loading...</button>
+  <h1>🌍 GlobeTap</h1>
+  <p id="status">Loading...</p>
+  <button id="startBtn" disabled onclick="startGame()">Start Game</button>
 </div>
-
-<div id="resultPopup"></div>
 
 <script>
+// ===== INIT GLOBE =====
 const globe = Globe()(document.getElementById('globeViz'))
-  .globeImageUrl('https://eoimages.gsfc.nasa.gov/images/imagerecords/57000/57730/land_ocean_ice_cloud_2048.jpg')
-  .bumpImageUrl('https://unpkg.com/three-globe/example/img/earth-topology.png')
+  .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-dark.jpg')
   .backgroundColor('#000');
 
 // ===== STATE =====
-let dataLoaded = false;
-let gameActive = false;
-
-// ===== COUNTRY BORDERS =====
-let countries = [];
-let hoveredCountry = null;
-let targetCountry = null;
-
-fetch('https://unpkg.com/world-atlas@2/countries-110m.json')
-.then(res => res.json())
-.then(worldData => {
-  countries = topojson.feature(worldData, worldData.objects.countries).features;
-
-  globe
-    .polygonsData(countries)
-    .polygonCapColor(d => {
-      if (d === targetCountry) return "rgba(0,255,100,0.6)";
-      if (d === hoveredCountry) return "rgba(255,255,255,0.3)";
-      return "rgba(0,0,0,0)";
-    })
-    .polygonSideColor(() => "rgba(0,100,255,0.15)")
-    .polygonStrokeColor(() => "#00aaff")
-    .polygonAltitude(d => d === hoveredCountry ? 0.02 : 0.005);
-});
-
-globe.onPolygonHover(d => hoveredCountry = d);
-
-// ===== CITY DATA =====
 let cities = [];
-let usedCities = JSON.parse(localStorage.getItem("usedCities")||"[]");
+let roundCities = [];
+let index = 0;
+let score = 0;
+let gameActive = false;
+let timer;
 
-let roundCities=[], index=0, score=0, streak=0;
-let timerInterval, timeLeft=10;
+// ===== LOAD LIGHTWEIGHT BORDERS =====
+fetch('https://unpkg.com/world-atlas@2/countries-50m.json')
+.then(res => res.json())
+.then(data => {
+  const countries = topojson.feature(data, data.objects.countries).features;
 
-// LOAD cities
-fetch('https://raw.githubusercontent.com/jetsetexpert/world-cities-json/master/data/cities.json')
-.then(r=>r.json())
-.then(d=>{
-  cities = d.filter(c=>c.population>100000);
-
-  dataLoaded = true;
-  document.getElementById("startBtn").disabled = false;
-  document.getElementById("startBtn").innerText = "Start Game";
-  document.getElementById("loadingText").innerText = "Ready!";
+  globe.polygonsData(countries)
+    .polygonStrokeColor(() => "#00aaff")
+    .polygonAltitude(0.003);
 });
 
-// ===== GET CITIES =====
-function getCities(){
-  let available = cities.filter(c=>!usedCities.includes(c.name));
-  if(available.length<5){ usedCities=[]; available=cities;}
+// ===== LOAD SMALLER CITY SET =====
+fetch('https://raw.githubusercontent.com/lutangar/cities.json/master/cities.json')
+.then(res => res.json())
+.then(data => {
+  // keep only major cities
+  cities = data.filter(c => Math.random() < 0.02);
 
-  let sel=[];
-  while(sel.length<5){
-    let r = available[Math.floor(Math.random()*available.length)];
-    if(!sel.includes(r)) sel.push(r);
-  }
-
-  usedCities.push(...sel.map(c=>c.name));
-  localStorage.setItem("usedCities", JSON.stringify(usedCities));
-
-  return sel;
-}
+  document.getElementById("status").innerText = "Ready!";
+  document.getElementById("startBtn").disabled = false;
+});
 
 // ===== DISTANCE =====
 function dist(a,b,c,d){
@@ -165,103 +91,68 @@ function dist(a,b,c,d){
   return R*(2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x)));
 }
 
-// ===== GAME =====
+// ===== START =====
 function startGame(){
-  if(!dataLoaded) return;
-
   gameActive = true;
   document.getElementById("center").style.display="none";
 
-  score=0; streak=0; index=0;
-  roundCities=getCities();
-  next();
-}
+  score = 0;
+  index = 0;
+  roundCities = [];
 
-function restartGame(){
-  score=0; streak=0; index=0;
-  roundCities=getCities();
-  gameActive = true;
-  updateUI();
-  next();
-}
+  for(let i=0;i<5;i++){
+    roundCities.push(cities[Math.floor(Math.random()*cities.length)]);
+  }
 
-function quitGame(){
-  gameActive = false;
-  document.getElementById("center").style.display="block";
-  globe.pointsData([]);
-  globe.arcsData([]);
-  clearInterval(timerInterval);
+  next();
 }
 
 // ===== NEXT =====
 function next(){
   if(index>=5) return end();
 
-  let c=roundCities[index];
+  let c = roundCities[index];
 
   document.getElementById("target").innerText =
-    "Find: "+c.name+", "+c.country;
-
-  targetCountry = countries.find(ct =>
-    ct.properties.name &&
-    c.country &&
-    ct.properties.name.toLowerCase().includes(c.country.toLowerCase())
-  );
-
-  globe.pointOfView({lat:c.lat,lng:c.lng,altitude:2},1500);
+    "Find: " + c.name + ", " + c.country;
 
   startTimer();
 }
 
 // ===== TIMER =====
 function startTimer(){
-  clearInterval(timerInterval);
-  timeLeft=10;
-  document.getElementById("timer").innerText="⏱️ "+timeLeft;
+  let time = 10;
+  document.getElementById("timer").innerText = "⏱️ " + time;
 
-  timerInterval=setInterval(()=>{
-    timeLeft--;
-    document.getElementById("timer").innerText="⏱️ "+timeLeft;
+  clearInterval(timer);
+  timer = setInterval(()=>{
+    time--;
+    document.getElementById("timer").innerText = "⏱️ " + time;
 
-    if(timeLeft<=0){
-      clearInterval(timerInterval);
+    if(time<=0){
+      clearInterval(timer);
       handleGuess(null);
     }
   },1000);
 }
 
-// ===== PIN DROP =====
-function dropPin(lat, lng, color){
+// ===== PIN DROP (OPTIMIZED) =====
+function dropPin(lat,lng,color){
   let altitude = 1;
 
-  let fall = setInterval(()=>{
-    altitude -= 0.08;
+  function animate(){
+    altitude -= 0.05;
 
     globe.pointsData([{
-      lat, lng,
-      size: 0.5,
-      color,
-      altitude: Math.max(altitude,0)
+      lat,lng,color,size:0.5, altitude:Math.max(altitude,0)
     }]);
 
-    if(altitude <= 0){
-      clearInterval(fall);
-
-      let bounce = 0.15;
-      let b = setInterval(()=>{
-        bounce -= 0.02;
-
-        globe.pointsData([{
-          lat, lng,
-          size: 0.5,
-          color,
-          altitude: bounce
-        }]);
-
-        if(bounce <= 0) clearInterval(b);
-      },20);
+    if(altitude > 0){
+      requestAnimationFrame(animate);
     }
-  },20);
+  }
+
+  animate();
 }
 
 // ===== CLICK =====
@@ -272,79 +163,29 @@ globe.onGlobeClick(({lat,lng})=>{
 
 // ===== GUESS =====
 function handleGuess(pos){
-  clearInterval(timerInterval);
+  clearInterval(timer);
 
-  let c=roundCities[index];
+  let c = roundCities[index];
   let d = pos ? dist(pos.lat,pos.lng,c.lat,c.lng) : 20000;
 
   let pts = Math.max(0,5000 - d*10);
-
-  if(d<500) streak++; else streak=0;
-  score += Math.round(pts + streak*200);
+  score += Math.round(pts);
 
   if(pos) dropPin(pos.lat,pos.lng,'red');
   dropPin(c.lat,c.lng,'lime');
 
-  if(pos){
-    globe.arcsData([{
-      startLat:pos.lat,startLng:pos.lng,
-      endLat:c.lat,endLng:c.lng
-    }]);
-  }
-
-  showResult(Math.round(d), Math.round(pts));
+  document.getElementById("score").innerText = "Score: " + score;
 
   index++;
-  updateUI();
-
-  setTimeout(next,2500);
-}
-
-// ===== UI =====
-function updateUI(){
-  document.getElementById("score").innerText="Score: "+score;
-  document.getElementById("streak").innerText="Streak: "+streak+" 🔥";
-}
-
-function showResult(d, pts){
-  let el=document.getElementById("resultPopup");
-  el.style.display="block";
-  el.innerText = d+" km | +"+pts+" pts";
-  setTimeout(()=> el.style.display="none",2000);
+  setTimeout(next,2000);
 }
 
 // ===== END =====
 function end(){
   gameActive = false;
-
-  let high = localStorage.getItem("highScore")||0;
-  if(score>high) localStorage.setItem("highScore",score);
-
-  let board = JSON.parse(localStorage.getItem("scores")||"[]");
-  board.push(score);
-  board.sort((a,b)=>b-a);
-  board=board.slice(0,5);
-
-  localStorage.setItem("scores", JSON.stringify(board));
-
-  document.getElementById("leaderboard").innerText =
-    "Top: "+board.join(", ");
-
-  document.getElementById("highScore").innerText =
-    "High Score: "+localStorage.getItem("highScore");
-
   document.getElementById("center").style.display="block";
+  document.getElementById("status").innerText = "Final Score: " + score;
 }
-
-// ===== SHARE =====
-function share(){
-  navigator.clipboard.writeText("I scored "+score+" 🌍");
-  alert("Copied!");
-}
-
-// INIT
-document.getElementById("highScore").innerText =
-  "High Score: "+(localStorage.getItem("highScore")||0);
 </script>
 
 </body>
