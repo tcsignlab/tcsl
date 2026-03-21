@@ -24,23 +24,24 @@
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
-  /* Page scrolls freely — only map is locked */
   html { height: 100%; }
   body {
     font-family: 'DM Sans', sans-serif;
     background: var(--charcoal);
     color: var(--text);
     min-height: 100%;
-    overflow-y: scroll; /* page scrolls normally */
+    overflow-y: scroll;
     overflow-x: hidden;
   }
 
-  /* ── HEADER — sticks at top ── */
+  /* ══════════════════════════════════════════
+     HEADER
+  ══════════════════════════════════════════ */
   header {
     background: var(--slate);
     border-bottom: 2px solid var(--orange);
-    padding: 0 20px;
-    height: 62px;
+    padding: 0 16px;
+    height: 56px;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -49,20 +50,18 @@
     z-index: 999;
     flex-shrink: 0;
   }
-  .logo { font-family: 'Bebas Neue', sans-serif; display: flex; align-items: center; gap: 10px; }
-  .logo-icon { width:38px;height:38px;background:var(--orange);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0; }
-  .logo-main { font-size:21px;letter-spacing:2px;color:var(--orange);line-height:1.15; }
+  .logo { font-family:'Bebas Neue',sans-serif;display:flex;align-items:center;gap:10px; }
+  .logo-icon { width:36px;height:36px;background:var(--orange);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0; }
+  .logo-main { font-size:19px;letter-spacing:2px;color:var(--orange);line-height:1.15; }
   .logo-main span { color:var(--text); }
-  .logo-sub { font-size:9px;letter-spacing:2px;color:var(--muted);font-family:'DM Sans',sans-serif;font-weight:500;text-transform:uppercase; }
-  .header-right { font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;text-align:right; }
+  .logo-sub { font-size:9px;letter-spacing:1.5px;color:var(--muted);font-family:'DM Sans',sans-serif;font-weight:500;text-transform:uppercase; }
+  .header-right { font-size:10px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;text-align:right; }
 
-  /* ── TWO-COLUMN WRAPPER ── */
-  .app {
-    display: flex;
-    align-items: flex-start; /* important: don't stretch columns */
-  }
+  /* ══════════════════════════════════════════
+     DESKTOP LAYOUT — side by side
+  ══════════════════════════════════════════ */
+  .app { display:flex;align-items:flex-start; }
 
-  /* ── SIDEBAR — natural height, page scroll reveals it all ── */
   .sidebar {
     width: 390px;
     flex-shrink: 0;
@@ -72,151 +71,208 @@
     display: flex;
     flex-direction: column;
     gap: 12px;
-    /* no overflow, no height constraint — just flows naturally */
   }
 
-  /* ── MAP COLUMN — sticky so it stays visible while you scroll sidebar ── */
   .map-col {
     flex: 1;
     position: sticky;
-    top: 62px; /* pin below header */
-    height: calc(100vh - 62px);
+    top: 56px;
+    height: calc(100vh - 56px);
     display: flex;
     flex-direction: column;
     overflow: hidden;
   }
 
-  #map {
-    flex: 1;
-    width: 100%;
-  }
+  #map { flex:1;width:100%; }
 
-  /* ── CARDS ── */
+  /* Mobile tab nav — hidden on desktop */
+  .mob-tabs { display:none; }
+
+  /* ══════════════════════════════════════════
+     CARDS — collapsible on mobile
+  ══════════════════════════════════════════ */
   .card { background:var(--slate);border:1px solid var(--border);border-radius:10px;overflow:hidden; }
-  .card-head { padding:9px 13px;background:rgba(244,97,26,0.08);border-bottom:1px solid var(--border);font-size:10px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:var(--orange);display:flex;align-items:center;gap:7px; }
-  .card-body { padding:12px 13px;display:flex;flex-direction:column;gap:9px; }
+  .card-head {
+    padding:11px 14px;
+    background:rgba(244,97,26,0.08);
+    border-bottom:1px solid var(--border);
+    font-size:10px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;
+    color:var(--orange);
+    display:flex;align-items:center;justify-content:space-between;gap:7px;
+    cursor:pointer;
+    user-select:none;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .card-head-left { display:flex;align-items:center;gap:7px; }
+  .card-chevron { font-size:11px;color:var(--muted);transition:transform .25s;flex-shrink:0; }
+  .card.collapsed .card-chevron { transform:rotate(-90deg); }
+  .card.collapsed .card-body { display:none; }
+  .card-body { padding:12px 14px;display:flex;flex-direction:column;gap:9px; }
 
-  /* ── FORM ── */
-  label { font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:3px; }
-  input[type=text],input[type=number],select,textarea { width:100%;background:var(--charcoal);border:1px solid var(--border);color:var(--text);border-radius:7px;padding:7px 10px;font-family:'DM Sans',sans-serif;font-size:13px;outline:none;transition:border-color .2s; }
+  /* ══════════════════════════════════════════
+     FORM ELEMENTS
+  ══════════════════════════════════════════ */
+  label { font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:4px; }
+  input[type=text],input[type=number],select,textarea {
+    width:100%;background:var(--charcoal);border:1px solid var(--border);color:var(--text);
+    border-radius:7px;padding:10px 12px;font-family:'DM Sans',sans-serif;
+    font-size:16px; /* 16px prevents iOS auto-zoom */
+    outline:none;transition:border-color .2s;
+    -webkit-appearance:none;
+  }
   input:focus,select:focus,textarea:focus { border-color:var(--orange); }
-  textarea { resize:vertical;min-height:52px; }
+  textarea { resize:vertical;min-height:60px; }
   select option { background:var(--charcoal); }
 
-  /* ── BUTTONS ── */
-  .btn { display:inline-flex;align-items:center;justify-content:center;gap:5px;padding:8px 14px;border-radius:7px;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;transition:all .15s;letter-spacing:.3px;white-space:nowrap; }
+  /* ══════════════════════════════════════════
+     BUTTONS
+  ══════════════════════════════════════════ */
+  .btn {
+    display:inline-flex;align-items:center;justify-content:center;gap:6px;
+    padding:11px 16px;border-radius:8px;border:none;cursor:pointer;
+    font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;
+    transition:all .15s;letter-spacing:.3px;white-space:nowrap;
+    -webkit-tap-highlight-color:transparent;
+    touch-action:manipulation;
+    min-height:44px; /* Apple HIG minimum touch target */
+  }
   .btn-primary { background:var(--orange);color:#fff; }
-  .btn-primary:hover { background:var(--orange-dark);transform:translateY(-1px); }
+  .btn-primary:active { background:var(--orange-dark); }
   .btn-secondary { background:var(--border);color:var(--text); }
-  .btn-secondary:hover { background:#4a4a4a; }
+  .btn-secondary:active { background:#4a4a4a; }
   .btn-green { background:var(--green);color:#111; }
-  .btn-green:hover { opacity:.9;transform:translateY(-1px); }
+  .btn-green:active { opacity:.85; }
   .btn-outline { background:transparent;border:1px solid var(--border);color:var(--text); }
-  .btn-outline:hover { border-color:var(--orange);color:var(--orange); }
+  .btn-outline:active { border-color:var(--orange);color:var(--orange); }
   .btn-full { width:100%; }
-  .btn-sm { padding:5px 10px;font-size:11px; }
+  .btn-sm { padding:8px 12px;font-size:12px;min-height:36px; }
 
-  /* ── DRAW TOOLS ── */
-  .tool-grid { display:grid;grid-template-columns:1fr 1fr;gap:7px; }
-  .tool-btn { padding:8px 6px;border-radius:8px;border:1px solid var(--border);background:var(--charcoal);color:var(--text);cursor:pointer;text-align:center;transition:all .15s;font-family:'DM Sans',sans-serif; }
-  .tool-btn:hover { border-color:var(--orange); }
+  /* ══════════════════════════════════════════
+     DRAW TOOLS
+  ══════════════════════════════════════════ */
+  .tool-grid { display:grid;grid-template-columns:1fr 1fr;gap:8px; }
+  .tool-btn {
+    padding:10px 6px;border-radius:9px;border:1px solid var(--border);
+    background:var(--charcoal);color:var(--text);cursor:pointer;text-align:center;
+    transition:all .15s;font-family:'DM Sans',sans-serif;
+    min-height:64px;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    -webkit-tap-highlight-color:transparent;touch-action:manipulation;
+  }
   .tool-btn.active { border-color:var(--orange);background:var(--orange-glow); }
-  .tool-btn .ti { font-size:17px;display:block;margin-bottom:2px; }
-  .tool-btn .tl { font-size:10px;font-weight:600;letter-spacing:.4px; }
-  .tool-dot { display:inline-block;width:7px;height:7px;border-radius:2px;margin-right:3px;vertical-align:middle; }
+  .tool-btn .ti { font-size:20px;display:block;margin-bottom:4px; }
+  .tool-btn .tl { font-size:11px;font-weight:600;letter-spacing:.4px; }
+  .tool-dot { display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:4px;vertical-align:middle; }
 
-  /* ── AREA LIST ── */
+  /* ══════════════════════════════════════════
+     AREA LIST
+  ══════════════════════════════════════════ */
   .area-list { display:flex;flex-direction:column;gap:6px; }
-  .area-item { background:var(--charcoal);border:1px solid var(--border);border-radius:8px;padding:8px 10px;display:flex;align-items:center;gap:8px; }
-  .area-dot { width:10px;height:10px;border-radius:3px;flex-shrink:0; }
+  .area-item { background:var(--charcoal);border:1px solid var(--border);border-radius:9px;padding:10px 12px;display:flex;align-items:center;gap:10px; }
+  .area-dot { width:11px;height:11px;border-radius:3px;flex-shrink:0; }
   .area-info { flex:1; }
-  .area-name { font-size:12px;font-weight:500; }
-  .area-sqft { font-size:10px;color:var(--muted);font-family:'DM Mono',monospace; }
-  .icon-btn { width:24px;height:24px;border-radius:5px;border:none;background:var(--border);color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:11px;transition:all .15s; }
-  .icon-btn.del:hover { background:var(--red);color:#fff; }
-  .no-areas { text-align:center;padding:14px;color:var(--muted);font-size:11px; }
-  .drawing-notice { background:rgba(255,208,74,0.1);border:1px solid var(--yellow);border-radius:7px;padding:8px 10px;font-size:11px;color:var(--yellow);display:none; }
+  .area-name { font-size:13px;font-weight:500; }
+  .area-sqft { font-size:11px;color:var(--muted);font-family:'DM Mono',monospace; }
+  .icon-btn {
+    width:36px;height:36px;border-radius:8px;border:none;
+    background:var(--border);color:var(--muted);cursor:pointer;
+    display:flex;align-items:center;justify-content:center;font-size:14px;
+    transition:all .15s;flex-shrink:0;touch-action:manipulation;
+  }
+  .icon-btn.del:active { background:var(--red);color:#fff; }
+  .no-areas { text-align:center;padding:16px;color:var(--muted);font-size:12px; }
+  .drawing-notice { background:rgba(255,208,74,0.1);border:1px solid var(--yellow);border-radius:8px;padding:10px 12px;font-size:12px;color:var(--yellow);display:none; }
   .drawing-notice.show { display:block; }
 
-  /* ── SERVICES BOX — its own internal scroller ── */
+  /* ══════════════════════════════════════════
+     SERVICES SCROLL BOX
+  ══════════════════════════════════════════ */
   .svc-scroll-box {
     max-height: 320px;
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
     border: 1px solid var(--border);
     border-radius: 8px;
     background: var(--charcoal);
   }
-  .svc-scroll-box::-webkit-scrollbar { width: 5px; }
-  .svc-scroll-box::-webkit-scrollbar-track { background: var(--charcoal); border-radius: 8px; }
-  .svc-scroll-box::-webkit-scrollbar-thumb { background: var(--orange); border-radius: 3px; }
+  .svc-scroll-box::-webkit-scrollbar { width:4px; }
+  .svc-scroll-box::-webkit-scrollbar-thumb { background:var(--orange);border-radius:3px; }
 
-  .svc-row { display:flex;align-items:center;gap:8px;padding:9px 11px;border-bottom:1px solid rgba(255,255,255,0.05); }
+  .svc-row { display:flex;align-items:center;gap:10px;padding:11px 12px;border-bottom:1px solid rgba(255,255,255,0.05); }
   .svc-row:last-child { border-bottom:none; }
-  .svc-check { width:14px;height:14px;cursor:pointer;accent-color:var(--orange);flex-shrink:0; }
+  .svc-check { width:18px;height:18px;cursor:pointer;accent-color:var(--orange);flex-shrink:0; }
   .svc-info { flex:1;min-width:0; }
-  .svc-name { font-size:12px;font-weight:500;color:var(--text); }
-  .svc-desc { font-size:10px;color:var(--muted);margin-top:1px; }
+  .svc-name { font-size:13px;font-weight:500;color:var(--text); }
+  .svc-desc { font-size:10px;color:var(--muted);margin-top:2px; }
   .svc-price { display:flex;align-items:center;gap:3px;flex-shrink:0; }
   .svc-price span { font-size:10px;color:var(--muted); }
-  .svc-price input { width:56px;padding:4px 6px;font-size:11px;text-align:right; }
+  .svc-price input { width:60px;padding:6px 7px;font-size:13px;text-align:right; }
 
-  /* ── CHEM CATEGORY LABELS ── */
-  .chem-cat {
-    padding: 6px 11px 4px;
-    font-size: 9px;
-    font-weight: 700;
-    letter-spacing: 1.6px;
-    text-transform: uppercase;
-    border-bottom: 1px solid rgba(255,255,255,0.05);
-    background: rgba(255,255,255,0.03);
-  }
-  .chem-row { display:flex;align-items:center;gap:8px;padding:8px 11px;border-bottom:1px solid rgba(255,255,255,0.04); }
+  /* ══════════════════════════════════════════
+     CHEMICALS
+  ══════════════════════════════════════════ */
+  .chem-cat { padding:6px 12px 4px;font-size:9px;font-weight:700;letter-spacing:1.6px;text-transform:uppercase;border-bottom:1px solid rgba(255,255,255,0.05);background:rgba(255,255,255,0.03); }
+  .chem-row { display:flex;align-items:center;gap:8px;padding:10px 12px;border-bottom:1px solid rgba(255,255,255,0.04); }
   .chem-row:last-child { border-bottom:none; }
-  .chem-check { width:14px;height:14px;cursor:pointer;accent-color:var(--blue);flex-shrink:0; }
+  .chem-check { width:18px;height:18px;cursor:pointer;accent-color:var(--blue);flex-shrink:0; }
   .chem-info { flex:1;min-width:0; }
   .chem-name { font-size:12px;font-weight:500;color:var(--text); }
   .chem-rate-wrap { display:flex;align-items:center;gap:3px;flex-shrink:0; }
   .chem-rate-wrap span { font-size:10px;color:var(--muted); }
-  .chem-rate-wrap input { width:52px;padding:4px 5px;font-size:11px;text-align:right; }
-  .chem-gal-chip {
-    display:flex;justify-content:space-between;align-items:center;
-    background:rgba(74,168,255,0.08);border:1px solid rgba(74,168,255,0.25);
-    border-radius:7px;padding:7px 11px;font-size:12px;
-  }
+  .chem-rate-wrap input { width:54px;padding:5px 6px;font-size:12px;text-align:right; }
+  .chem-gal-chip { display:flex;justify-content:space-between;align-items:flex-start;gap:8px;background:rgba(74,168,255,0.08);border:1px solid rgba(74,168,255,0.25);border-radius:8px;padding:9px 12px;font-size:12px; }
   .chem-gal-lbl { color:var(--muted);font-size:11px; }
-  .chem-gal-val { font-family:'DM Mono',monospace;color:var(--blue);font-size:13px;font-weight:600; }
+  .chem-gal-val { font-family:'DM Mono',monospace;color:var(--blue);font-size:14px;font-weight:600;flex-shrink:0; }
 
-  /* ── TOTALS ── */
-  .tot-grid { display:grid;grid-template-columns:1fr 1fr;gap:6px; }
-  .tot-chip { background:var(--charcoal);border:1px solid var(--border);border-radius:8px;padding:8px 10px; }
-  .tot-lbl { font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:2px; }
-  .tot-val { font-size:16px;font-family:'Bebas Neue',sans-serif;letter-spacing:1px; }
-  .price-row { display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);font-size:12px; }
+  /* ══════════════════════════════════════════
+     TOTALS / PRICING
+  ══════════════════════════════════════════ */
+  .tot-grid { display:grid;grid-template-columns:1fr 1fr;gap:7px; }
+  .tot-chip { background:var(--charcoal);border:1px solid var(--border);border-radius:9px;padding:9px 11px; }
+  .tot-lbl { font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:3px; }
+  .tot-val { font-size:17px;font-family:'Bebas Neue',sans-serif;letter-spacing:1px; }
+  .price-row { display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);font-size:13px; }
   .price-row:last-child { border-bottom:none; }
   .price-lbl { color:var(--muted); }
   .price-val { font-family:'DM Mono',monospace; }
-  .grand-total { display:flex;justify-content:space-between;align-items:center;padding-top:10px; }
-  .grand-lbl { font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px; }
-  .grand-val { font-size:28px;font-family:'Bebas Neue',sans-serif;letter-spacing:1px;color:var(--orange); }
+  .grand-total { display:flex;justify-content:space-between;align-items:center;padding-top:12px; }
+  .grand-lbl { font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px; }
+  .grand-val { font-size:30px;font-family:'Bebas Neue',sans-serif;letter-spacing:1px;color:var(--orange); }
 
-  /* ── CUSTOM JOB ── */
-  .custom-add-row { display:flex;gap:7px;align-items:flex-end; }
+  /* ══════════════════════════════════════════
+     CUSTOM JOB
+  ══════════════════════════════════════════ */
+  .custom-add-row { display:flex;gap:8px;align-items:flex-end; }
   .custom-add-row>div:first-child { flex:1; }
-  .custom-add-row>div:last-child { flex:0 0 88px; }
-  .ci { background:var(--charcoal);border:1px solid var(--border);border-radius:6px;padding:7px 9px;display:flex;align-items:center;gap:7px;font-size:12px; }
+  .custom-add-row>div:last-child { flex:0 0 90px; }
+  .ci { background:var(--charcoal);border:1px solid var(--border);border-radius:7px;padding:9px 11px;display:flex;align-items:center;gap:8px;font-size:13px; }
   .ci-name { flex:1;color:var(--text); }
   .ci-val { font-family:'DM Mono',monospace;color:var(--green); }
 
-  /* ── MAP TOOLBAR ── */
-  .map-toolbar { position:absolute;top:12px;left:50%;transform:translateX(-50%);z-index:10;background:var(--slate);border:1px solid var(--border);border-radius:10px;padding:5px 10px;display:flex;align-items:center;gap:7px;box-shadow:0 4px 24px rgba(0,0,0,.5);flex-wrap:wrap;max-width:90%; }
-  .map-toolbar-lbl { font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;white-space:nowrap; }
-  .map-status { position:absolute;bottom:40px;left:50%;transform:translateX(-50%);background:var(--charcoal);border:1px solid var(--orange);border-radius:8px;padding:7px 14px;font-size:12px;color:var(--orange);display:none;z-index:10;white-space:nowrap; }
+  /* ══════════════════════════════════════════
+     MAP TOOLBAR
+  ══════════════════════════════════════════ */
+  .map-toolbar {
+    position:absolute;top:10px;left:50%;transform:translateX(-50%);
+    z-index:10;background:var(--slate);border:1px solid var(--border);
+    border-radius:10px;padding:5px 8px;
+    display:flex;align-items:center;gap:5px;
+    box-shadow:0 4px 24px rgba(0,0,0,.5);flex-wrap:wrap;max-width:96%;
+  }
+  .map-toolbar-lbl { font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;white-space:nowrap; }
+  .map-status {
+    position:absolute;bottom:16px;left:50%;transform:translateX(-50%);
+    background:var(--charcoal);border:1px solid var(--orange);
+    border-radius:8px;padding:8px 16px;font-size:12px;color:var(--orange);
+    display:none;z-index:10;white-space:nowrap;max-width:90%;text-align:center;
+  }
   .map-status.show { display:block; }
 
-  /* ── API OVERLAY ── */
+  /* ══════════════════════════════════════════
+     API OVERLAY
+  ══════════════════════════════════════════ */
   .api-overlay { position:absolute;inset:0;background:rgba(26,26,26,0.96);display:flex;align-items:center;justify-content:center;z-index:100;backdrop-filter:blur(4px); }
-  .api-box { background:var(--panel);border:1px solid var(--orange);border-radius:16px;padding:28px;max-width:440px;width:90%;text-align:center; }
-  .api-box h2 { font-family:'Bebas Neue',sans-serif;font-size:26px;color:var(--orange);margin-bottom:10px;letter-spacing:2px; }
+  .api-box { background:var(--panel);border:1px solid var(--orange);border-radius:16px;padding:24px;max-width:440px;width:92%;text-align:center; }
+  .api-box h2 { font-family:'Bebas Neue',sans-serif;font-size:24px;color:var(--orange);margin-bottom:10px;letter-spacing:2px; }
   .api-box p { color:var(--muted);font-size:12px;line-height:1.6;margin-bottom:14px; }
   .api-steps { text-align:left;background:var(--charcoal);border-radius:8px;padding:12px 14px;margin-bottom:14px; }
   .api-steps li { font-size:12px;color:var(--text);line-height:1.9;list-style:decimal;margin-left:16px; }
@@ -224,44 +280,163 @@
   .api-row { display:flex;gap:8px;margin-bottom:8px; }
   .api-row input { flex:1; }
 
-  /* ── QUOTE MODAL ── */
-  .modal-overlay { position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:2000;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px); }
+  /* ══════════════════════════════════════════
+     QUOTE MODAL
+  ══════════════════════════════════════════ */
+  .modal-overlay { position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:2000;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px); }
   .modal-overlay.show { display:flex; }
-  .modal { background:var(--panel);border:1px solid var(--border);border-radius:16px;width:90%;max-width:720px;max-height:92vh;overflow-y:auto;position:relative; }
+  .modal { background:var(--panel);border:1px solid var(--border);border-radius:16px;width:96%;max-width:720px;max-height:94vh;overflow-y:auto;position:relative; }
   .modal::-webkit-scrollbar { width:4px; }
   .modal::-webkit-scrollbar-thumb { background:var(--border); }
-  .modal-actions { padding:13px 18px;background:var(--slate);border-top:1px solid var(--border);display:flex;gap:9px;justify-content:flex-end;position:sticky;bottom:0; }
+  .modal-actions { padding:13px 16px;background:var(--slate);border-top:1px solid var(--border);display:flex;gap:9px;justify-content:flex-end;position:sticky;bottom:0;flex-wrap:wrap; }
 
-  /* ── QUOTE PRINT STYLES ── */
-  #qPreview { font-family:'DM Sans',sans-serif;background:#fff;color:#111;padding:34px; }
-  .qh { display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;padding-bottom:18px;border-bottom:3px solid #F4611A; }
-  .ql { font-family:'Bebas Neue',sans-serif;font-size:28px;color:#F4611A;letter-spacing:2px; }
+  /* ══════════════════════════════════════════
+     QUOTE PRINT
+  ══════════════════════════════════════════ */
+  #qPreview { font-family:'DM Sans',sans-serif;background:#fff;color:#111;padding:28px; }
+  .qh { display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:22px;padding-bottom:16px;border-bottom:3px solid #F4611A;gap:12px; }
+  .ql { font-family:'Bebas Neue',sans-serif;font-size:26px;color:#F4611A;letter-spacing:2px; }
   .qls { font-size:10px;color:#888;letter-spacing:1px;text-transform:uppercase;margin-top:2px; }
   .qm { text-align:right;font-size:11px;color:#555;line-height:1.7; }
-  .qm strong { font-size:16px;color:#111;display:block;font-family:'Bebas Neue',sans-serif;letter-spacing:1px; }
-  .qcust { margin-bottom:18px; }
+  .qm strong { font-size:15px;color:#111;display:block;font-family:'Bebas Neue',sans-serif;letter-spacing:1px; }
+  .qcust { margin-bottom:16px; }
   .qcust h3 { font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#888;margin-bottom:5px; }
   .qcust p { font-size:13px;line-height:1.6; }
-  .qmap { width:100%;height:160px;background:#f5f5f5;border-radius:8px;overflow:hidden;margin-bottom:16px;border:1px solid #eee;display:flex;align-items:center;justify-content:center;color:#aaa;font-size:13px; }
+  .qmap { width:100%;height:150px;background:#f5f5f5;border-radius:8px;overflow:hidden;margin-bottom:14px;border:1px solid #eee;display:flex;align-items:center;justify-content:center;color:#aaa;font-size:13px; }
   .qmap img { width:100%;height:100%;object-fit:cover; }
-  .qst { font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:#F4611A;font-weight:700;margin-bottom:8px;padding-top:16px;border-top:1px solid #eee; }
+  .qst { font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:#F4611A;font-weight:700;margin-bottom:8px;padding-top:14px;border-top:1px solid #eee; }
   .qtbl { width:100%;border-collapse:collapse;font-size:12px;margin-bottom:14px; }
   .qtbl th { background:#F4611A;color:#fff;padding:7px 10px;text-align:left;font-size:10px;letter-spacing:.8px;text-transform:uppercase; }
   .qtbl td { padding:8px 10px;border-bottom:1px solid #f0f0f0; }
   .qtbl tr:nth-child(even) td { background:#fafafa; }
   .qtbl .n { text-align:right;font-family:'DM Mono',monospace; }
-  .qtot { margin-left:auto;width:250px;margin-bottom:18px; }
+  .qtot { margin-left:auto;width:240px;margin-bottom:16px; }
   .qtr { display:flex;justify-content:space-between;font-size:12px;padding:5px 0;border-bottom:1px solid #eee; }
-  .qtf { display:flex;justify-content:space-between;font-size:22px;font-family:'Bebas Neue',sans-serif;color:#F4611A;letter-spacing:1px;padding:9px 0;border-top:2px solid #F4611A;margin-top:5px; }
-  .qsig { display:flex;gap:34px;margin-top:26px; }
+  .qtf { display:flex;justify-content:space-between;font-size:20px;font-family:'Bebas Neue',sans-serif;color:#F4611A;letter-spacing:1px;padding:9px 0;border-top:2px solid #F4611A;margin-top:4px; }
+  .qsig { display:flex;gap:30px;margin-top:24px; }
   .qsl { flex:1;border-top:1px solid #ccc;padding-top:5px;font-size:10px;color:#888;text-transform:uppercase;letter-spacing:.8px; }
-  .qterms { font-size:10px;color:#999;line-height:1.7;margin-top:16px;border-top:1px solid #eee;padding-top:12px; }
+  .qterms { font-size:10px;color:#999;line-height:1.7;margin-top:14px;border-top:1px solid #eee;padding-top:12px; }
+
+  /* ══════════════════════════════════════════
+     MOBILE — ≤ 768px
+  ══════════════════════════════════════════ */
+  @media (max-width: 768px) {
+
+    /* Header compact */
+    header { height:52px;padding:0 12px; }
+    .logo-main { font-size:16px; }
+    .logo-sub { display:none; }
+    .header-right { display:none; }
+
+    /* Stack columns vertically */
+    .app { flex-direction:column; }
+
+    /* Sidebar goes full width, no sticky behaviour */
+    .sidebar {
+      width:100%;
+      border-right:none;
+      border-bottom:1px solid var(--border);
+      padding:12px;
+      gap:10px;
+    }
+
+    /* Map panel sits below sidebar, scrolls with page */
+    .map-col {
+      position:relative;
+      top:0;
+      width:100%;
+      height:55vw; /* aspect-ratio style height */
+      min-height:260px;
+      max-height:420px;
+      order: -1; /* map appears ABOVE the sidebar on mobile */
+    }
+
+    /* Tab nav bar at bottom — switch between Map and Forms */
+    .mob-tabs {
+      display:flex;
+      position:fixed;
+      bottom:0;left:0;right:0;
+      z-index:998;
+      background:var(--slate);
+      border-top:2px solid var(--orange);
+      height:56px;
+    }
+    .mob-tab {
+      flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+      gap:3px;font-size:10px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;
+      color:var(--muted);cursor:pointer;transition:color .15s;
+      -webkit-tap-highlight-color:transparent;touch-action:manipulation;
+      border:none;background:none;font-family:'DM Sans',sans-serif;
+    }
+    .mob-tab.active { color:var(--orange); }
+    .mob-tab .tab-icon { font-size:20px; }
+
+    /* Push page content up so bottom nav doesn't cover it */
+    body { padding-bottom:56px; }
+
+    /* In map-only view: hide sidebar */
+    body.view-map .sidebar { display:none; }
+    body.view-map .map-col { height:calc(100vh - 52px - 56px);max-height:none;position:fixed;top:52px;left:0;right:0;order:unset; }
+
+    /* In forms view: hide map */
+    body.view-forms .map-col { display:none; }
+
+    /* Map toolbar compact on mobile */
+    .map-toolbar { padding:4px 7px;gap:4px;top:8px; }
+    .map-toolbar-lbl { display:none; }
+    .btn-sm { padding:6px 9px;font-size:11px;min-height:32px; }
+
+    /* Cards are all expanded by default on mobile — user can collapse */
+    .card-head { padding:12px 14px; }
+
+    /* Make service price input stack better */
+    .svc-row { flex-wrap:nowrap;gap:8px; }
+    .svc-price { flex-direction:column;align-items:flex-end;gap:1px; }
+    .svc-price input { width:52px; }
+
+    /* Chem rate wrap */
+    .chem-rate-wrap { flex-direction:column;align-items:flex-end;gap:1px; }
+    .chem-rate-wrap input { width:50px; }
+
+    /* Totals grid — keep 2 col */
+    .tot-grid { grid-template-columns:1fr 1fr; }
+
+    /* Quote modal full screen */
+    .modal { width:100%;max-width:100%;height:100%;max-height:100%;border-radius:0; }
+    .modal-overlay.show { align-items:flex-end; }
+
+    /* Quote print table smaller */
+    .qh { flex-direction:column;gap:10px; }
+    .qm { text-align:left; }
+    .qtot { width:100%; }
+    .qsig { flex-direction:column;gap:20px; }
+
+    /* Generate quote button — sticky at bottom of forms */
+    .gen-btn-wrap {
+      position:sticky;
+      bottom:56px;
+      z-index:100;
+      background:var(--panel);
+      padding:10px 0 4px;
+      margin:0 -12px;
+      padding-left:12px;padding-right:12px;
+      border-top:1px solid var(--border);
+    }
+  }
+
+  /* Very small phones */
+  @media (max-width: 380px) {
+    .tool-grid { grid-template-columns:repeat(3,1fr); }
+    .tool-btn { min-height:52px;padding:7px 4px; }
+    .tool-btn .ti { font-size:16px;margin-bottom:2px; }
+    .tool-btn .tl { font-size:9px; }
+  }
 
   @media print {
-    .modal-actions,header,.sidebar,.map-toolbar,.api-overlay { display:none!important; }
+    .modal-actions,header,.sidebar,.map-toolbar,.api-overlay,.mob-tabs,.gen-btn-wrap { display:none!important; }
     .modal-overlay { position:static;background:none;display:block!important; }
     .modal { border:none;border-radius:0;max-height:none;max-width:none;width:100%; }
-    #qPreview { padding:20px; }
+    #qPreview { padding:16px; }
   }
 </style>
 </head>
@@ -284,8 +459,11 @@
   <div class="sidebar">
 
     <!-- 1. CUSTOMER INFO -->
-    <div class="card">
-      <div class="card-head">👤 Customer Info</div>
+    <div class="card" id="card-customer">
+      <div class="card-head" onclick="toggleCard('card-customer')">
+        <span class="card-head-left">👤 Customer Info</span>
+        <span class="card-chevron">▼</span>
+      </div>
       <div class="card-body">
         <div><label>Full Name</label><input type="text" id="custName" placeholder="Jane Smith"></div>
         <div><label>Phone</label><input type="text" id="custPhone" placeholder="(772) 555-0100"></div>
@@ -296,8 +474,11 @@
     </div>
 
     <!-- 2. MEASURE -->
-    <div class="card">
-      <div class="card-head">✏️ Measure Areas on Map</div>
+    <div class="card" id="card-measure">
+      <div class="card-head" onclick="toggleCard('card-measure')">
+        <span class="card-head-left">✏️ Measure Areas on Map</span>
+        <span class="card-chevron">▼</span>
+      </div>
       <div class="card-body">
         <p style="font-size:11px;color:var(--muted);line-height:1.5;">Select area type → Start Drawing → click on satellite map → double-click to finish.</p>
         <div class="tool-grid">
@@ -329,8 +510,11 @@
     </div>
 
     <!-- 3. MEASURED AREAS -->
-    <div class="card">
-      <div class="card-head">📐 Measured Areas</div>
+    <div class="card" id="card-areas">
+      <div class="card-head" onclick="toggleCard('card-areas')">
+        <span class="card-head-left">📐 Measured Areas</span>
+        <span class="card-chevron">▼</span>
+      </div>
       <div class="card-body">
         <div class="area-list" id="areaList">
           <div class="no-areas">No areas drawn yet — use tools above.</div>
@@ -339,8 +523,11 @@
     </div>
 
     <!-- 4. AREA SUMMARY -->
-    <div class="card">
-      <div class="card-head">📊 Area Summary</div>
+    <div class="card" id="card-summary">
+      <div class="card-head" onclick="toggleCard('card-summary')">
+        <span class="card-head-left">📊 Area Summary</span>
+        <span class="card-chevron">▼</span>
+      </div>
       <div class="card-body">
         <div class="tot-grid">
           <div class="tot-chip"><div class="tot-lbl">Paved Surfaces</div><div class="tot-val" id="tPaved" style="color:var(--blue)">0 ft²</div></div>
@@ -352,8 +539,11 @@
     </div>
 
     <!-- 5. SERVICES & PRICING — internal scroll box -->
-    <div class="card">
-      <div class="card-head">💰 Services &amp; Pricing</div>
+    <div class="card" id="card-services">
+      <div class="card-head" onclick="toggleCard('card-services')">
+        <span class="card-head-left">💰 Services &amp; Pricing</span>
+        <span class="card-chevron">▼</span>
+      </div>
       <div class="card-body">
         <p style="font-size:10px;color:var(--muted);">Check services to include. Adjust rate per ft² as needed. <span style="color:var(--orange)">↕ Scroll for all services</span></p>
 
@@ -472,8 +662,11 @@
     </div>
 
     <!-- 6. CUSTOM JOB -->
-    <div class="card">
-      <div class="card-head">⚙️ Custom Job / Flat Rate</div>
+    <div class="card" id="card-custom">
+      <div class="card-head" onclick="toggleCard('card-custom')">
+        <span class="card-head-left">⚙️ Custom Job / Flat Rate</span>
+        <span class="card-chevron">▼</span>
+      </div>
       <div class="card-body">
         <div class="custom-add-row">
           <div><label>Description</label><input type="text" id="ciDesc" placeholder="e.g. Driveway extension repair"></div>
@@ -485,8 +678,11 @@
     </div>
 
     <!-- 7. CHEMICALS -->
-    <div class="card">
-      <div class="card-head">🧪 Chemical Calculator</div>
+    <div class="card" id="card-chems">
+      <div class="card-head" onclick="toggleCard('card-chems')">
+        <span class="card-head-left">🧪 Chemical Calculator</span>
+        <span class="card-chevron">▼</span>
+      </div>
       <div class="card-body">
         <p style="font-size:10px;color:var(--muted);line-height:1.6;">Chemicals are auto-suggested based on checked services above. Each chemical uses <em>only the square footage of its associated service</em>. Adjust coverage rate per chemical. Check/uncheck to include in the job.</p>
 
@@ -510,22 +706,27 @@
     </div>
 
     <!-- 8. NOTES -->
-    <div class="card">
-      <div class="card-head">📝 Notes &amp; Scope</div>
+    <div class="card" id="card-notes">
+      <div class="card-head" onclick="toggleCard('card-notes')">
+        <span class="card-head-left">📝 Notes &amp; Scope</span>
+        <span class="card-chevron">▼</span>
+      </div>
       <div class="card-body">
         <textarea id="qNotes" placeholder="Special conditions, access notes, surface issues, HOA requirements..."></textarea>
       </div>
     </div>
 
     <!-- GENERATE -->
-    <button class="btn btn-green btn-full" onclick="genQuote()" style="font-size:15px;padding:14px;letter-spacing:.5px;">
-      📄 Generate Quote
-    </button>
+    <div class="gen-btn-wrap">
+      <button class="btn btn-green btn-full" onclick="genQuote()" style="font-size:15px;padding:14px;letter-spacing:.5px;">
+        📄 Generate Quote
+      </button>
+    </div>
 
     <div style="height:14px;"></div>
   </div><!-- /sidebar -->
 
-  <!-- ══════════ MAP — sticky, never scrolls with page ══════════ -->
+  <!-- ══════════ MAP — sticky on desktop, inline on mobile ══════════ -->
   <div class="map-col" id="mapCol">
     <div id="map"></div>
 
@@ -579,6 +780,25 @@
   </div>
 
 </div><!-- /app -->
+
+<!-- MOBILE BOTTOM TAB NAV -->
+<nav class="mob-tabs" id="mobTabs">
+  <button class="mob-tab active" id="tab-map" onclick="switchTab('map')">
+    <span class="tab-icon">🗺</span>Map
+  </button>
+  <button class="mob-tab" id="tab-measure" onclick="switchTab('measure')">
+    <span class="tab-icon">✏️</span>Measure
+  </button>
+  <button class="mob-tab" id="tab-services" onclick="switchTab('services')">
+    <span class="tab-icon">💰</span>Services
+  </button>
+  <button class="mob-tab" id="tab-chems" onclick="switchTab('chems')">
+    <span class="tab-icon">🧪</span>Chemicals
+  </button>
+  <button class="mob-tab" id="tab-quote" onclick="genQuote()">
+    <span class="tab-icon">📄</span>Quote
+  </button>
+</nav>
 
 <!-- QUOTE MODAL -->
 <div class="modal-overlay" id="qModal">
@@ -640,8 +860,7 @@ window.initMap=function(){
     mapTypeControl:false,streetViewControl:false,fullscreenControl:true,
     rotateControl:true,
     gestureHandling:'greedy'
-  });
-  geocoder=new google.maps.Geocoder();
+  });  geocoder=new google.maps.Geocoder();
   dm=new google.maps.drawing.DrawingManager({drawingMode:null,drawingControl:false,polygonOptions:pOpts(curTool)});
   dm.setMap(map); google.maps.event.addListener(dm,'polygoncomplete',onPoly);
 
@@ -991,6 +1210,68 @@ function genQuote(){
   document.getElementById('qPreview').innerHTML=`<div style="font-family:'DM Sans',sans-serif;background:#fff;color:#111;padding:34px"><div class="qh"><div><div class="ql">LIBERTY <span style="color:#111">PAVER RESTORATION INC.</span></div><div class="qls">Paver Restoration · Pressure Washing · Roof Soft Wash · House Wash</div><div style="font-size:10px;color:#aaa;margin-top:3px">Licensed & Insured · Serving South Florida</div></div><div class="qm"><strong>ESTIMATE #${qNum}</strong>Date: ${today}<br>Valid Until: ${valid}<br>Liberty Paver Restoration Inc.</div></div><div class="qcust"><h3>Prepared For</h3><p><strong style="font-size:15px">${name}</strong><br>${addr}<br>📞 ${phone} &nbsp;|&nbsp; ✉️ ${email}</p></div><div class="qmap">${mapImg}</div>${aRows?`<div class="qst">Measured Property Areas</div><table class="qtbl" style="margin-bottom:14px"><thead><tr><th>Area</th><th class="n">Square Footage</th></tr></thead><tbody>${aRows}</tbody></table>`:''}<div class="qst">Scope of Work &amp; Pricing</div><table class="qtbl"><thead><tr><th>Service</th><th class="n">Area</th><th class="n">Rate</th><th class="n">Amount</th></tr></thead><tbody>${sRows||'<tr><td colspan="4" style="color:#aaa;text-align:center;padding:14px">No services selected</td></tr>'}</tbody></table><div class="qtot"><div class="qtr"><span>Subtotal</span><span style="font-family:monospace">$${sub.toFixed(2)}</span></div>${disc>0?`<div class="qtr" style="color:green"><span>Discount (${disc}%)</span><span>-$${da.toFixed(2)}</span></div>`:''}<div class="qtf"><span>TOTAL</span><span>$${tot.toFixed(2)}</span></div></div>${chemRows?`<div class="qst">Chemical Requirements</div><table class="qtbl" style="margin-bottom:14px"><thead><tr><th>Chemical</th><th class="n">Total Area</th><th class="n">Coverage Rate</th><th class="n">Qty Needed</th></tr></thead><tbody>${chemRows}</tbody></table>`:''}${notes?`<div class="qst">Notes & Special Conditions</div><p style="font-size:12px;line-height:1.7;color:#444;margin-bottom:16px">${notes}</p>`:''}<div class="qsig"><div class="qsl">Customer Signature &amp; Date</div><div class="qsl">Authorized — Liberty Paver Restoration Inc.</div></div><div class="qterms"><strong>Terms &amp; Conditions:</strong> Quote valid 30 days. 50% deposit required to schedule. Balance due upon completion. Pricing based on measured square footage. Additional charges may apply for severely stained or damaged surfaces. All sealing work carries a 12-month warranty. Liberty Paver Restoration Inc. is fully licensed and insured. Customer is responsible for clearing furniture and vehicles prior to service date.</div></div>`;
   document.getElementById('qModal').classList.add('show');
 }
+
+// ── COLLAPSIBLE CARDS ──
+function toggleCard(id){
+  const card=document.getElementById(id);
+  if(card) card.classList.toggle('collapsed');
+}
+
+// ── MOBILE TAB SWITCHING ──
+// Maps tab name → which cards to show (others collapse), and view class
+const TAB_CARDS = {
+  map:      [],  // map view — hide sidebar entirely
+  measure:  ['card-customer','card-measure','card-areas','card-summary'],
+  services: ['card-services','card-custom','card-notes'],
+  chems:    ['card-chems'],
+};
+
+function isMobile(){ return window.innerWidth <= 768; }
+
+function switchTab(tab){
+  if(!isMobile()) return;
+
+  // Update tab button styles
+  document.querySelectorAll('.mob-tab').forEach(b=>b.classList.remove('active'));
+  const btn=document.getElementById('tab-'+tab);
+  if(btn) btn.classList.add('active');
+
+  if(tab==='map'){
+    document.body.className='view-map';
+    // unlock page scroll when map is full screen
+    document.body.style.overflowY='hidden';
+    return;
+  }
+
+  document.body.className='view-forms';
+  document.body.style.overflowY='scroll';
+
+  // Expand target cards, collapse others
+  const allCards=['card-customer','card-measure','card-areas','card-summary','card-services','card-custom','card-chems','card-notes'];
+  const showCards=TAB_CARDS[tab]||[];
+  allCards.forEach(id=>{
+    const c=document.getElementById(id);
+    if(!c) return;
+    if(showCards.includes(id)){
+      c.classList.remove('collapsed');
+      c.style.display='';
+    } else {
+      c.style.display='none';
+    }
+  });
+
+  // Scroll to top of sidebar
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// On resize: reset mobile classes if going back to desktop
+window.addEventListener('resize',()=>{
+  if(!isMobile()){
+    document.body.className='';
+    document.body.style.overflowY='scroll';
+    document.querySelectorAll('.card').forEach(c=>{ c.style.display=''; c.classList.remove('collapsed'); });
+  }
+});
 
 function closeQ(){document.getElementById('qModal').classList.remove('show');}
 document.getElementById('qModal').addEventListener('click',function(e){if(e.target===this)closeQ();});
