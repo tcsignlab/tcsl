@@ -8,7 +8,7 @@
        SEO META TAGS
   ═══════════════════════════════════════════ -->
   <title>Liberty Paver Restoration, Inc. | South Florida's Premier Paver & Exterior Restoration</title>
-  <meta name="description" content="Liberty Paver Restoration, Inc. — South Florida's luxury paver and exterior restoration specialists. 15 years of experience in paver sealing, soft washing, pool deck restoration, and more. Serving the highest class with the highest class work." />
+  <meta name="description" content="Liberty Paver Restoration, Inc. — South Florida's luxury paver and exterior restoration specialists. 20 years of experience in paver sealing, soft washing, pool deck restoration, and more. Serving the highest class with the highest class work." />
   <meta name="keywords" content="paver restoration South Florida, paver sealing, paver cleaning, soft wash, pool deck seal, roof soft wash, weed removal, paver re-leveling, color restoration, driveway cleaning, Fort Lauderdale, Miami, Palm Beach, luxury home exterior" />
   <meta name="author" content="Liberty Paver Restoration, Inc." />
   <meta name="robots" content="index, follow" />
@@ -20,7 +20,7 @@
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://[YOUR-DOMAIN].com/" />
   <meta property="og:title" content="Liberty Paver Restoration, Inc. | South Florida's Premier Exterior Restoration" />
-  <meta property="og:description" content="15 years of unmatched paver and exterior restoration across South Florida. We serve the highest class and deliver the highest class work." />
+  <meta property="og:description" content="20 years of unmatched paver and exterior restoration across South Florida. We serve the highest class and deliver the highest class work." />
   <meta property="og:image" content="https://[YOUR-DOMAIN].com/og-image.jpg" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
@@ -33,7 +33,7 @@
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:site" content="@[YOUR_TWITTER]" />
   <meta name="twitter:title" content="Liberty Paver Restoration, Inc. | South Florida" />
-  <meta name="twitter:description" content="Premier paver & exterior restoration serving South Florida's finest properties. 15 years of excellence." />
+  <meta name="twitter:description" content="Premier paver & exterior restoration serving South Florida's finest properties. 20 years of excellence." />
   <meta name="twitter:image" content="https://[YOUR-DOMAIN].com/og-image.jpg" />
 
   <!-- ═══════════════════════════════════════════
@@ -44,7 +44,7 @@
     "@context": "https://schema.org",
     "@type": "LocalBusiness",
     "name": "Liberty Paver Restoration, Inc.",
-    "description": "South Florida's premier paver and exterior restoration company with 15 years of experience serving luxury properties.",
+    "description": "South Florida's premier paver and exterior restoration company with 20 years of experience serving luxury properties.",
     "url": "https://[YOUR-DOMAIN].com",
     "telephone": "[YOUR-PHONE-NUMBER]",
     "email": "[YOUR-EMAIL]",
@@ -121,13 +121,33 @@
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    html { scroll-behavior: smooth; font-size: 16px; }
+    html {
+      scroll-behavior: smooth;
+      font-size: 16px;
+      overflow-x: hidden;
+      /* Fix for mobile Safari 100vh issue */
+      height: -webkit-fill-available;
+    }
 
     body {
       font-family: var(--font-body);
       background: var(--charcoal);
       color: var(--sand);
       overflow-x: hidden;
+      min-height: 100vh;
+      min-height: -webkit-fill-available;
+      /* Prevent tap highlight on mobile */
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* ── Reduced motion ── */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+      .reveal { opacity: 1 !important; transform: none !important; }
     }
 
     /* ── SCROLLBAR ── */
@@ -151,15 +171,21 @@
       border-bottom: 1px solid rgba(184,137,58,0.18);
       box-shadow: 0 2px 20px rgba(0,0,0,0.06);
     }
+    .nav-logo {
+      display: flex; flex-direction: column; gap: 1px;
+      text-decoration: none !important;
+    }
     .nav-logo-top {
       font-family: var(--font-display);
       font-size: 1.5rem; font-weight: 600; letter-spacing: 0.04em;
       color: var(--ink);
       line-height: 1;
+      text-decoration: none;
     }
     .nav-logo-sub {
       font-size: 0.6rem; letter-spacing: 0.25em; text-transform: uppercase;
       color: var(--gold); font-weight: 300;
+      text-decoration: none;
     }
     .nav-links {
       display: flex; gap: 2.5rem; list-style: none; align-items: center;
@@ -189,13 +215,15 @@
        HERO
     ══════════════════════════════════════════ */
     .hero {
-      position: relative; min-height: 100vh;
+      position: relative;
+      min-height: 100vh;
+      min-height: 100svh;
       display: flex; align-items: flex-end;
       overflow: hidden;
     }
     .hero-bg {
       position: absolute; inset: 0;
-      background-image: url('hero.jpg');
+      background-image: url('hero.png');
       background-size: cover; background-position: center top;
       transform: scale(1.05);
       animation: heroZoom 18s ease-in-out infinite alternate;
@@ -331,6 +359,7 @@
       display: flex; gap: 3rem; white-space: nowrap;
       animation: marquee 30s linear infinite;
       flex-shrink: 0; min-width: 100%;
+      will-change: transform;
     }
     .marquee-track + .marquee-track { animation-delay: -15s; }
     @keyframes marquee {
@@ -534,6 +563,7 @@
       display: flex; gap: 1.5rem;
       animation: testScroll 35s linear infinite;
       width: max-content;
+      will-change: transform;
     }
     .test-track:hover { animation-play-state: paused; }
     @keyframes testScroll {
@@ -738,34 +768,143 @@
     }
 
     /* ══════════════════════════════════════════
-       RESPONSIVE
+       RESPONSIVE — TABLET (≤1024px)
     ══════════════════════════════════════════ */
     @media (max-width: 1024px) {
-      .about { grid-template-columns: 1fr; gap: 3rem; }
-      .about-visual { max-width: 480px; }
+      .about { grid-template-columns: 1fr; gap: 3rem; padding: 5rem 6vw; }
+      .about-visual { max-width: 100%; aspect-ratio: 16/9; }
+      .about-img { object-position: center 30%; }
+      .about-tag { left: 0; bottom: -1.5rem; }
       .why-us-inner { grid-template-columns: 1fr; gap: 3rem; }
       .service-area { grid-template-columns: 1fr; gap: 3rem; }
       .contact-inner { grid-template-columns: 1fr; gap: 3rem; }
       .footer-top { grid-template-columns: 1fr 1fr; gap: 2rem; }
+      .hero-stats { right: 0; }
     }
+
+    /* ══════════════════════════════════════════
+       RESPONSIVE — MOBILE (≤768px)
+    ══════════════════════════════════════════ */
     @media (max-width: 768px) {
+      /* Nav */
       .nav-links { display: none; }
       .hamburger { display: flex; }
-      .hero-stats { position: relative; right: auto; bottom: auto; margin-top: 3rem; flex-wrap: wrap; width: 100%; }
-      .hero-stat { flex: 1; min-width: 100px; }
-      .hero-content { padding: 0 5vw 4vh; }
-      .process-steps { grid-template-columns: 1fr 1fr; }
+      nav { padding: 1rem 4vw; }
+      .nav-logo-top { font-size: 1.2rem; }
+
+      /* Hero */
+      .hero { min-height: 100svh; align-items: flex-end; }
+      .hero-content {
+        padding: 0 5vw 2rem;
+        padding-bottom: max(2rem, env(safe-area-inset-bottom));
+      }
+      .hero-h1 { font-size: clamp(2.4rem, 11vw, 4rem); margin-bottom: 1rem; }
+      .hero-desc { font-size: 0.9rem; margin-bottom: 1.8rem; max-width: 100%; }
+      .hero-eyebrow { font-size: 0.62rem; letter-spacing: 0.2em; }
+      .hero-actions { flex-direction: column; align-items: flex-start; gap: 0.8rem; }
+      .btn-primary { width: 100%; text-align: center; padding: 1rem; }
+      .hero-stats {
+        position: relative; right: auto; bottom: auto;
+        display: grid; grid-template-columns: 1fr 1fr;
+        width: 100%; margin-top: 1.5rem; gap: 1px;
+        background: rgba(184,137,58,0.2);
+      }
+      .hero-stat { flex: unset; padding: 1rem; border-left: none; }
+
+      /* Sections */
+      section { padding: 4rem 5vw; }
+      .section-title { font-size: clamp(1.8rem, 7vw, 2.8rem) !important; }
+
+      /* About */
+      .about { padding: 4rem 5vw; }
+      .about-visual { aspect-ratio: 4/3; }
+      .about-tag { left: 0; bottom: 0; }
+      .about-pillars { grid-template-columns: 1fr; gap: 0.8rem; }
+      .about-gallery { grid-template-columns: 1fr; }
+      .gallery-img-ph.featured { grid-column: span 1; min-height: 280px; }
+      .gallery-img-ph { min-height: 130px; }
+
+      /* Services */
+      .services-header { flex-direction: column; align-items: flex-start; gap: 1rem; }
+      .services-intro { max-width: 100%; }
+      .services-grid { grid-template-columns: 1fr; gap: 1px; }
+      .service-img-placeholder { height: 160px; }
+      .service-img-wrap { height: 160px; }
+
+      /* Why Us */
+      .why-us { padding: 4rem 5vw; }
+      .why-us-inner { grid-template-columns: 1fr; gap: 2.5rem; }
+      .why-us-left .section-title { font-size: clamp(2rem, 8vw, 3rem) !important; }
+      .why-card { grid-template-columns: 48px 1fr; gap: 1rem; padding: 1.4rem 1.2rem; }
+      .why-card-num { font-size: 1.5rem; }
+
+      /* Process */
+      .process-steps { grid-template-columns: 1fr 1fr; gap: 2rem 1rem; }
       .process-steps::before { display: none; }
-      .about-pillars { grid-template-columns: 1fr; }
+      .process-step { padding: 0 0.5rem; }
+
+      /* Testimonials */
+      .test-card { width: 300px; padding: 1.8rem; }
+      .test-text { font-size: 1rem; }
+
+      /* Service Area */
+      .area-list { grid-template-columns: 1fr 1fr; gap: 0.5rem; }
+      .area-visual { padding: 1.5rem; }
+      .area-map-placeholder { height: 240px; }
+
+      /* CTA */
+      .cta-band { padding: 3.5rem 5vw; flex-direction: column; align-items: flex-start; gap: 1.5rem; }
+      .btn-dark { width: 100%; text-align: center; padding: 1rem; }
+
+      /* Contact */
+      .contact { padding: 4rem 5vw; }
       .form-row { grid-template-columns: 1fr; }
-      .footer-top { grid-template-columns: 1fr; }
-      .cta-band { flex-direction: column; align-items: flex-start; }
-      .footer-bottom { flex-direction: column; align-items: flex-start; }
-      .area-list { grid-template-columns: 1fr; }
+      .form-submit { width: 100%; text-align: center; }
+
+      /* Footer */
+      .footer-top { grid-template-columns: 1fr; gap: 2rem; }
+      .footer-bottom { flex-direction: column; align-items: flex-start; gap: 0.8rem; }
+      .footer-legal { flex-wrap: wrap; gap: 1rem; }
     }
+
+    /* ══════════════════════════════════════════
+       RESPONSIVE — SMALL MOBILE (≤480px)
+    ══════════════════════════════════════════ */
     @media (max-width: 480px) {
-      section { padding: 4.5rem 5vw; }
-      .process-steps { grid-template-columns: 1fr; }
+      section { padding: 3.5rem 4vw; }
+      nav { padding: 0.9rem 4vw; }
+      .hero-h1 { font-size: clamp(2rem, 12vw, 3rem); line-height: 1; }
+      .hero-eyebrow { display: none; }
+      .hero-stats { grid-template-columns: 1fr 1fr; }
+      .process-steps { grid-template-columns: 1fr; gap: 2rem; }
+      .process-step { padding: 0; }
+      .why-card { grid-template-columns: 1fr; gap: 0.4rem; }
+      .why-card-num { font-size: 1.1rem; }
+      .services-grid { gap: 1px; }
+      .service-card { padding: 1.8rem 1.4rem; }
+      .test-card { width: 260px; padding: 1.5rem; }
+      .about-gallery { gap: 0.4rem; }
+      .gallery-img-ph.featured { min-height: 220px; }
+      .area-list { grid-template-columns: 1fr; }
+      .footer-top { gap: 1.5rem; }
+      .cta-band { padding: 2.5rem 4vw; }
+      .hero-stat-num { font-size: 1.6rem; }
+      .hero-stat-label { font-size: 0.55rem; }
+      .hero-stat { padding: 0.8rem 0.6rem; }
+    }
+
+    /* ══════════════════════════════════════════
+       TOUCH / HOVER SAFETY
+       Disable hover animations on touch devices
+       to prevent sticky states
+    ══════════════════════════════════════════ */
+    @media (hover: none) {
+      .service-card:hover { background: var(--white); box-shadow: none; }
+      .service-card:hover::before { transform: scaleX(0); }
+      .service-card:hover .service-arrow { opacity: 0; }
+      .pillar:hover { border-color: rgba(184,137,58,0.18); background: var(--charcoal-2); box-shadow: none; }
+      .process-step:hover .step-circle { background: var(--white); color: var(--gold); }
+      .btn-primary:hover::before { transform: translateX(-100%); }
     }
 
     /* ══════════════════════════════════════════
@@ -789,15 +928,15 @@
        SERVICE CARD IMAGES
     ══════════════════════════════════════════ */
     .service-img-wrap {
-      width: 100%; height: 180px; overflow: hidden; margin-bottom: 1.6rem;
+      width: 100%; height: 200px; overflow: hidden; margin-bottom: 1.6rem;
       position: relative;
     }
     .service-img-wrap img {
-      width: 100%; height: 100%; object-fit: cover;
+      width: 100%; height: 100%; object-fit: cover; object-position: center 40%;
       transition: transform 0.6s ease;
-      filter: brightness(0.92);
+      display: block;
     }
-    .service-card:hover .service-img-wrap img { transform: scale(1.06); }
+    .service-card:hover .service-img-wrap img { transform: scale(1.04); }
     .service-img-placeholder {
       width: 100%; height: 180px; margin-bottom: 1.6rem;
       display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -827,21 +966,22 @@
       margin-top: 2rem;
     }
     .gallery-img-ph {
-      aspect-ratio: 4/3; overflow: hidden;
+      overflow: hidden; position: relative;
       background: linear-gradient(135deg, var(--charcoal-3) 0%, var(--charcoal-2) 100%);
       border: 1px dashed rgba(184,137,58,0.2);
       display: flex; flex-direction: column; align-items: center; justify-content: center;
-      gap: 0.4rem; position: relative;
+      gap: 0.4rem; min-height: 160px;
     }
     .gallery-img-ph img {
-      width: 100%; height: 100%; object-fit: cover;
-      display: block;
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      object-fit: cover; display: block;
     }
-    .gallery-img-ph .gph-icon { font-size: 1.8rem; }
+    .gallery-img-ph .gph-icon { font-size: 1.8rem; position: relative; z-index: 1; }
     .gallery-img-ph .gph-label {
       font-size: 0.58rem; letter-spacing: 0.18em; text-transform: uppercase;
       color: var(--gold-dark); font-family: var(--font-body); font-weight: 400;
-      text-align: center; padding: 0 0.5rem;
+      text-align: center; padding: 0 0.5rem; position: relative; z-index: 1;
     }
     .gallery-img-ph::after {
       content: 'Before / After Photo';
@@ -849,7 +989,8 @@
       text-align: center; font-size: 0.55rem; letter-spacing: 0.15em;
       text-transform: uppercase; color: var(--slate); font-family: var(--font-body); font-weight: 300;
     }
-    .gallery-img-ph.featured { grid-column: span 2; aspect-ratio: 16/7; }
+    .gallery-img-ph.has-image::after { display: none; }
+    .gallery-img-ph.featured { grid-column: span 2; min-height: 420px; border: none; background: none; }
     .gallery-img-ph.featured .gph-icon { font-size: 2.5rem; }
   </style>
 </head>
@@ -859,7 +1000,7 @@
      NAVIGATION
 ═══════════════════════════════════════════ -->
 <nav id="mainNav" role="navigation" aria-label="Main navigation">
-  <a href="#" class="nav-logo" aria-label="Liberty Paver Restoration Home">
+  <a href="#" class="nav-logo" aria-label="Liberty Paver Restoration Home" style="text-decoration:none;">
     <span class="nav-logo-top">Liberty Paver</span>
     <span class="nav-logo-sub">Restoration, Inc. · South Florida</span>
   </a>
@@ -897,7 +1038,7 @@
   <div class="hero-content">
     <p class="hero-eyebrow">South Florida's Finest · Est. 20+ Years</p>
     <h1 class="hero-h1">
-      Liberty <em>Paver</em><br>Restoration
+      <em>Liberty</em><br>Paver<br>Restoration
     </h1>
     <p class="hero-desc">
       Liberty Paver Restoration, Inc. delivers museum-grade craftsmanship to South Florida's most distinguished properties. From grand estate driveways to resort-style pool decks — we restore what matters most.
@@ -912,7 +1053,7 @@
       </a>
     </div>
   </div>
-    </div>
+
 </section>
 
 <!-- ═══════════════════════════════════════════
@@ -929,7 +1070,7 @@
     <span class="marquee-item">Roof Soft Wash</span>
     <span class="marquee-item">Luxury Exterior Care</span>
     <span class="marquee-item">South Florida's Best</span>
-    <span class="marquee-item">15 Years of Excellence</span>
+    <span class="marquee-item">20 Years of Excellence</span>
     <span class="marquee-item">Paver Sealing</span>
     <span class="marquee-item">Soft Wash</span>
     <span class="marquee-item">Pool Deck Restoration</span>
@@ -939,7 +1080,7 @@
     <span class="marquee-item">Roof Soft Wash</span>
     <span class="marquee-item">Luxury Exterior Care</span>
     <span class="marquee-item">South Florida's Best</span>
-    <span class="marquee-item">15 Years of Excellence</span>
+    <span class="marquee-item">20 Years of Excellence</span>
   </div>
 </div>
 
@@ -947,19 +1088,25 @@
      ABOUT
 ═══════════════════════════════════════════ -->
 <section class="about" id="about" aria-labelledby="about-heading">
+  <div class="about-visual">
+    <img src="3e3fe3f7-86b3-4423-a8db-304a26c9c97a.jpg" alt="Restored paver driveway at luxury South Florida home" class="about-img" loading="lazy" width="600" height="750" />
+    <div class="about-border" aria-hidden="true"></div>
+    <div class="about-tag" aria-label="20 plus years of excellence">
+      <div class="about-tag-num">20+</div>
+      <div class="about-tag-label">Years of Excellence</div>
+    </div>
+  </div>
   <div class="about-text reveal">
-    <p class="section-eyebrow">Our Story</p>
     <h2 class="section-title" id="about-heading" style="font-size:clamp(2.2rem,4vw,3.5rem)">
       Craftsmanship<br><em style="color:var(--gold);font-style:italic">Built on Legacy</em>
     </h2>
     <p>For over two decades, Liberty Paver Restoration, Inc. has been South Florida's trusted authority in premium exterior restoration. We were founded on a simple belief: that every driveway, pool deck, and exterior surface deserves the same meticulous care as the property it belongs to.</p>
     <p>We work exclusively with South Florida's most discerning homeowners and property managers — those who understand that quality is not a luxury, it's a standard. Our processes, products, and people are selected with that philosophy at the forefront.</p>
 
-    <!-- 15 Years gallery placeholders -->
-    <div class="about-gallery" aria-label="15 years of project gallery">
-      <div class="gallery-img-ph featured reveal">
-        <div class="gph-icon">🏠</div>
-        <div class="gph-label">Before &amp; After · Driveway Restoration</div>
+    <!-- 20 Years gallery placeholders -->
+    <div class="about-gallery" aria-label="20 years of project gallery">
+      <div class="gallery-img-ph featured has-image reveal">
+        <img src="dwba.png" alt="Before and after sealer stripping and re-seal on luxury driveway" loading="lazy" />
       </div>
       <div class="gallery-img-ph reveal reveal-delay-1">
         <div class="gph-icon">🏊</div>
@@ -1013,15 +1160,14 @@
       <p class="section-eyebrow">What We Do</p>
       <h2 class="section-title services-title" id="services-heading">Our Services</h2>
     </div>
-    <p class="services-intro">Every service is performed with the same relentless attention to detail that has made Liberty Paver Restoration South Florida's premier choice for over 15 years.</p>
+    <p class="services-intro">Every service is performed with the same relentless attention to detail that has made Liberty Paver Restoration South Florida's premier choice for over 20 years.</p>
   </div>
   <div class="services-grid" role="list">
 
     <article class="service-card reveal" role="listitem">
       <div class="service-num" aria-hidden="true">01</div>
-      <div class="service-img-placeholder" aria-label="Sealer stripping photo placeholder">
-        <div class="svc-ph-icon">🔄</div>
-        <div class="svc-ph-label">Sealer Stripping &amp; Re-seal</div>
+      <div class="service-img-wrap">
+        <img src="strip_seal_reseal.png" alt="Before and after sealer stripping and re-seal on luxury paver driveway" loading="lazy" />
       </div>
       <div class="service-icon" aria-hidden="true">🔄</div>
       <h3 class="service-name">Sealer Stripping<br>& Re-seal</h3>
@@ -1031,9 +1177,8 @@
 
     <article class="service-card reveal reveal-delay-1" role="listitem">
       <div class="service-num" aria-hidden="true">02</div>
-      <div class="service-img-placeholder" aria-label="Exterior soft wash photo placeholder">
-        <div class="svc-ph-icon">🏠</div>
-        <div class="svc-ph-label">House / Exterior Soft Wash</div>
+      <div class="service-img-wrap">
+        <img src="house_wash.png" alt="Before and after exterior soft wash on luxury South Florida home" loading="lazy" />
       </div>
       <div class="service-icon" aria-hidden="true">🏠</div>
       <h3 class="service-name">House / Exterior<br>Soft Wash</h3>
@@ -1043,9 +1188,8 @@
 
     <article class="service-card reveal reveal-delay-2" role="listitem">
       <div class="service-num" aria-hidden="true">03</div>
-      <div class="service-img-placeholder" aria-label="Roof soft wash photo placeholder">
-        <div class="svc-ph-icon">🌤</div>
-        <div class="svc-ph-label">Roof Soft Wash</div>
+      <div class="service-img-wrap">
+        <img src="roof_wash.png" alt="Before and after roof soft wash on South Florida tile roof" loading="lazy" />
       </div>
       <div class="service-icon" aria-hidden="true">🌤</div>
       <h3 class="service-name">Roof Soft Wash</h3>
@@ -1055,9 +1199,8 @@
 
     <article class="service-card reveal" role="listitem">
       <div class="service-num" aria-hidden="true">04</div>
-      <div class="service-img-placeholder" aria-label="Pool deck wash photo placeholder">
-        <div class="svc-ph-icon">🏊</div>
-        <div class="svc-ph-label">Pool Deck Wash &amp; Seal</div>
+      <div class="service-img-wrap">
+        <img src="pool_deck.png" alt="Before and after pool deck wash and seal on luxury travertine deck" loading="lazy" />
       </div>
       <div class="service-icon" aria-hidden="true">🏊</div>
       <h3 class="service-name">Pool Deck<br>Wash & Seal</h3>
@@ -1067,9 +1210,8 @@
 
     <article class="service-card reveal reveal-delay-1" role="listitem">
       <div class="service-num" aria-hidden="true">05</div>
-      <div class="service-img-placeholder" aria-label="Weed and moss removal photo placeholder">
-        <div class="svc-ph-icon">🌿</div>
-        <div class="svc-ph-label">Weed &amp; Moss Removal</div>
+      <div class="service-img-wrap">
+        <img src="patio.png" alt="Before and after weed and moss removal from paver patio" loading="lazy" />
       </div>
       <div class="service-icon" aria-hidden="true">🌿</div>
       <h3 class="service-name">Weed & Moss<br>Removal</h3>
@@ -1079,9 +1221,8 @@
 
     <article class="service-card reveal reveal-delay-2" role="listitem">
       <div class="service-num" aria-hidden="true">06</div>
-      <div class="service-img-placeholder" aria-label="Paver re-leveling photo placeholder">
-        <div class="svc-ph-icon">⚙️</div>
-        <div class="svc-ph-label">Paver Re-leveling / Reset</div>
+      <div class="service-img-wrap">
+        <img src="paver_clean.png" alt="Before and after paver cleaning and restoration on estate driveway" loading="lazy" />
       </div>
       <div class="service-icon" aria-hidden="true">⚙️</div>
       <h3 class="service-name">Paver Re-leveling<br>/ Reset</h3>
@@ -1131,7 +1272,7 @@
       <div class="quote-block">
         <p class="quote-text">"We serve the highest class and perform the highest class work — no exceptions."</p>
       </div>
-      <p>In an industry where shortcuts are common, Liberty Paver Restoration holds itself to an elevated standard. We bring 15 years of hard-won expertise, premium products, and unwavering pride of work to every single project.</p>
+      <p>In an industry where shortcuts are common, Liberty Paver Restoration holds itself to an elevated standard. We bring 20 years of hard-won expertise, premium products, and unwavering pride of work to every single project.</p>
       <br>
       <a href="#contact" class="btn-primary"><span>Schedule Your Consultation</span></a>
     </div>
@@ -1139,33 +1280,26 @@
       <div class="why-card">
         <div class="why-card-num">01</div>
         <div>
-          <div class="why-card-title">Two Decades of Mastery</div>
-          <p class="why-card-body">With 15 years serving South Florida exclusively, we have encountered — and solved — every paver and exterior challenge imaginable. Experience is irreplaceable.</p>
-        </div>
-      </div>
-      <div class="why-card">
-        <div class="why-card-num">02</div>
-        <div>
           <div class="why-card-title">Premium Materials Only</div>
           <p class="why-card-body">We source commercial-grade sealers, eco-conscious cleaners, and industry-leading joint compounds — the same products used on Florida's most prestigious estates.</p>
         </div>
       </div>
       <div class="why-card">
-        <div class="why-card-num">03</div>
+        <div class="why-card-num">02</div>
         <div>
           <div class="why-card-title">White-Glove Service</div>
           <p class="why-card-body">From the first consultation to the final walk-through, every interaction reflects the professionalism and discretion that luxury clients expect and deserve.</p>
         </div>
       </div>
       <div class="why-card">
-        <div class="why-card-num">04</div>
+        <div class="why-card-num">03</div>
         <div>
           <div class="why-card-title">Results-Backed Guarantee</div>
           <p class="why-card-body">We stand behind every job with a workmanship guarantee. Your satisfaction is not a courtesy — it is our commitment and our standard.</p>
         </div>
       </div>
       <div class="why-card">
-        <div class="why-card-num">05</div>
+        <div class="why-card-num">04</div>
         <div>
           <div class="why-card-title">Climate Expertise</div>
           <p class="why-card-body">South Florida's heat, humidity, and salt air demand specialized knowledge. Our techniques and products are engineered specifically for this environment.</p>
@@ -1213,7 +1347,6 @@
 <section class="testimonials" id="testimonials" aria-labelledby="test-heading">
   <div class="testimonials-header reveal">
     <div>
-      <p class="section-eyebrow">Client Reviews</p>
       <h2 class="section-title testimonials-title" id="test-heading">What Our Clients Say</h2>
     </div>
   </div>
@@ -1365,7 +1498,7 @@
           <div class="contact-item-icon" aria-hidden="true">✉️</div>
           <div>
             <div class="contact-item-label">Email</div>
-            <div class="contact-item-value"><a href="mailto:[YOUR-EMAIL]" style="color:inherit;text-decoration:none;">[YOUR-EMAIL-ADDRESS]</a></div>
+            <div class="contact-item-value"><a href="/cdn-cgi/l/email-protection#6b3032243e39462e262a222736" style="color:inherit;text-decoration:none;">[YOUR-EMAIL-ADDRESS]</a></div>
           </div>
         </div>
         <div class="contact-item">
@@ -1442,7 +1575,7 @@
     <div class="footer-brand">
       <div class="footer-brand-logo">Liberty Paver</div>
       <div class="footer-brand-sub">Restoration, Inc.</div>
-      <p>South Florida's premier paver and exterior restoration specialists. 15 years of uncompromising quality serving the region's most distinguished properties.</p>
+      <p>South Florida's premier paver and exterior restoration specialists. 20+ years of uncompromising quality serving the region's most distinguished properties.</p>
       <div class="footer-social" aria-label="Social media links">
         <a href="https://www.facebook.com/[YOUR-PAGE]" class="social-icon" aria-label="Facebook" target="_blank" rel="noopener noreferrer">f</a>
         <a href="https://www.instagram.com/[YOUR-HANDLE]" class="social-icon" aria-label="Instagram" target="_blank" rel="noopener noreferrer">in</a>
@@ -1477,7 +1610,7 @@
       <h4>Contact</h4>
       <ul>
         <li><a href="tel:[YOUR-PHONE]">[YOUR-PHONE-NUMBER]</a></li>
-        <li><a href="mailto:[YOUR-EMAIL]">[YOUR-EMAIL-ADDRESS]</a></li>
+        <li><a href="/cdn-cgi/l/email-protection#396260766c6b147c7478707564">[YOUR-EMAIL-ADDRESS]</a></li>
         <li><a href="#service-area">South Florida</a></li>
         <li><a href="https://g.page/[YOUR-GOOGLE]" target="_blank" rel="noopener noreferrer">Google Reviews ↗</a></li>
         <li><a href="[YOUR-LICENSE-URL]" target="_blank" rel="noopener noreferrer">License: [LICENSE #]</a></li>
@@ -1501,6 +1634,17 @@
   // ── Year ──
   document.getElementById('year').textContent = new Date().getFullYear();
 
+  // ── Reduced motion: disable animations if user prefers ──
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (prefersReducedMotion) {
+    document.querySelectorAll('.marquee-track, .test-track, .hero-bg').forEach(el => {
+      el.style.animationPlayState = 'paused';
+    });
+    document.querySelectorAll('.reveal').forEach(el => {
+      el.classList.add('visible');
+    });
+  }
+
   // ── Nav scroll ──
   const nav = document.getElementById('mainNav');
   window.addEventListener('scroll', () => {
@@ -1511,50 +1655,85 @@
   const hamburger = document.getElementById('hamburger');
   const mobileNav = document.getElementById('mobileNav');
   const navOverlay = document.getElementById('navOverlay');
-  const closeNav = document.getElementById('closeNav');
+  const closeNavBtn = document.getElementById('closeNav');
 
   function openNav() {
     mobileNav.classList.add('open');
     navOverlay.classList.add('open');
     hamburger.setAttribute('aria-expanded', 'true');
+    mobileNav.setAttribute('aria-hidden', 'false');
     document.body.style.overflow = 'hidden';
+    // trap focus inside nav
+    closeNavBtn.focus();
   }
+
   function closeNavFn() {
     mobileNav.classList.remove('open');
     navOverlay.classList.remove('open');
     hamburger.setAttribute('aria-expanded', 'false');
+    mobileNav.setAttribute('aria-hidden', 'true');
     document.body.style.overflow = '';
+    hamburger.focus();
   }
+
   hamburger.addEventListener('click', openNav);
-  closeNav.addEventListener('click', closeNavFn);
+  closeNavBtn.addEventListener('click', closeNavFn);
   navOverlay.addEventListener('click', closeNavFn);
+
+  // Close nav on any mobile link click (with small delay for smooth scroll)
   document.querySelectorAll('.mob-link').forEach(a => {
-    a.addEventListener('click', closeNavFn);
+    a.addEventListener('click', () => {
+      closeNavFn();
+    });
+  });
+
+  // Close nav on Escape key
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && mobileNav.classList.contains('open')) {
+      closeNavFn();
+    }
   });
 
   // ── Scroll reveal ──
-  const reveals = document.querySelectorAll('.reveal');
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(e => {
-      if (e.isIntersecting) {
-        e.target.classList.add('visible');
-        observer.unobserve(e.target);
-      }
+  // Skip if reduced motion — already marked visible above
+  if (!prefersReducedMotion) {
+    const reveals = document.querySelectorAll('.reveal');
+    // Lower threshold on mobile for better trigger timing
+    const isMobile = window.innerWidth < 768;
+    const revealObserver = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          e.target.classList.add('visible');
+          revealObserver.unobserve(e.target);
+        }
+      });
+    }, {
+      threshold: isMobile ? 0.05 : 0.12,
+      rootMargin: isMobile ? '0px 0px -20px 0px' : '0px 0px -40px 0px'
     });
-  }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
-  reveals.forEach(el => observer.observe(el));
+    reveals.forEach(el => revealObserver.observe(el));
+  }
 
   // ── Smooth scroll for anchor links ──
   document.querySelectorAll('a[href^="#"]').forEach(a => {
     a.addEventListener('click', e => {
-      const target = document.querySelector(a.getAttribute('href'));
+      const href = a.getAttribute('href');
+      if (href === '#') return;
+      const target = document.querySelector(href);
       if (target) {
         e.preventDefault();
-        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        const navHeight = nav.offsetHeight;
+        const top = target.getBoundingClientRect().top + window.scrollY - navHeight;
+        window.scrollTo({ top, behavior: 'smooth' });
       }
     });
   });
-</script>
 
-</body>
-</html>
+  // ── Pause marquee/testimonials when tab is not visible (perf) ──
+  document.addEventListener('visibilitychange', () => {
+    const paused = document.hidden ? 'paused' : 'running';
+    document.querySelectorAll('.marquee-track, .test-track').forEach(el => {
+      el.style.animationPlayState = paused;
+    });
+  });
+</script>
