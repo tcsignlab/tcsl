@@ -827,21 +827,22 @@
       margin-top: 2rem;
     }
     .gallery-img-ph {
-      aspect-ratio: 4/3; overflow: hidden;
+      overflow: hidden; position: relative;
       background: linear-gradient(135deg, var(--charcoal-3) 0%, var(--charcoal-2) 100%);
       border: 1px dashed rgba(184,137,58,0.2);
       display: flex; flex-direction: column; align-items: center; justify-content: center;
-      gap: 0.4rem; position: relative;
+      gap: 0.4rem; min-height: 160px;
     }
     .gallery-img-ph img {
-      width: 100%; height: 100%; object-fit: cover;
-      display: block;
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      object-fit: cover; display: block;
     }
-    .gallery-img-ph .gph-icon { font-size: 1.8rem; }
+    .gallery-img-ph .gph-icon { font-size: 1.8rem; position: relative; z-index: 1; }
     .gallery-img-ph .gph-label {
       font-size: 0.58rem; letter-spacing: 0.18em; text-transform: uppercase;
       color: var(--gold-dark); font-family: var(--font-body); font-weight: 400;
-      text-align: center; padding: 0 0.5rem;
+      text-align: center; padding: 0 0.5rem; position: relative; z-index: 1;
     }
     .gallery-img-ph::after {
       content: 'Before / After Photo';
@@ -849,7 +850,8 @@
       text-align: center; font-size: 0.55rem; letter-spacing: 0.15em;
       text-transform: uppercase; color: var(--slate); font-family: var(--font-body); font-weight: 300;
     }
-    .gallery-img-ph.featured { grid-column: span 2; aspect-ratio: 3/4; }
+    .gallery-img-ph.has-image::after { display: none; }
+    .gallery-img-ph.featured { grid-column: span 2; min-height: 420px; border: none; background: none; }
     .gallery-img-ph.featured .gph-icon { font-size: 2.5rem; }
   </style>
 </head>
@@ -965,7 +967,7 @@
 ═══════════════════════════════════════════ -->
 <section class="about" id="about" aria-labelledby="about-heading">
   <div class="about-visual">
-    <img src="https://github.com/tcsignlab/tcs/dwba.png" alt="Luxury Florida estate with freshly restored paver driveway" class="about-img" loading="lazy" width="600" height="750" />
+    <img src="3e3fe3f7-86b3-4423-a8db-304a26c9c97a.jpg" alt="Luxury Florida estate with freshly restored paver driveway" class="about-img" loading="lazy" width="600" height="750" />
     <div class="about-border" aria-hidden="true"></div>
     <div class="about-tag" aria-label="20 plus years of excellence">
       <div class="about-tag-num">20+</div>
@@ -982,8 +984,8 @@
 
     <!-- 20 Years gallery placeholders -->
     <div class="about-gallery" aria-label="20 years of project gallery">
-      <div class="gallery-img-ph featured reveal" style="border:none;background:none;">
-        <img src="dwba.png" alt="Before and after sealer stripping and re-seal on luxury driveway" style="width:100%;height:100%;object-fit:cover;display:block;" loading="lazy" />
+      <div class="gallery-img-ph featured has-image reveal">
+        <img src="dwba.png" alt="Before and after sealer stripping and re-seal on luxury driveway" loading="lazy" />
       </div>
       <div class="gallery-img-ph reveal reveal-delay-1">
         <div class="gph-icon">🏊</div>
