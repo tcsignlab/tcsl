@@ -1,1169 +1,1584 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ProPave Estimator — Paver & Pressure Wash Quoting Tool</title>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
-<style>
-  :root {
-    --orange: #F4611A;
-    --orange-dark: #C94D0A;
-    --orange-glow: rgba(244,97,26,0.18);
-    --charcoal: #1A1A1A;
-    --slate: #242424;
-    --panel: #2C2C2C;
-    --border: #3A3A3A;
-    --text: #EEEEEE;
-    --muted: #888;
-    --green: #3ED97A;
-    --blue: #4AA8FF;
-    --yellow: #FFD04A;
-    --red: #FF5E5E;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    font-family: 'DM Sans', sans-serif;
-    background: var(--charcoal);
-    color: var(--text);
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-  }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  /* ── HEADER ── */
-  header {
-    background: var(--slate);
-    border-bottom: 2px solid var(--orange);
-    padding: 0 24px;
-    height: 60px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    position: sticky;
-    top: 0;
-    z-index: 1000;
-    flex-shrink: 0;
-  }
-  .logo {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 28px;
-    letter-spacing: 2px;
-    color: var(--orange);
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  .logo span { color: var(--text); }
-  .logo-icon {
-    width: 32px; height: 32px;
-    background: var(--orange);
-    border-radius: 6px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 18px;
-  }
-  .header-tagline {
-    font-size: 12px;
-    color: var(--muted);
-    letter-spacing: 1px;
-    text-transform: uppercase;
-  }
+  <!-- ═══════════════════════════════════════════
+       SEO META TAGS
+  ═══════════════════════════════════════════ -->
+  <title>Liberty Paver Restoration, Inc. | South Florida's Premier Paver & Exterior Restoration</title>
+  <meta name="description" content="Liberty Paver Restoration, Inc. — South Florida's luxury paver and exterior restoration specialists. 20 years of experience in paver sealing, soft washing, pool deck restoration, and more. Serving the highest class with the highest class work." />
+  <meta name="keywords" content="paver restoration South Florida, paver sealing, paver cleaning, soft wash, pool deck seal, roof soft wash, weed removal, paver re-leveling, color restoration, driveway cleaning, Fort Lauderdale, Miami, Palm Beach, luxury home exterior" />
+  <meta name="author" content="Liberty Paver Restoration, Inc." />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://[YOUR-DOMAIN].com/" />
 
-  /* ── LAYOUT ── */
-  .app {
-    display: flex;
-    flex: 1;
-    height: calc(100vh - 60px);
-    overflow: hidden;
-  }
+  <!-- ═══════════════════════════════════════════
+       OPEN GRAPH / FACEBOOK
+  ═══════════════════════════════════════════ -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://[YOUR-DOMAIN].com/" />
+  <meta property="og:title" content="Liberty Paver Restoration, Inc. | South Florida's Premier Exterior Restoration" />
+  <meta property="og:description" content="20 years of unmatched paver and exterior restoration across South Florida. We serve the highest class and deliver the highest class work." />
+  <meta property="og:image" content="https://[YOUR-DOMAIN].com/og-image.jpg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:site_name" content="Liberty Paver Restoration, Inc." />
+  <meta property="og:locale" content="en_US" />
 
-  /* ── LEFT PANEL ── */
-  .sidebar {
-    width: 360px;
-    flex-shrink: 0;
-    background: var(--panel);
-    border-right: 1px solid var(--border);
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-  }
-  .sidebar-scroll {
-    overflow-y: auto;
-    flex: 1;
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-  }
-  .sidebar-scroll::-webkit-scrollbar { width: 4px; }
-  .sidebar-scroll::-webkit-scrollbar-track { background: transparent; }
-  .sidebar-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+  <!-- ═══════════════════════════════════════════
+       TWITTER CARD
+  ═══════════════════════════════════════════ -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:site" content="@[YOUR_TWITTER]" />
+  <meta name="twitter:title" content="Liberty Paver Restoration, Inc. | South Florida" />
+  <meta name="twitter:description" content="Premier paver & exterior restoration serving South Florida's finest properties. 20 years of excellence." />
+  <meta name="twitter:image" content="https://[YOUR-DOMAIN].com/og-image.jpg" />
 
-  .section-card {
-    background: var(--slate);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    overflow: hidden;
+  <!-- ═══════════════════════════════════════════
+       SCHEMA.ORG JSON-LD
+  ═══════════════════════════════════════════ -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "LocalBusiness",
+    "name": "Liberty Paver Restoration, Inc.",
+    "description": "South Florida's premier paver and exterior restoration company with 20 years of experience serving luxury properties.",
+    "url": "https://[YOUR-DOMAIN].com",
+    "telephone": "[YOUR-PHONE-NUMBER]",
+    "email": "[YOUR-EMAIL]",
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "[YOUR-STREET-ADDRESS]",
+      "addressLocality": "[YOUR-CITY]",
+      "addressRegion": "FL",
+      "postalCode": "[YOUR-ZIP]",
+      "addressCountry": "US"
+    },
+    "geo": {
+      "@type": "GeoCoordinates",
+      "latitude": "[YOUR-LAT]",
+      "longitude": "[YOUR-LNG]"
+    },
+    "areaServed": {
+      "@type": "State",
+      "name": "South Florida"
+    },
+    "priceRange": "$$$",
+    "foundingDate": "2005",
+    "hasOfferCatalog": {
+      "@type": "OfferCatalog",
+      "name": "Paver & Exterior Restoration Services",
+      "itemListElement": [
+        {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "Sealer Stripping and Re-seal"}},
+        {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "House / Exterior Soft Wash"}},
+        {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "Roof Soft Wash"}},
+        {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "Pool Deck Wash & Seal"}},
+        {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "Weed & Moss Removal"}},
+        {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "Paver Re-leveling / Reset"}},
+        {"@type": "Offer", "itemOffered": {"@type": "Service", "name": "Color Restoration"}}
+      ]
+    },
+    "sameAs": [
+      "https://www.facebook.com/[YOUR-PAGE]",
+      "https://www.instagram.com/[YOUR-HANDLE]",
+      "https://www.linkedin.com/company/[YOUR-COMPANY]"
+    ]
   }
-  .section-header {
-    padding: 12px 16px;
-    background: rgba(244,97,26,0.08);
-    border-bottom: 1px solid var(--border);
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    color: var(--orange);
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .section-body { padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; }
+  </script>
 
-  label {
-    font-size: 11px;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 0.8px;
-    display: block;
-    margin-bottom: 5px;
-  }
-  input[type="text"], input[type="number"], select, textarea {
-    width: 100%;
-    background: var(--charcoal);
-    border: 1px solid var(--border);
-    color: var(--text);
-    border-radius: 7px;
-    padding: 9px 12px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 13px;
-    outline: none;
-    transition: border-color 0.2s;
-  }
-  input:focus, select:focus, textarea:focus { border-color: var(--orange); }
-  textarea { resize: vertical; min-height: 60px; }
+  <!-- ═══════════════════════════════════════════
+       FONTS
+  ═══════════════════════════════════════════ -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&family=Jost:wght@200;300;400;500&display=swap" rel="stylesheet" />
 
-  .input-row { display: flex; gap: 8px; }
-  .input-row > * { flex: 1; }
+  <style>
+    /* ═══════════════════════════════════
+       CSS CUSTOM PROPERTIES
+    ═══════════════════════════════════ */
+    :root {
+      --gold:        #b8893a;
+      --gold-light:  #d4a85a;
+      --gold-dark:   #8a6820;
+      --gold-pale:   #f5e8cc;
+      --charcoal:    #ffffff;
+      --charcoal-2:  #f8f5f0;
+      --charcoal-3:  #f0ebe2;
+      --sand:        #2a2318;
+      --sand-2:      #4a4035;
+      --slate:       #6a6055;
+      --white:       #ffffff;
+      --ink:         #1c1710;
+      --ink-2:       #3a3228;
+      --rule:        rgba(184,137,58,0.18);
+      --font-display: 'Cormorant Garamond', Georgia, serif;
+      --font-body:   'Jost', sans-serif;
+      --transition:  0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
 
-  .btn {
-    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
-    padding: 10px 16px;
-    border-radius: 7px;
-    border: none; cursor: pointer;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 13px;
-    font-weight: 600;
-    transition: all 0.15s;
-    letter-spacing: 0.3px;
-  }
-  .btn-primary {
-    background: var(--orange);
-    color: #fff;
-  }
-  .btn-primary:hover { background: var(--orange-dark); transform: translateY(-1px); }
-  .btn-secondary {
-    background: var(--border);
-    color: var(--text);
-  }
-  .btn-secondary:hover { background: #4a4a4a; }
-  .btn-green { background: var(--green); color: #111; }
-  .btn-green:hover { opacity: 0.9; }
-  .btn-outline {
-    background: transparent;
-    border: 1px solid var(--border);
-    color: var(--text);
-  }
-  .btn-outline:hover { border-color: var(--orange); color: var(--orange); }
-  .btn-full { width: 100%; }
-  .btn-sm { padding: 7px 12px; font-size: 12px; }
-  .btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-  /* ── AREA ITEMS ── */
-  .area-list { display: flex; flex-direction: column; gap: 8px; }
-  .area-item {
-    background: var(--charcoal);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 10px 12px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  .area-dot {
-    width: 12px; height: 12px;
-    border-radius: 3px;
-    flex-shrink: 0;
-  }
-  .area-info { flex: 1; }
-  .area-name { font-size: 13px; font-weight: 500; }
-  .area-sqft { font-size: 11px; color: var(--muted); font-family: 'DM Mono', monospace; }
-  .area-actions { display: flex; gap: 4px; }
-  .icon-btn {
-    width: 28px; height: 28px;
-    border-radius: 6px;
-    border: none;
-    background: var(--border);
-    color: var(--muted);
-    cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 13px;
-    transition: all 0.15s;
-  }
-  .icon-btn:hover { background: var(--orange); color: #fff; }
-  .icon-btn.del:hover { background: var(--red); color: #fff; }
+    html { scroll-behavior: smooth; font-size: 16px; }
 
-  /* ── DRAW TOOLS ── */
-  .tool-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-  .tool-btn {
-    padding: 10px;
-    border-radius: 8px;
-    border: 1px solid var(--border);
-    background: var(--charcoal);
-    color: var(--text);
-    cursor: pointer;
-    text-align: center;
-    transition: all 0.15s;
-    font-family: 'DM Sans', sans-serif;
-  }
-  .tool-btn:hover { border-color: var(--orange); }
-  .tool-btn.active { border-color: var(--orange); background: var(--orange-glow); }
-  .tool-btn .tool-icon { font-size: 20px; display: block; margin-bottom: 4px; }
-  .tool-btn .tool-label { font-size: 11px; font-weight: 600; letter-spacing: 0.5px; }
-  .tool-btn .tool-color {
-    display: inline-block;
-    width: 8px; height: 8px;
-    border-radius: 2px;
-    margin-right: 4px;
-    vertical-align: middle;
-  }
+    body {
+      font-family: var(--font-body);
+      background: var(--charcoal);
+      color: var(--sand);
+      overflow-x: hidden;
+    }
 
-  /* ── PRICING ── */
-  .price-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 8px 0;
-    border-bottom: 1px solid var(--border);
-    font-size: 13px;
-  }
-  .price-row:last-child { border-bottom: none; }
-  .price-label { color: var(--muted); }
-  .price-val { font-family: 'DM Mono', monospace; color: var(--text); }
-  .price-total {
-    font-size: 24px;
-    font-family: 'Bebas Neue', sans-serif;
-    letter-spacing: 1px;
-    color: var(--orange);
-  }
+    /* ── SCROLLBAR ── */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--charcoal-2); }
+    ::-webkit-scrollbar-thumb { background: var(--gold); border-radius: 3px; }
 
-  /* ── MAP AREA ── */
-  .map-container {
-    flex: 1;
-    position: relative;
-    display: flex;
-    flex-direction: column;
-  }
-  #map {
-    flex: 1;
-    width: 100%;
-  }
+    /* ══════════════════════════════════════════
+       NAV
+    ══════════════════════════════════════════ */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      padding: 1.2rem 5vw;
+      display: flex; align-items: center; justify-content: space-between;
+      background: linear-gradient(180deg, rgba(255,255,255,0.98) 0%, rgba(255,255,255,0) 100%);
+      backdrop-filter: blur(4px);
+      transition: background var(--transition);
+    }
+    nav.scrolled {
+      background: rgba(255,255,255,0.98);
+      border-bottom: 1px solid rgba(184,137,58,0.18);
+      box-shadow: 0 2px 20px rgba(0,0,0,0.06);
+    }
+    .nav-logo-top {
+      font-family: var(--font-display);
+      font-size: 1.5rem; font-weight: 600; letter-spacing: 0.04em;
+      color: var(--ink);
+      line-height: 1;
+    }
+    .nav-logo-sub {
+      font-size: 0.6rem; letter-spacing: 0.25em; text-transform: uppercase;
+      color: var(--gold); font-weight: 300;
+    }
+    .nav-links {
+      display: flex; gap: 2.5rem; list-style: none; align-items: center;
+    }
+    .nav-links a {
+      color: var(--ink-2); text-decoration: none; font-size: 0.75rem;
+      letter-spacing: 0.18em; text-transform: uppercase; font-weight: 400;
+      position: relative; transition: color var(--transition);
+    }
+    .nav-links a::after {
+      content: ''; position: absolute; bottom: -3px; left: 0; width: 0; height: 1px;
+      background: var(--gold); transition: width var(--transition);
+    }
+    .nav-links a:hover { color: var(--gold); }
+    .nav-links a:hover::after { width: 100%; }
+    .nav-cta {
+      background: var(--gold); color: var(--white) !important;
+      padding: 0.55rem 1.4rem; font-weight: 500 !important;
+      transition: background var(--transition), transform var(--transition) !important;
+    }
+    .nav-cta:hover { background: var(--gold-dark) !important; transform: translateY(-1px); }
+    .nav-cta::after { display: none !important; }
+    .hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; background: none; border: none; padding: 4px; }
+    .hamburger span { width: 24px; height: 1px; background: var(--gold); display: block; transition: all 0.3s; }
 
-  /* MAP TOOLBAR */
-  .map-toolbar {
-    position: absolute;
-    top: 12px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 10;
-    background: var(--slate);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 6px 10px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    box-shadow: 0 4px 24px rgba(0,0,0,0.5);
-    flex-wrap: wrap;
-    max-width: 90%;
-  }
-  .map-toolbar-label {
-    font-size: 11px;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    white-space: nowrap;
-  }
+    /* ══════════════════════════════════════════
+       HERO
+    ══════════════════════════════════════════ */
+    .hero {
+      position: relative; min-height: 100vh;
+      display: flex; align-items: flex-end;
+      overflow: hidden;
+    }
+    .hero-bg {
+      position: absolute; inset: 0;
+      background-image: url('hero.png');
+      background-size: cover; background-position: center top;
+      transform: scale(1.05);
+      animation: heroZoom 18s ease-in-out infinite alternate;
+    }
+    @keyframes heroZoom {
+      from { transform: scale(1.05); }
+      to   { transform: scale(1.12); }
+    }
+    .hero-overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(
+        180deg,
+        rgba(8,6,2,0.18) 0%,
+        rgba(8,6,2,0.32) 35%,
+        rgba(8,6,2,0.78) 65%,
+        rgba(8,6,2,0.96) 100%
+      );
+    }
+    .hero-overlay-accent {
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse at 60% 20%, rgba(232,150,60,0.12) 0%, transparent 55%);
+    }
+    .hero-content {
+      position: relative; z-index: 2;
+      padding: 0 5vw 8vh;
+      max-width: 900px;
+      animation: heroReveal 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+    }
+    @keyframes heroReveal {
+      from { opacity: 0; transform: translateY(40px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .hero-eyebrow {
+      font-size: 0.7rem; letter-spacing: 0.3em; text-transform: uppercase;
+      color: #f5d88a; font-weight: 400; margin-bottom: 1.2rem;
+      display: flex; align-items: center; gap: 1rem;
+      text-shadow: 0 1px 8px rgba(0,0,0,0.6);
+    }
+    .hero-eyebrow::before {
+      content: ''; display: block; width: 40px; height: 1px; background: #f5d88a;
+    }
+    .hero-h1 {
+      font-family: var(--font-display);
+      font-size: clamp(3.2rem, 8vw, 7rem);
+      font-weight: 300; line-height: 0.95;
+      color: #ffffff;
+      margin-bottom: 1.6rem;
+      text-shadow: 0 2px 20px rgba(0,0,0,0.5), 0 1px 4px rgba(0,0,0,0.4);
+    }
+    .hero-h1 em {
+      font-style: italic; color: #f5d88a;
+    }
+    .hero-desc {
+      font-size: 1rem; font-weight: 300; letter-spacing: 0.06em; line-height: 1.7;
+      color: rgba(255,255,255,0.88); max-width: 540px; margin-bottom: 2.8rem;
+      text-shadow: 0 1px 8px rgba(0,0,0,0.5);
+    }
+    .hero-actions {
+      display: flex; gap: 1.2rem; flex-wrap: wrap; align-items: center;
+    }
+    .btn-primary {
+      background: var(--gold); color: var(--white);
+      padding: 0.9rem 2.4rem; font-family: var(--font-body);
+      font-size: 0.75rem; letter-spacing: 0.2em; text-transform: uppercase;
+      font-weight: 500; text-decoration: none; display: inline-block;
+      transition: all var(--transition); position: relative; overflow: hidden;
+    }
+    .btn-primary::before {
+      content: ''; position: absolute; inset: 0;
+      background: var(--gold-dark); transform: translateX(-100%);
+      transition: transform var(--transition);
+    }
+    .btn-primary:hover::before { transform: translateX(0); }
+    .btn-primary span { position: relative; z-index: 1; }
+    .btn-secondary {
+      color: var(--gold-light); font-size: 0.75rem; letter-spacing: 0.2em;
+      text-transform: uppercase; font-weight: 300; text-decoration: none;
+      display: inline-flex; align-items: center; gap: 0.6rem;
+      transition: color var(--transition);
+    }
+    .btn-secondary:hover { color: var(--white); }
+    .btn-secondary svg { transition: transform var(--transition); }
+    .btn-secondary:hover svg { transform: translateX(4px); }
 
-  /* MAP STATUS */
-  .map-status {
-    position: absolute;
-    bottom: 40px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: var(--charcoal);
-    border: 1px solid var(--orange);
-    border-radius: 8px;
-    padding: 8px 16px;
-    font-size: 12px;
-    color: var(--orange);
-    display: none;
-    z-index: 10;
-    white-space: nowrap;
-  }
-  .map-status.show { display: block; }
+    /* hero stats bar */
+    .hero-stats {
+      position: absolute; bottom: 0; right: 5vw; z-index: 2;
+      display: flex; gap: 0; align-items: stretch;
+      animation: heroReveal 1.4s 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+    }
+    .hero-stat {
+      padding: 1.4rem 2rem;
+      background: rgba(255,255,255,0.92);
+      backdrop-filter: blur(12px);
+      border-top: 2px solid var(--gold);
+      border-left: 1px solid rgba(184,137,58,0.15);
+      text-align: center;
+    }
+    .hero-stat-num {
+      font-family: var(--font-display); font-size: 2.2rem; font-weight: 600;
+      color: var(--gold); line-height: 1;
+    }
+    .hero-stat-label {
+      font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--ink-2); font-weight: 400; margin-top: 0.3rem;
+    }
 
-  /* ── API KEY PROMPT ── */
-  .api-overlay {
-    position: absolute;
-    inset: 0;
-    background: rgba(26,26,26,0.96);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 100;
-    backdrop-filter: blur(4px);
-  }
-  .api-box {
-    background: var(--panel);
-    border: 1px solid var(--orange);
-    border-radius: 16px;
-    padding: 32px;
-    max-width: 460px;
-    width: 90%;
-    text-align: center;
-  }
-  .api-box h2 {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 32px;
-    color: var(--orange);
-    margin-bottom: 12px;
-    letter-spacing: 2px;
-  }
-  .api-box p {
-    color: var(--muted);
-    font-size: 13px;
-    line-height: 1.6;
-    margin-bottom: 20px;
-  }
-  .api-steps {
-    text-align: left;
-    background: var(--charcoal);
-    border-radius: 8px;
-    padding: 14px 16px;
-    margin-bottom: 20px;
-  }
-  .api-steps li {
-    font-size: 12px;
-    color: var(--text);
-    line-height: 1.8;
-    list-style: decimal;
-    margin-left: 16px;
-  }
-  .api-steps a { color: var(--orange); }
-  .api-input-row { display: flex; gap: 8px; margin-bottom: 12px; }
-  .api-input-row input { flex: 1; }
+    /* ══════════════════════════════════════════
+       SECTION SHARED
+    ══════════════════════════════════════════ */
+    section { padding: 7rem 5vw; }
+    .section-eyebrow {
+      font-size: 0.65rem; letter-spacing: 0.3em; text-transform: uppercase;
+      color: var(--gold); font-weight: 400; margin-bottom: 1rem;
+      display: flex; align-items: center; gap: 1rem;
+    }
+    .section-eyebrow::before {
+      content: ''; display: block; width: 30px; height: 1px; background: var(--gold);
+    }
+    .section-title {
+      font-family: var(--font-display); font-weight: 300; line-height: 1.05;
+      color: var(--ink);
+    }
 
-  /* ── QUOTE MODAL ── */
-  .modal-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.8);
-    z-index: 2000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    backdrop-filter: blur(4px);
-    display: none;
-  }
-  .modal-overlay.show { display: flex; }
-  .modal {
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    width: 90%;
-    max-width: 700px;
-    max-height: 90vh;
-    overflow-y: auto;
-    position: relative;
-  }
-  .modal::-webkit-scrollbar { width: 4px; }
-  .modal::-webkit-scrollbar-thumb { background: var(--border); }
+    /* ══════════════════════════════════════════
+       MARQUEE BAND
+    ══════════════════════════════════════════ */
+    .marquee-band {
+      background: var(--ink); padding: 0.85rem 0; overflow: hidden;
+      display: flex; gap: 0;
+    }
+    .marquee-track {
+      display: flex; gap: 3rem; white-space: nowrap;
+      animation: marquee 30s linear infinite;
+      flex-shrink: 0; min-width: 100%;
+    }
+    .marquee-track + .marquee-track { animation-delay: -15s; }
+    @keyframes marquee {
+      from { transform: translateX(0); }
+      to   { transform: translateX(-100%); }
+    }
+    .marquee-item {
+      font-size: 0.7rem; letter-spacing: 0.25em; text-transform: uppercase;
+      color: var(--gold-light); font-weight: 400;
+      display: flex; align-items: center; gap: 1.5rem;
+    }
+    .marquee-item::after {
+      content: '✦'; font-size: 0.5rem; opacity: 0.5;
+    }
 
-  /* ── QUOTE PREVIEW ── */
-  #quotePreview {
-    font-family: 'DM Sans', sans-serif;
-    background: #fff;
-    color: #111;
-    padding: 40px;
-  }
-  .q-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 32px;
-    padding-bottom: 24px;
-    border-bottom: 3px solid #F4611A;
-  }
-  .q-logo {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 36px;
-    color: #F4611A;
-    letter-spacing: 2px;
-  }
-  .q-logo-sub { font-size: 11px; color: #888; letter-spacing: 1px; text-transform: uppercase; }
-  .q-meta { text-align: right; font-size: 12px; color: #555; line-height: 1.7; }
-  .q-meta strong { font-size: 18px; color: #111; display: block; font-family: 'Bebas Neue', sans-serif; letter-spacing: 1px; }
-  .q-customer { margin-bottom: 24px; }
-  .q-customer h3 { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #888; margin-bottom: 6px; }
-  .q-customer p { font-size: 14px; line-height: 1.6; }
-  .q-section-title {
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
-    color: #F4611A;
-    font-weight: 600;
-    margin-bottom: 10px;
-    padding-top: 20px;
-    border-top: 1px solid #eee;
-  }
-  .q-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 20px; }
-  .q-table th { background: #F4611A; color: #fff; padding: 8px 12px; text-align: left; font-size: 11px; letter-spacing: 0.8px; text-transform: uppercase; }
-  .q-table td { padding: 9px 12px; border-bottom: 1px solid #f0f0f0; }
-  .q-table tr:nth-child(even) td { background: #fafafa; }
-  .q-table .num { text-align: right; font-family: 'DM Mono', monospace; }
-  .q-totals { margin-left: auto; width: 260px; margin-bottom: 24px; }
-  .q-total-row { display: flex; justify-content: space-between; font-size: 13px; padding: 5px 0; border-bottom: 1px solid #eee; }
-  .q-total-final {
-    display: flex; justify-content: space-between;
-    font-size: 22px; font-family: 'Bebas Neue', sans-serif;
-    color: #F4611A; letter-spacing: 1px;
-    padding: 10px 0; border-top: 2px solid #F4611A; margin-top: 6px;
-  }
-  .q-terms { font-size: 11px; color: #888; line-height: 1.7; margin-top: 20px; border-top: 1px solid #eee; padding-top: 16px; }
-  .q-map-placeholder {
-    width: 100%;
-    height: 180px;
-    background: #f5f5f5;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #aaa;
-    font-size: 13px;
-    margin-bottom: 20px;
-    border: 1px solid #eee;
-    overflow: hidden;
-  }
-  .q-map-placeholder img { width: 100%; height: 100%; object-fit: cover; }
-  .q-sig-line {
-    display: flex; gap: 40px; margin-top: 30px;
-  }
-  .q-sig { flex: 1; border-top: 1px solid #ccc; padding-top: 6px; font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 0.8px; }
+    /* ══════════════════════════════════════════
+       ABOUT
+    ══════════════════════════════════════════ */
+    .about {
+      background: var(--white);
+      display: grid; grid-template-columns: 1fr 1fr; gap: 6rem;
+      align-items: center;
+    }
+    .about-visual {
+      position: relative; aspect-ratio: 4/5; overflow: hidden;
+    }
+    .about-img {
+      width: 100%; height: 100%; object-fit: cover;
+      filter: sepia(0.08) contrast(1.05);
+      transition: transform 0.8s ease;
+    }
+    .about-visual:hover .about-img { transform: scale(1.04); }
+    .about-border {
+      position: absolute; inset: 1.5rem; border: 1px solid rgba(184,137,58,0.35);
+      pointer-events: none;
+    }
+    .about-tag {
+      position: absolute; bottom: 2.5rem; left: -1.5rem;
+      background: var(--gold); padding: 1rem 1.5rem; color: var(--white);
+    }
+    .about-tag-num { font-family: var(--font-display); font-size: 2.5rem; font-weight: 700; line-height: 1; }
+    .about-tag-label { font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase; font-weight: 500; }
+    .about-text .section-title { font-size: clamp(2.2rem, 4vw, 3.5rem); margin-bottom: 2rem; }
+    .about-text p {
+      font-size: 0.95rem; font-weight: 300; line-height: 1.8; color: var(--sand-2);
+      margin-bottom: 1.5rem;
+    }
+    .about-pillars {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; margin-top: 2.5rem;
+    }
+    .pillar {
+      padding: 1.2rem; border: 1px solid rgba(184,137,58,0.18);
+      background: var(--charcoal-2);
+      transition: border-color var(--transition), background var(--transition), box-shadow var(--transition);
+    }
+    .pillar:hover { border-color: var(--gold); background: var(--white); box-shadow: 0 4px 24px rgba(184,137,58,0.10); }
+    .pillar-icon { font-size: 1.4rem; margin-bottom: 0.6rem; }
+    .pillar-title { font-size: 0.8rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink); font-weight: 500; margin-bottom: 0.3rem; }
+    .pillar-body { font-size: 0.78rem; color: var(--sand-2); font-weight: 300; line-height: 1.6; }
 
-  .modal-actions {
-    padding: 16px 20px;
-    background: var(--slate);
-    border-top: 1px solid var(--border);
-    display: flex;
-    gap: 10px;
-    justify-content: flex-end;
-    position: sticky;
-    bottom: 0;
-  }
+    /* ══════════════════════════════════════════
+       SERVICES
+    ══════════════════════════════════════════ */
+    .services { background: var(--charcoal-2); }
+    .services-header {
+      display: flex; justify-content: space-between; align-items: flex-end;
+      margin-bottom: 4rem; flex-wrap: wrap; gap: 2rem;
+    }
+    .services-title { font-size: clamp(2.2rem, 4.5vw, 4rem); }
+    .services-intro {
+      max-width: 380px; font-size: 0.9rem; font-weight: 300; line-height: 1.8;
+      color: var(--sand-2);
+    }
+    .services-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1.5px; background: rgba(184,137,58,0.12);
+    }
+    .service-card {
+      background: var(--white); padding: 2.8rem 2.2rem;
+      position: relative; overflow: hidden; cursor: default;
+      transition: background var(--transition), box-shadow var(--transition);
+    }
+    .service-card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+      background: var(--gold); transform: scaleX(0); transform-origin: left;
+      transition: transform var(--transition);
+    }
+    .service-card:hover { background: var(--charcoal-2); box-shadow: 0 8px 32px rgba(0,0,0,0.06); }
+    .service-card:hover::before { transform: scaleX(1); }
+    .service-num {
+      font-family: var(--font-display); font-size: 3.5rem; font-weight: 300;
+      color: rgba(184,137,58,0.1); position: absolute; top: 1rem; right: 1.5rem;
+      line-height: 1; transition: color var(--transition);
+    }
+    .service-card:hover .service-num { color: rgba(184,137,58,0.2); }
+    .service-icon {
+      width: 44px; height: 44px; background: var(--gold-pale);
+      border: 1px solid rgba(184,137,58,0.3);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.2rem; margin-bottom: 1.5rem;
+      transition: background var(--transition), border-color var(--transition);
+    }
+    .service-card:hover .service-icon { background: rgba(184,137,58,0.15); border-color: var(--gold); }
+    .service-name {
+      font-family: var(--font-display); font-size: 1.4rem; font-weight: 400;
+      color: var(--ink); margin-bottom: 0.8rem; line-height: 1.2;
+    }
+    .service-desc { font-size: 0.82rem; font-weight: 300; line-height: 1.7; color: var(--sand-2); }
+    .service-arrow {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--gold); margin-top: 1.5rem; font-weight: 400;
+      opacity: 0; transform: translateX(-6px); transition: all var(--transition);
+      text-decoration: none;
+    }
+    .service-card:hover .service-arrow { opacity: 1; transform: translateX(0); }
 
-  /* ── SUMMARY TOTALS ── */
-  .totals-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-  }
-  .total-chip {
-    background: var(--charcoal);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 10px 12px;
-  }
-  .total-chip-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 4px; }
-  .total-chip-val { font-size: 18px; font-family: 'Bebas Neue', sans-serif; letter-spacing: 1px; }
+    /* ══════════════════════════════════════════
+       WHY US / LUXURY BAND
+    ══════════════════════════════════════════ */
+    .why-us {
+      background: linear-gradient(135deg, var(--ink) 0%, #2a2010 100%);
+      position: relative; overflow: hidden;
+    }
+    .why-us::before {
+      content: '';
+      position: absolute; top: -50%; right: -20%; width: 700px; height: 700px;
+      background: radial-gradient(circle, rgba(184,137,58,0.10) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .why-us-inner {
+      position: relative; z-index: 1;
+      display: grid; grid-template-columns: 1fr 1.4fr; gap: 5rem; align-items: center;
+    }
+    .why-us-left .section-title { font-size: clamp(2.5rem, 5vw, 4.5rem); margin-bottom: 1.5rem; color: var(--white); }
+    .why-us-left p { font-size: 0.92rem; font-weight: 300; line-height: 1.8; color: rgba(255,255,255,0.65); margin-bottom: 2.5rem; }
+    .quote-block {
+      border-left: 2px solid var(--gold); padding-left: 1.5rem; margin: 2rem 0;
+    }
+    .quote-text {
+      font-family: var(--font-display); font-size: 1.4rem; font-style: italic;
+      color: var(--gold-light); line-height: 1.4; font-weight: 300;
+    }
+    .why-cards {
+      display: flex; flex-direction: column; gap: 1px;
+      background: rgba(255,255,255,0.08);
+    }
+    .why-card {
+      background: rgba(255,255,255,0.04); padding: 2rem 2.2rem;
+      display: grid; grid-template-columns: 60px 1fr; gap: 1.5rem; align-items: start;
+      transition: background var(--transition);
+    }
+    .why-card:hover { background: rgba(255,255,255,0.08); }
+    .why-card-num {
+      font-family: var(--font-display); font-size: 2rem; font-weight: 600;
+      color: var(--gold); line-height: 1;
+    }
+    .why-card-title {
+      font-size: 0.9rem; letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--white); font-weight: 400; margin-bottom: 0.5rem;
+    }
+    .why-card-body { font-size: 0.8rem; font-weight: 300; line-height: 1.7; color: rgba(255,255,255,0.6); }
 
-  .badge {
-    display: inline-flex;
-    align-items: center;
-    padding: 2px 8px;
-    border-radius: 20px;
-    font-size: 10px;
-    font-weight: 600;
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
-  }
-  .badge-orange { background: var(--orange-glow); color: var(--orange); border: 1px solid var(--orange); }
+    /* ══════════════════════════════════════════
+       PROCESS
+    ══════════════════════════════════════════ */
+    .process { background: var(--white); }
+    .process-header { text-align: center; margin-bottom: 4rem; }
+    .process-header .section-eyebrow { justify-content: center; }
+    .process-header .section-eyebrow::before { display: none; }
+    .process-header .section-eyebrow::after { content: ''; display: block; width: 30px; height: 1px; background: var(--gold); }
+    .process-title { font-size: clamp(2rem, 4vw, 3.5rem); }
+    .process-steps {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 0;
+      position: relative;
+    }
+    .process-steps::before {
+      content: ''; position: absolute; top: 28px; left: 12.5%; right: 12.5%;
+      height: 1px; background: linear-gradient(90deg, var(--gold), rgba(184,137,58,0.15), var(--gold));
+    }
+    .process-step { padding: 0 2rem; text-align: center; }
+    .step-circle {
+      width: 56px; height: 56px; border: 1.5px solid var(--gold);
+      border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 1.5rem; background: var(--white);
+      font-family: var(--font-display); font-size: 1.3rem; color: var(--gold); font-weight: 600;
+      position: relative; z-index: 1; transition: background var(--transition), color var(--transition);
+    }
+    .process-step:hover .step-circle { background: var(--gold); color: var(--white); }
+    .step-title { font-family: var(--font-display); font-size: 1.15rem; color: var(--ink); margin-bottom: 0.6rem; font-weight: 400; }
+    .step-body { font-size: 0.78rem; font-weight: 300; line-height: 1.7; color: var(--sand-2); }
 
-  .drawing-notice {
-    background: rgba(255,208,74,0.1);
-    border: 1px solid var(--yellow);
-    border-radius: 8px;
-    padding: 10px 12px;
-    font-size: 12px;
-    color: var(--yellow);
-    display: none;
-  }
-  .drawing-notice.show { display: block; }
+    /* ══════════════════════════════════════════
+       TESTIMONIALS
+    ══════════════════════════════════════════ */
+    .testimonials { background: var(--charcoal-2); overflow: hidden; }
+    .testimonials-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 3.5rem; flex-wrap: wrap; gap: 1.5rem; }
+    .testimonials-title { font-size: clamp(2rem, 4vw, 3.5rem); }
+    .test-track-wrap { overflow: hidden; }
+    .test-track {
+      display: flex; gap: 1.5rem;
+      animation: testScroll 35s linear infinite;
+      width: max-content;
+    }
+    .test-track:hover { animation-play-state: paused; }
+    @keyframes testScroll {
+      from { transform: translateX(0); }
+      to   { transform: translateX(-50%); }
+    }
+    .test-card {
+      width: 360px; flex-shrink: 0;
+      padding: 2.5rem; background: var(--white);
+      border: 1px solid rgba(184,137,58,0.14);
+      box-shadow: 0 2px 16px rgba(0,0,0,0.04);
+      position: relative;
+    }
+    .test-quote-mark {
+      font-family: var(--font-display); font-size: 5rem; color: var(--gold);
+      opacity: 0.18; line-height: 0.5; margin-bottom: 1.2rem;
+    }
+    .test-text {
+      font-family: var(--font-display); font-size: 1.1rem; font-style: italic;
+      color: var(--ink-2); line-height: 1.6; margin-bottom: 1.8rem; font-weight: 300;
+    }
+    .test-stars { color: var(--gold); font-size: 0.75rem; margin-bottom: 1rem; letter-spacing: 0.1em; }
+    .test-author { font-size: 0.75rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--gold); font-weight: 500; }
+    .test-location { font-size: 0.7rem; color: var(--sand-2); font-weight: 300; margin-top: 0.2rem; }
 
-  .no-areas {
-    text-align: center;
-    padding: 20px;
-    color: var(--muted);
-    font-size: 12px;
-  }
+    /* ══════════════════════════════════════════
+       SERVICE AREA
+    ══════════════════════════════════════════ */
+    .service-area {
+      background: var(--white);
+      display: grid; grid-template-columns: 1fr 1fr; gap: 5rem; align-items: center;
+    }
+    .area-text .section-title { font-size: clamp(2rem, 4vw, 3.5rem); margin-bottom: 1.5rem; }
+    .area-text p { font-size: 0.92rem; font-weight: 300; line-height: 1.8; color: var(--sand-2); margin-bottom: 2rem; }
+    .area-list {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 0.7rem;
+      list-style: none; margin-bottom: 2.5rem;
+    }
+    .area-list li {
+      font-size: 0.8rem; letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--sand-2); font-weight: 300;
+      display: flex; align-items: center; gap: 0.6rem;
+    }
+    .area-list li::before { content: '◆'; color: var(--gold); font-size: 0.4rem; }
+    .area-visual {
+      background: var(--charcoal-2); padding: 3rem;
+      border: 1px solid rgba(184,137,58,0.15); text-align: center;
+    }
+    .area-map-placeholder {
+      height: 340px; background: var(--charcoal-3);
+      border: 1px dashed rgba(184,137,58,0.25);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 1rem; font-size: 0.78rem; color: var(--gold); letter-spacing: 0.15em;
+      text-transform: uppercase;
+    }
+    .area-map-placeholder svg { opacity: 0.5; }
 
-  select option { background: var(--charcoal); }
+    /* ══════════════════════════════════════════
+       CTA BAND
+    ══════════════════════════════════════════ */
+    .cta-band {
+      background: var(--gold); padding: 5rem 5vw;
+      display: flex; justify-content: space-between; align-items: center;
+      gap: 3rem; flex-wrap: wrap;
+    }
+    .cta-band-left .cta-title {
+      font-family: var(--font-display); font-size: clamp(2rem, 4vw, 3.5rem);
+      color: var(--white); font-weight: 400; line-height: 1.1;
+    }
+    .cta-band-left .cta-sub {
+      font-size: 0.9rem; color: var(--white); font-weight: 300; margin-top: 0.8rem; opacity: 0.8;
+    }
+    .btn-dark {
+      background: var(--ink); color: var(--gold-light);
+      padding: 1rem 2.8rem; font-family: var(--font-body);
+      font-size: 0.75rem; letter-spacing: 0.2em; text-transform: uppercase;
+      font-weight: 500; text-decoration: none; display: inline-block;
+      transition: all var(--transition); white-space: nowrap;
+    }
+    .btn-dark:hover { background: #0c0a06; transform: translateY(-2px); }
 
-  @media print {
-    .modal-actions, header, .sidebar, .map-toolbar { display: none !important; }
-    .modal-overlay { position: static; background: none; }
-    .modal { border: none; border-radius: 0; max-height: none; max-width: none; width: 100%; }
-  }
-</style>
+    /* ══════════════════════════════════════════
+       CONTACT
+    ══════════════════════════════════════════ */
+    .contact { background: var(--charcoal-2); }
+    .contact-inner {
+      display: grid; grid-template-columns: 1fr 1.3fr; gap: 5rem;
+    }
+    .contact-text .section-title { font-size: clamp(2rem, 4vw, 3.5rem); margin-bottom: 1.5rem; }
+    .contact-text p { font-size: 0.92rem; font-weight: 300; line-height: 1.8; color: var(--sand-2); margin-bottom: 2.5rem; }
+    .contact-details { display: flex; flex-direction: column; gap: 1.4rem; }
+    .contact-item { display: flex; align-items: flex-start; gap: 1rem; }
+    .contact-item-icon {
+      width: 40px; height: 40px; background: var(--gold-pale);
+      border: 1px solid rgba(184,137,58,0.3); flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center; font-size: 1rem;
+    }
+    .contact-item-label { font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold); font-weight: 400; }
+    .contact-item-value { font-size: 0.9rem; color: var(--ink); font-weight: 300; margin-top: 0.2rem; }
+    .contact-form { display: flex; flex-direction: column; gap: 1.2rem; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .form-group { display: flex; flex-direction: column; gap: 0.4rem; }
+    .form-group label { font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold-dark); font-weight: 400; }
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      background: var(--white);
+      border: 1px solid rgba(184,137,58,0.25);
+      color: var(--ink); font-family: var(--font-body); font-size: 0.88rem; font-weight: 300;
+      padding: 0.85rem 1rem; outline: none;
+      transition: border-color var(--transition), box-shadow var(--transition);
+    }
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      border-color: var(--gold);
+      box-shadow: 0 0 0 3px rgba(184,137,58,0.08);
+    }
+    .form-group select { cursor: pointer; }
+    .form-group select option { background: var(--white); color: var(--ink); }
+    .form-group textarea { resize: vertical; min-height: 110px; }
+    .form-submit {
+      background: var(--gold); color: var(--white); border: none; cursor: pointer;
+      padding: 1rem 2.5rem; font-family: var(--font-body);
+      font-size: 0.75rem; letter-spacing: 0.2em; text-transform: uppercase; font-weight: 500;
+      transition: all var(--transition); align-self: flex-start;
+    }
+    .form-submit:hover { background: var(--gold-dark); transform: translateY(-2px); }
+
+    /* ══════════════════════════════════════════
+       FOOTER
+    ══════════════════════════════════════════ */
+    footer {
+      background: var(--ink); border-top: 1px solid rgba(184,137,58,0.2);
+      padding: 4rem 5vw 2rem;
+    }
+    .footer-top {
+      display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr; gap: 3rem;
+      padding-bottom: 3rem; border-bottom: 1px solid rgba(255,255,255,0.08);
+      margin-bottom: 2rem;
+    }
+    .footer-brand-logo {
+      font-family: var(--font-display); font-size: 1.8rem; font-weight: 600;
+      color: var(--gold-light); line-height: 1; margin-bottom: 0.4rem;
+    }
+    .footer-brand-sub { font-size: 0.6rem; letter-spacing: 0.25em; text-transform: uppercase; color: var(--gold); margin-bottom: 1.2rem; }
+    .footer-brand p { font-size: 0.82rem; font-weight: 300; line-height: 1.7; color: rgba(255,255,255,0.5); max-width: 280px; }
+    .footer-social { display: flex; gap: 0.8rem; margin-top: 1.5rem; }
+    .social-icon {
+      width: 36px; height: 36px; border: 1px solid rgba(184,137,58,0.3);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--gold); font-size: 0.75rem; text-decoration: none;
+      transition: all var(--transition);
+    }
+    .social-icon:hover { background: var(--gold); color: var(--white); }
+    .footer-col h4 { font-size: 0.65rem; letter-spacing: 0.25em; text-transform: uppercase; color: var(--gold); font-weight: 400; margin-bottom: 1.2rem; }
+    .footer-col ul { list-style: none; display: flex; flex-direction: column; gap: 0.65rem; }
+    .footer-col ul a {
+      font-size: 0.82rem; font-weight: 300; color: rgba(255,255,255,0.5); text-decoration: none;
+      transition: color var(--transition);
+    }
+    .footer-col ul a:hover { color: var(--gold-light); }
+    .footer-bottom { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+    .footer-copy { font-size: 0.72rem; color: rgba(255,255,255,0.35); font-weight: 300; }
+    .footer-legal { display: flex; gap: 1.5rem; }
+    .footer-legal a { font-size: 0.72rem; color: rgba(255,255,255,0.35); text-decoration: none; transition: color var(--transition); font-weight: 300; }
+    .footer-legal a:hover { color: var(--gold); }
+
+    /* ══════════════════════════════════════════
+       MOBILE NAV DRAWER
+    ══════════════════════════════════════════ */
+    .mobile-nav {
+      position: fixed; top: 0; right: 0; bottom: 0; width: 280px;
+      background: var(--white); z-index: 200;
+      transform: translateX(100%); transition: transform 0.4s cubic-bezier(0.77, 0, 0.175, 1);
+      padding: 5rem 2rem 2rem;
+      border-left: 1px solid rgba(184,137,58,0.15);
+      box-shadow: -8px 0 40px rgba(0,0,0,0.1);
+      display: flex; flex-direction: column; gap: 0;
+    }
+    .mobile-nav.open { transform: translateX(0); }
+    .mobile-nav a {
+      color: var(--ink-2); text-decoration: none; font-size: 0.8rem;
+      letter-spacing: 0.2em; text-transform: uppercase; font-weight: 400;
+      padding: 1rem 0; border-bottom: 1px solid rgba(184,137,58,0.1);
+      transition: color var(--transition);
+    }
+    .mobile-nav a:hover { color: var(--gold); }
+    .mobile-nav .mob-cta {
+      margin-top: 2rem; background: var(--gold); color: var(--white) !important;
+      text-align: center; padding: 1rem !important; border: none !important; font-weight: 500 !important;
+    }
+    .nav-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.35); z-index: 190;
+      opacity: 0; pointer-events: none; transition: opacity 0.3s;
+    }
+    .nav-overlay.open { opacity: 1; pointer-events: all; }
+    .close-btn {
+      position: absolute; top: 1.5rem; right: 1.5rem;
+      background: none; border: none; color: var(--gold); font-size: 1.5rem;
+      cursor: pointer; line-height: 1;
+    }
+
+    /* ══════════════════════════════════════════
+       RESPONSIVE
+    ══════════════════════════════════════════ */
+    @media (max-width: 1024px) {
+      .about { grid-template-columns: 1fr; gap: 3rem; }
+      .about-visual { max-width: 480px; }
+      .why-us-inner { grid-template-columns: 1fr; gap: 3rem; }
+      .service-area { grid-template-columns: 1fr; gap: 3rem; }
+      .contact-inner { grid-template-columns: 1fr; gap: 3rem; }
+      .footer-top { grid-template-columns: 1fr 1fr; gap: 2rem; }
+    }
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+      .hamburger { display: flex; }
+      .hero-stats { position: relative; right: auto; bottom: auto; margin-top: 3rem; flex-wrap: wrap; width: 100%; }
+      .hero-stat { flex: 1; min-width: 100px; }
+      .hero-content { padding: 0 5vw 4vh; }
+      .process-steps { grid-template-columns: 1fr 1fr; }
+      .process-steps::before { display: none; }
+      .about-pillars { grid-template-columns: 1fr; }
+      .form-row { grid-template-columns: 1fr; }
+      .footer-top { grid-template-columns: 1fr; }
+      .cta-band { flex-direction: column; align-items: flex-start; }
+      .footer-bottom { flex-direction: column; align-items: flex-start; }
+      .area-list { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 480px) {
+      section { padding: 4.5rem 5vw; }
+      .process-steps { grid-template-columns: 1fr; }
+    }
+
+    /* ══════════════════════════════════════════
+       SCROLL REVEAL UTILITY
+    ══════════════════════════════════════════ */
+    .reveal {
+      opacity: 0; transform: translateY(30px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+    .reveal-delay-1 { transition-delay: 0.1s; }
+    .reveal-delay-2 { transition-delay: 0.2s; }
+    .reveal-delay-3 { transition-delay: 0.3s; }
+    .reveal-delay-4 { transition-delay: 0.4s; }
+
+    /* Light section divider lines */
+    .about, .service-area, .process, .white-section { background: var(--white); }
+    .services, .testimonials, .contact { background: var(--charcoal-2); }
+
+    /* ══════════════════════════════════════════
+       SERVICE CARD IMAGES
+    ══════════════════════════════════════════ */
+    .service-img-wrap {
+      width: 100%; height: 180px; overflow: hidden; margin-bottom: 1.6rem;
+      position: relative;
+    }
+    .service-img-wrap img {
+      width: 100%; height: 100%; object-fit: cover;
+      transition: transform 0.6s ease;
+      filter: brightness(0.92);
+    }
+    .service-card:hover .service-img-wrap img { transform: scale(1.06); }
+    .service-img-placeholder {
+      width: 100%; height: 180px; margin-bottom: 1.6rem;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 0.5rem;
+      background: linear-gradient(135deg, var(--charcoal-3) 0%, var(--charcoal-2) 100%);
+      border: 1px dashed rgba(184,137,58,0.25);
+      color: var(--gold); font-size: 2rem;
+      position: relative; overflow: hidden;
+    }
+    .service-img-placeholder::after {
+      content: 'Photo Placeholder';
+      position: absolute; bottom: 0.5rem; left: 0; right: 0;
+      text-align: center; font-size: 0.6rem; letter-spacing: 0.2em;
+      text-transform: uppercase; color: var(--slate); font-family: var(--font-body); font-weight: 300;
+    }
+    .service-img-placeholder .svc-ph-icon { font-size: 2.2rem; line-height: 1; }
+    .service-img-placeholder .svc-ph-label {
+      font-size: 0.7rem; letter-spacing: 0.15em; text-transform: uppercase;
+      color: var(--gold-dark); font-family: var(--font-body); font-weight: 400;
+    }
+
+    /* ══════════════════════════════════════════
+       ABOUT GALLERY (20 years)
+    ══════════════════════════════════════════ */
+    .about-gallery {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem;
+      margin-top: 2rem;
+    }
+    .gallery-img-ph {
+      aspect-ratio: 4/3; overflow: hidden;
+      background: linear-gradient(135deg, var(--charcoal-3) 0%, var(--charcoal-2) 100%);
+      border: 1px dashed rgba(184,137,58,0.2);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 0.4rem; position: relative;
+    }
+    .gallery-img-ph img {
+      width: 100%; height: 100%; object-fit: cover;
+      display: block;
+    }
+    .gallery-img-ph .gph-icon { font-size: 1.8rem; }
+    .gallery-img-ph .gph-label {
+      font-size: 0.58rem; letter-spacing: 0.18em; text-transform: uppercase;
+      color: var(--gold-dark); font-family: var(--font-body); font-weight: 400;
+      text-align: center; padding: 0 0.5rem;
+    }
+    .gallery-img-ph::after {
+      content: 'Before / After Photo';
+      position: absolute; bottom: 0.4rem; left: 0; right: 0;
+      text-align: center; font-size: 0.55rem; letter-spacing: 0.15em;
+      text-transform: uppercase; color: var(--slate); font-family: var(--font-body); font-weight: 300;
+    }
+    .gallery-img-ph.featured { grid-column: span 2; aspect-ratio: 16/7; }
+    .gallery-img-ph.featured .gph-icon { font-size: 2.5rem; }
+  </style>
 </head>
 <body>
 
-<header>
-  <div class="logo">
-    <div class="logo-icon">🧱</div>
-    PRO<span>PAVE</span> ESTIMATOR
-  </div>
-  <div class="header-tagline">Paver Restoration & Pressure Washing — Instant Quote Generator</div>
-</header>
+<!-- ═══════════════════════════════════════════
+     NAVIGATION
+═══════════════════════════════════════════ -->
+<nav id="mainNav" role="navigation" aria-label="Main navigation">
+  <a href="#" class="nav-logo" aria-label="Liberty Paver Restoration Home">
+    <span class="nav-logo-top">Liberty Paver</span>
+    <span class="nav-logo-sub">Restoration, Inc. · South Florida</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="#about">About</a></li>
+    <li><a href="#services">Services</a></li>
+    <li><a href="#why-us">Why Us</a></li>
+    <li><a href="#service-area">Service Area</a></li>
+    <li><a href="#contact" class="nav-cta"><span>Free Estimate</span></a></li>
+  </ul>
+  <button class="hamburger" id="hamburger" aria-label="Open menu" aria-expanded="false">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
 
-<div class="app">
-  <!-- SIDEBAR -->
-  <div class="sidebar">
-    <div class="sidebar-scroll">
+<!-- Mobile Nav -->
+<div class="nav-overlay" id="navOverlay" aria-hidden="true"></div>
+<div class="mobile-nav" id="mobileNav" role="dialog" aria-modal="true" aria-label="Navigation menu">
+  <button class="close-btn" id="closeNav" aria-label="Close menu">✕</button>
+  <a href="#about" class="mob-link">About</a>
+  <a href="#services" class="mob-link">Services</a>
+  <a href="#why-us" class="mob-link">Why Us</a>
+  <a href="#service-area" class="mob-link">Service Area</a>
+  <a href="#testimonials" class="mob-link">Reviews</a>
+  <a href="#contact" class="mob-cta mob-link">Free Estimate</a>
+</div>
 
-      <!-- CUSTOMER INFO -->
-      <div class="section-card">
-        <div class="section-header">👤 Customer Info</div>
-        <div class="section-body">
-          <div>
-            <label>Full Name</label>
-            <input type="text" id="custName" placeholder="Jane Smith">
-          </div>
-          <div>
-            <label>Phone</label>
-            <input type="text" id="custPhone" placeholder="(555) 555-5555">
-          </div>
-          <div>
-            <label>Email</label>
-            <input type="text" id="custEmail" placeholder="jane@email.com">
-          </div>
-          <div>
-            <label>Property Address</label>
-            <input type="text" id="addressInput" placeholder="123 Main St, City, FL">
-          </div>
-          <button class="btn btn-primary btn-full" onclick="geocodeAddress()">
-            📍 Find Property on Map
-          </button>
-        </div>
-      </div>
-
-      <!-- DRAW TOOLS -->
-      <div class="section-card">
-        <div class="section-header">✏️ Measure Areas</div>
-        <div class="section-body">
-          <p style="font-size:12px;color:var(--muted);line-height:1.6;">Select an area type, then click on the satellite map to draw a polygon. Double-click to finish.</p>
-          <div class="tool-grid">
-            <div class="tool-btn active" id="tool-driveway" onclick="selectTool('driveway')">
-              <span class="tool-icon">🚗</span>
-              <span class="tool-label"><span class="tool-color" style="background:#4AA8FF"></span>Driveway</span>
-            </div>
-            <div class="tool-btn" id="tool-patio" onclick="selectTool('patio')">
-              <span class="tool-icon">☀️</span>
-              <span class="tool-label"><span class="tool-color" style="background:#3ED97A"></span>Patio</span>
-            </div>
-            <div class="tool-btn" id="tool-walkway" onclick="selectTool('walkway')">
-              <span class="tool-icon">🚶</span>
-              <span class="tool-label"><span class="tool-color" style="background:#FFD04A"></span>Walkway</span>
-            </div>
-            <div class="tool-btn" id="tool-roof" onclick="selectTool('roof')">
-              <span class="tool-icon">🏠</span>
-              <span class="tool-label"><span class="tool-color" style="background:#FF5E5E"></span>Roof</span>
-            </div>
-          </div>
-          <div class="drawing-notice" id="drawingNotice">
-            📐 Drawing mode active — click map to place points, double-click to finish
-          </div>
-          <div style="display:flex;gap:8px;">
-            <button class="btn btn-outline btn-sm" onclick="startDrawing()" style="flex:1">▶ Start Drawing</button>
-            <button class="btn btn-outline btn-sm" onclick="cancelDrawing()" style="flex:1">✕ Cancel</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- MEASURED AREAS -->
-      <div class="section-card">
-        <div class="section-header">📐 Measured Areas</div>
-        <div class="section-body">
-          <div class="area-list" id="areaList">
-            <div class="no-areas">No areas drawn yet.<br>Use tools above to measure.</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- TOTALS -->
-      <div class="section-card">
-        <div class="section-header">📊 Area Summary</div>
-        <div class="section-body">
-          <div class="totals-grid">
-            <div class="total-chip">
-              <div class="total-chip-label">Paved Areas</div>
-              <div class="total-chip-val" id="totalPaved" style="color:var(--blue)">0 ft²</div>
-            </div>
-            <div class="total-chip">
-              <div class="total-chip-label">Roof Area</div>
-              <div class="total-chip-val" id="totalRoof" style="color:var(--red)">0 ft²</div>
-            </div>
-            <div class="total-chip" style="grid-column:1/-1">
-              <div class="total-chip-label">Total All Areas</div>
-              <div class="total-chip-val" id="totalAll" style="color:var(--orange)">0 ft²</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- SERVICES & PRICING -->
-      <div class="section-card">
-        <div class="section-header">💰 Services & Pricing</div>
-        <div class="section-body">
-          <div class="price-row">
-            <span class="price-label">Paver Sealing ($/ft²)</span>
-            <input type="number" id="priceSealing" value="1.25" min="0" step="0.01" style="width:80px;text-align:right;" oninput="calcQuote()">
-          </div>
-          <div class="price-row">
-            <span class="price-label">Pressure Wash ($/ft²)</span>
-            <input type="number" id="priceWash" value="0.35" min="0" step="0.01" style="width:80px;text-align:right;" oninput="calcQuote()">
-          </div>
-          <div class="price-row">
-            <span class="price-label">Joint Sand Fill ($/ft²)</span>
-            <input type="number" id="priceSand" value="0.45" min="0" step="0.01" style="width:80px;text-align:right;" oninput="calcQuote()">
-          </div>
-          <div class="price-row">
-            <span class="price-label">Roof Soft Wash ($/ft²)</span>
-            <input type="number" id="priceRoof" value="0.55" min="0" step="0.01" style="width:80px;text-align:right;" oninput="calcQuote()">
-          </div>
-
-          <div style="margin-top:4px;">
-            <label>Services to Include</label>
-            <div style="display:flex;flex-direction:column;gap:6px;margin-top:6px;">
-              <label style="display:flex;align-items:center;gap:8px;text-transform:none;letter-spacing:0;font-size:13px;color:var(--text);">
-                <input type="checkbox" id="svcSealing" checked onchange="calcQuote()"> Paver Sealing
-              </label>
-              <label style="display:flex;align-items:center;gap:8px;text-transform:none;letter-spacing:0;font-size:13px;color:var(--text);">
-                <input type="checkbox" id="svcWash" checked onchange="calcQuote()"> Pressure Washing
-              </label>
-              <label style="display:flex;align-items:center;gap:8px;text-transform:none;letter-spacing:0;font-size:13px;color:var(--text);">
-                <input type="checkbox" id="svcSand" onchange="calcQuote()"> Joint Sand Re-fill
-              </label>
-              <label style="display:flex;align-items:center;gap:8px;text-transform:none;letter-spacing:0;font-size:13px;color:var(--text);">
-                <input type="checkbox" id="svcRoof" onchange="calcQuote()"> Roof Soft Wash
-              </label>
-            </div>
-          </div>
-
-          <div class="price-row" style="margin-top:8px;">
-            <span class="price-label">Discount (%)</span>
-            <input type="number" id="discount" value="0" min="0" max="100" style="width:80px;text-align:right;" oninput="calcQuote()">
-          </div>
-          <div style="border-top:1px solid var(--border);margin-top:8px;padding-top:12px;">
-            <div class="price-row">
-              <span class="price-label">Subtotal</span>
-              <span class="price-val" id="subtotalDisplay">$0.00</span>
-            </div>
-            <div class="price-row">
-              <span class="price-label">Discount</span>
-              <span class="price-val" id="discountDisplay" style="color:var(--green)">-$0.00</span>
-            </div>
-            <div style="display:flex;justify-content:space-between;align-items:center;padding-top:10px;">
-              <span style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:1px;">TOTAL</span>
-              <span class="price-total" id="totalDisplay">$0.00</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- NOTES -->
-      <div class="section-card">
-        <div class="section-header">📝 Notes & Scope</div>
-        <div class="section-body">
-          <textarea id="quoteNotes" placeholder="Special conditions, extra services, material notes, access instructions..."></textarea>
-        </div>
-      </div>
-
-      <!-- GENERATE -->
-      <button class="btn btn-green btn-full" onclick="generateQuote()" style="font-size:15px;padding:14px;">
-        📄 Generate Quote
-      </button>
-      <div style="height:8px;"></div>
-
+<!-- ═══════════════════════════════════════════
+     HERO
+═══════════════════════════════════════════ -->
+<section class="hero" id="home" aria-label="Hero section">
+  <div class="hero-bg" role="img" aria-label="Luxury Florida home with paver driveway at sunset"></div>
+  <div class="hero-overlay"></div>
+  <div class="hero-overlay-accent"></div>
+  <div class="hero-content">
+    <p class="hero-eyebrow">South Florida's Finest · Est. 20+ Years</p>
+    <h1 class="hero-h1">
+      Where <em>Precision</em><br>Meets<br>Prestige.
+    </h1>
+    <p class="hero-desc">
+      Liberty Paver Restoration, Inc. delivers museum-grade craftsmanship to South Florida's most distinguished properties. From grand estate driveways to resort-style pool decks — we restore what matters most.
+    </p>
+    <div class="hero-actions">
+      <a href="#contact" class="btn-primary"><span>Request Free Estimate</span></a>
+      <a href="#services" class="btn-secondary">
+        Explore Services
+        <svg width="16" height="10" viewBox="0 0 16 10" fill="none" stroke="currentColor" stroke-width="1.2">
+          <path d="M0 5h14M10 1l4 4-4 4"/>
+        </svg>
+      </a>
     </div>
   </div>
-
-  <!-- MAP -->
-  <div class="map-container">
-    <div id="map"></div>
-
-    <div class="map-toolbar">
-      <span class="map-toolbar-label">View:</span>
-      <button class="btn btn-secondary btn-sm" onclick="setMapType('satellite')">🛰 Satellite</button>
-      <button class="btn btn-secondary btn-sm" onclick="setMapType('hybrid')">🗺 Hybrid</button>
-      <button class="btn btn-secondary btn-sm" onclick="setMapType('roadmap')">📍 Road</button>
-      <span style="width:1px;background:var(--border);height:20px;display:inline-block;"></span>
-      <button class="btn btn-outline btn-sm" onclick="clearAll()">🗑 Clear All</button>
+  <div class="hero-stats" aria-label="Company statistics">
+    <div class="hero-stat">
+      <div class="hero-stat-num">20+</div>
+      <div class="hero-stat-label">Years Experience</div>
     </div>
-
-    <div class="map-status" id="mapStatus"></div>
-
-    <!-- API KEY OVERLAY -->
-    <div class="api-overlay" id="apiOverlay">
-      <div class="api-box">
-        <div style="font-size:48px;margin-bottom:12px;">🗺️</div>
-        <h2>Google Maps API Key Required</h2>
-        <p>This tool uses Google Maps satellite imagery to measure paved areas and roofs. You need a free API key — Google gives $200 free credit/month (more than enough for business use).</p>
-        <div class="api-steps">
-          <ol>
-            <li>Go to <a href="https://console.cloud.google.com" target="_blank">console.cloud.google.com</a></li>
-            <li>Create a project → Enable <strong>Maps JavaScript API</strong> + <strong>Geocoding API</strong></li>
-            <li>Go to Credentials → Create API Key</li>
-            <li>Paste your key below and click Load Map</li>
-          </ol>
-        </div>
-        <div class="api-input-row">
-          <input type="text" id="apiKeyInput" placeholder="AIzaSyARAPToeKBhuk3hG1KUz46B5H1UDwWTers">
-          <button class="btn btn-primary" onclick="loadMapsWithKey()">Load Map</button>
-        </div>
-        <p style="font-size:11px;margin-top:8px;">Your key is stored locally in your browser and never sent anywhere.</p>
-      </div>
+    <div class="hero-stat">
+      <div class="hero-stat-num">1K+</div>
+      <div class="hero-stat-label">Projects Completed</div>
     </div>
+    <div class="hero-stat">
+      <div class="hero-stat-num">7</div>
+      <div class="hero-stat-label">Core Services</div>
+    </div>
+    <div class="hero-stat">
+      <div class="hero-stat-num">5★</div>
+      <div class="hero-stat-label">Avg. Rating</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     MARQUEE BAND
+═══════════════════════════════════════════ -->
+<div class="marquee-band" aria-hidden="true">
+  <div class="marquee-track">
+    <span class="marquee-item">Paver Sealing</span>
+    <span class="marquee-item">Soft Wash</span>
+    <span class="marquee-item">Pool Deck Restoration</span>
+    <span class="marquee-item">Color Restoration</span>
+    <span class="marquee-item">Weed & Moss Removal</span>
+    <span class="marquee-item">Paver Re-leveling</span>
+    <span class="marquee-item">Roof Soft Wash</span>
+    <span class="marquee-item">Luxury Exterior Care</span>
+    <span class="marquee-item">South Florida's Best</span>
+    <span class="marquee-item">20 Years of Excellence</span>
+    <span class="marquee-item">Paver Sealing</span>
+    <span class="marquee-item">Soft Wash</span>
+    <span class="marquee-item">Pool Deck Restoration</span>
+    <span class="marquee-item">Color Restoration</span>
+    <span class="marquee-item">Weed & Moss Removal</span>
+    <span class="marquee-item">Paver Re-leveling</span>
+    <span class="marquee-item">Roof Soft Wash</span>
+    <span class="marquee-item">Luxury Exterior Care</span>
+    <span class="marquee-item">South Florida's Best</span>
+    <span class="marquee-item">20 Years of Excellence</span>
   </div>
 </div>
 
-<!-- QUOTE MODAL -->
-<div class="modal-overlay" id="quoteModal">
-  <div class="modal">
-    <div id="quotePreview"></div>
-    <div class="modal-actions">
-      <button class="btn btn-secondary" onclick="closeModal()">✕ Close</button>
-      <button class="btn btn-outline" onclick="window.print()">🖨 Print</button>
-      <button class="btn btn-primary" onclick="downloadQuote()">⬇ Download PDF</button>
+<!-- ═══════════════════════════════════════════
+     ABOUT
+═══════════════════════════════════════════ -->
+<section class="about" id="about" aria-labelledby="about-heading">
+  <div class="about-visual">
+    <img src="3e3fe3f7-86b3-4423-a8db-304a26c9c97a.jpg" alt="Luxury Florida estate with freshly restored paver driveway" class="about-img" loading="lazy" width="600" height="750" />
+    <div class="about-border" aria-hidden="true"></div>
+    <div class="about-tag" aria-label="20 plus years of excellence">
+      <div class="about-tag-num">20+</div>
+      <div class="about-tag-label">Years of Excellence</div>
     </div>
   </div>
+  <div class="about-text reveal">
+    <p class="section-eyebrow">Our Story</p>
+    <h2 class="section-title" id="about-heading" style="font-size:clamp(2.2rem,4vw,3.5rem)">
+      Craftsmanship<br><em style="color:var(--gold);font-style:italic">Built on Legacy</em>
+    </h2>
+    <p>For over two decades, Liberty Paver Restoration, Inc. has been South Florida's trusted authority in premium exterior restoration. We were founded on a simple belief: that every driveway, pool deck, and exterior surface deserves the same meticulous care as the property it belongs to.</p>
+    <p>We work exclusively with South Florida's most discerning homeowners and property managers — those who understand that quality is not a luxury, it's a standard. Our processes, products, and people are selected with that philosophy at the forefront.</p>
+
+    <!-- 20 Years gallery placeholders -->
+    <div class="about-gallery" aria-label="20 years of project gallery">
+      <div class="gallery-img-ph featured reveal">
+        <div class="gph-icon">🏠</div>
+        <div class="gph-label">Before &amp; After · Driveway Restoration</div>
+      </div>
+      <div class="gallery-img-ph reveal reveal-delay-1">
+        <div class="gph-icon">🏊</div>
+        <div class="gph-label">Pool Deck Seal</div>
+      </div>
+      <div class="gallery-img-ph reveal reveal-delay-2">
+        <div class="gph-icon">🎨</div>
+        <div class="gph-label">Color Restoration</div>
+      </div>
+      <div class="gallery-img-ph reveal reveal-delay-1">
+        <div class="gph-icon">🌤</div>
+        <div class="gph-label">Roof Soft Wash</div>
+      </div>
+      <div class="gallery-img-ph reveal reveal-delay-2">
+        <div class="gph-icon">⚙️</div>
+        <div class="gph-label">Paver Re-leveling</div>
+      </div>
+    </div>
+
+    <div class="about-pillars" role="list">
+      <div class="pillar reveal reveal-delay-1" role="listitem">
+        <div class="pillar-icon" aria-hidden="true">🏆</div>
+        <div class="pillar-title">Elite Standards</div>
+        <div class="pillar-body">We use only professional-grade sealers, biodegradable cleaners, and precision equipment.</div>
+      </div>
+      <div class="pillar reveal reveal-delay-2" role="listitem">
+        <div class="pillar-icon" aria-hidden="true">🔒</div>
+        <div class="pillar-title">Fully Licensed & Insured</div>
+        <div class="pillar-body">Complete peace of mind — full licensing, comprehensive insurance, and documented workmanship.</div>
+      </div>
+      <div class="pillar reveal reveal-delay-3" role="listitem">
+        <div class="pillar-icon" aria-hidden="true">⏱</div>
+        <div class="pillar-title">Prompt & Professional</div>
+        <div class="pillar-body">We respect your time, your property, and your expectations — every single visit.</div>
+      </div>
+      <div class="pillar reveal reveal-delay-4" role="listitem">
+        <div class="pillar-icon" aria-hidden="true">✦</div>
+        <div class="pillar-title">Guaranteed Results</div>
+        <div class="pillar-body">Our workmanship is backed by our reputation and a commitment to your complete satisfaction.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     SERVICES
+═══════════════════════════════════════════ -->
+<section class="services" id="services" aria-labelledby="services-heading">
+  <div class="services-header reveal">
+    <div>
+      <p class="section-eyebrow">What We Do</p>
+      <h2 class="section-title services-title" id="services-heading">Our Services</h2>
+    </div>
+    <p class="services-intro">Every service is performed with the same relentless attention to detail that has made Liberty Paver Restoration South Florida's premier choice for over 20 years.</p>
+  </div>
+  <div class="services-grid" role="list">
+
+    <article class="service-card reveal" role="listitem">
+      <div class="service-num" aria-hidden="true">01</div>
+      <div class="service-img-placeholder" aria-label="Sealer stripping photo placeholder">
+        <div class="svc-ph-icon">🔄</div>
+        <div class="svc-ph-label">Sealer Stripping &amp; Re-seal</div>
+      </div>
+      <div class="service-icon" aria-hidden="true">🔄</div>
+      <h3 class="service-name">Sealer Stripping<br>& Re-seal</h3>
+      <p class="service-desc">Full removal of degraded or discolored sealers followed by a fresh, UV-resistant application. Restores protection and dramatically improves appearance.</p>
+      <span class="service-arrow" aria-hidden="true">Learn More →</span>
+    </article>
+
+    <article class="service-card reveal reveal-delay-1" role="listitem">
+      <div class="service-num" aria-hidden="true">02</div>
+      <div class="service-img-placeholder" aria-label="Exterior soft wash photo placeholder">
+        <div class="svc-ph-icon">🏠</div>
+        <div class="svc-ph-label">House / Exterior Soft Wash</div>
+      </div>
+      <div class="service-icon" aria-hidden="true">🏠</div>
+      <h3 class="service-name">House / Exterior<br>Soft Wash</h3>
+      <p class="service-desc">Low-pressure, chemical-assisted cleaning that safely eliminates mold, algae, and grime from your home's exterior without damage to surfaces or landscaping.</p>
+      <span class="service-arrow" aria-hidden="true">Learn More →</span>
+    </article>
+
+    <article class="service-card reveal reveal-delay-2" role="listitem">
+      <div class="service-num" aria-hidden="true">03</div>
+      <div class="service-img-placeholder" aria-label="Roof soft wash photo placeholder">
+        <div class="svc-ph-icon">🌤</div>
+        <div class="svc-ph-label">Roof Soft Wash</div>
+      </div>
+      <div class="service-icon" aria-hidden="true">🌤</div>
+      <h3 class="service-name">Roof Soft Wash</h3>
+      <p class="service-desc">ARMA-approved soft washing techniques that remove black streaks, moss, and lichen from your roof — extending its life without voiding manufacturer warranties.</p>
+      <span class="service-arrow" aria-hidden="true">Learn More →</span>
+    </article>
+
+    <article class="service-card reveal" role="listitem">
+      <div class="service-num" aria-hidden="true">04</div>
+      <div class="service-img-placeholder" aria-label="Pool deck wash photo placeholder">
+        <div class="svc-ph-icon">🏊</div>
+        <div class="svc-ph-label">Pool Deck Wash &amp; Seal</div>
+      </div>
+      <div class="service-icon" aria-hidden="true">🏊</div>
+      <h3 class="service-name">Pool Deck<br>Wash & Seal</h3>
+      <p class="service-desc">Deep cleaning and high-performance sealing for pool decks — protecting against chemical exposure, UV fading, and slip hazards while restoring a showroom finish.</p>
+      <span class="service-arrow" aria-hidden="true">Learn More →</span>
+    </article>
+
+    <article class="service-card reveal reveal-delay-1" role="listitem">
+      <div class="service-num" aria-hidden="true">05</div>
+      <div class="service-img-placeholder" aria-label="Weed and moss removal photo placeholder">
+        <div class="svc-ph-icon">🌿</div>
+        <div class="svc-ph-label">Weed &amp; Moss Removal</div>
+      </div>
+      <div class="service-icon" aria-hidden="true">🌿</div>
+      <h3 class="service-name">Weed & Moss<br>Removal</h3>
+      <p class="service-desc">Targeted extraction and treatment of weeds, moss, and biological growth from joints and surfaces — with preventive solutions to dramatically reduce regrowth.</p>
+      <span class="service-arrow" aria-hidden="true">Learn More →</span>
+    </article>
+
+    <article class="service-card reveal reveal-delay-2" role="listitem">
+      <div class="service-num" aria-hidden="true">06</div>
+      <div class="service-img-placeholder" aria-label="Paver re-leveling photo placeholder">
+        <div class="svc-ph-icon">⚙️</div>
+        <div class="svc-ph-label">Paver Re-leveling / Reset</div>
+      </div>
+      <div class="service-icon" aria-hidden="true">⚙️</div>
+      <h3 class="service-name">Paver Re-leveling<br>/ Reset</h3>
+      <p class="service-desc">Precise lifting, re-sanding, and re-setting of sunken, shifted, or uneven pavers. Eliminates trip hazards and restores the uniformity of your hardscape investment.</p>
+      <span class="service-arrow" aria-hidden="true">Learn More →</span>
+    </article>
+
+    <article class="service-card reveal" role="listitem">
+      <div class="service-num" aria-hidden="true">07</div>
+      <div class="service-img-placeholder" aria-label="Color restoration photo placeholder">
+        <div class="svc-ph-icon">🎨</div>
+        <div class="svc-ph-label">Color Restoration</div>
+      </div>
+      <div class="service-icon" aria-hidden="true">🎨</div>
+      <h3 class="service-name">Color<br>Restoration</h3>
+      <p class="service-desc">Revive the original richness of faded, sun-bleached, or stained pavers using professional-grade color enhancers and sealers designed for South Florida's intense climate.</p>
+      <span class="service-arrow" aria-hidden="true">Learn More →</span>
+    </article>
+
+    <article class="service-card reveal reveal-delay-1" role="listitem" style="background: var(--charcoal-2);">
+      <div class="service-num" aria-hidden="true">+</div>
+      <div class="service-img-placeholder" aria-label="Custom services photo placeholder">
+        <div class="svc-ph-icon">💬</div>
+        <div class="svc-ph-label">Custom &amp; Additional Services</div>
+      </div>
+      <div class="service-icon" aria-hidden="true">💬</div>
+      <h3 class="service-name">Custom<br>& Additional Services</h3>
+      <p class="service-desc">Every property is unique. Contact us to discuss pressure washing, joint sand replacement, efflorescence treatment, or any custom restoration need.</p>
+      <a href="#contact" class="service-arrow" style="opacity:1;transform:none;">
+        Contact Us →
+      </a>
+    </article>
+
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     WHY US
+═══════════════════════════════════════════ -->
+<section class="why-us" id="why-us" aria-labelledby="why-heading">
+  <div class="why-us-inner">
+    <div class="why-us-left reveal">
+      <p class="section-eyebrow">The Liberty Standard</p>
+      <h2 class="section-title" id="why-heading">
+        Quality That<br><em style="color:#f5d88a;font-style:italic">Separates<br>Us From<br>The Rest.</em>
+      </h2>
+      <div class="quote-block">
+        <p class="quote-text">"We serve the highest class and perform the highest class work — no exceptions."</p>
+      </div>
+      <p>In an industry where shortcuts are common, Liberty Paver Restoration holds itself to an elevated standard. We bring 20 years of hard-won expertise, premium products, and unwavering pride of work to every single project.</p>
+      <br>
+      <a href="#contact" class="btn-primary"><span>Schedule Your Consultation</span></a>
+    </div>
+    <div class="why-cards reveal reveal-delay-1">
+      <div class="why-card">
+        <div class="why-card-num">01</div>
+        <div>
+          <div class="why-card-title">Two Decades of Mastery</div>
+          <p class="why-card-body">With 20+ years serving South Florida exclusively, we have encountered — and solved — every paver and exterior challenge imaginable. Experience is irreplaceable.</p>
+        </div>
+      </div>
+      <div class="why-card">
+        <div class="why-card-num">02</div>
+        <div>
+          <div class="why-card-title">Premium Materials Only</div>
+          <p class="why-card-body">We source commercial-grade sealers, eco-conscious cleaners, and industry-leading joint compounds — the same products used on Florida's most prestigious estates.</p>
+        </div>
+      </div>
+      <div class="why-card">
+        <div class="why-card-num">03</div>
+        <div>
+          <div class="why-card-title">White-Glove Service</div>
+          <p class="why-card-body">From the first consultation to the final walk-through, every interaction reflects the professionalism and discretion that luxury clients expect and deserve.</p>
+        </div>
+      </div>
+      <div class="why-card">
+        <div class="why-card-num">04</div>
+        <div>
+          <div class="why-card-title">Results-Backed Guarantee</div>
+          <p class="why-card-body">We stand behind every job with a workmanship guarantee. Your satisfaction is not a courtesy — it is our commitment and our standard.</p>
+        </div>
+      </div>
+      <div class="why-card">
+        <div class="why-card-num">05</div>
+        <div>
+          <div class="why-card-title">Climate Expertise</div>
+          <p class="why-card-body">South Florida's heat, humidity, and salt air demand specialized knowledge. Our techniques and products are engineered specifically for this environment.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     PROCESS
+═══════════════════════════════════════════ -->
+<section class="process" id="process" aria-labelledby="process-heading">
+  <div class="process-header reveal">
+    <p class="section-eyebrow">How It Works</p>
+    <h2 class="section-title process-title" id="process-heading">Our Simple Process</h2>
+  </div>
+  <div class="process-steps" role="list">
+    <div class="process-step reveal" role="listitem">
+      <div class="step-circle" aria-hidden="true">1</div>
+      <h3 class="step-title">Free Consultation</h3>
+      <p class="step-body">Contact us for a no-obligation on-site assessment. We evaluate your property and identify exactly what it needs.</p>
+    </div>
+    <div class="process-step reveal reveal-delay-1" role="listitem">
+      <div class="step-circle" aria-hidden="true">2</div>
+      <h3 class="step-title">Custom Proposal</h3>
+      <p class="step-body">Receive a transparent, detailed quote with clear scope, timeline, and pricing — no surprises, no hidden fees.</p>
+    </div>
+    <div class="process-step reveal reveal-delay-2" role="listitem">
+      <div class="step-circle" aria-hidden="true">3</div>
+      <h3 class="step-title">Expert Restoration</h3>
+      <p class="step-body">Our skilled team arrives on schedule, fully equipped, and works with precision and care for your property.</p>
+    </div>
+    <div class="process-step reveal reveal-delay-3" role="listitem">
+      <div class="step-circle" aria-hidden="true">4</div>
+      <h3 class="step-title">Your Satisfaction</h3>
+      <p class="step-body">We conduct a final walk-through together. The job isn't done until you're completely satisfied with the results.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     TESTIMONIALS
+═══════════════════════════════════════════ -->
+<section class="testimonials" id="testimonials" aria-labelledby="test-heading">
+  <div class="testimonials-header reveal">
+    <div>
+      <p class="section-eyebrow">Client Reviews</p>
+      <h2 class="section-title testimonials-title" id="test-heading">What Our Clients Say</h2>
+    </div>
+  </div>
+  <div class="test-track-wrap" aria-label="Scrolling customer testimonials">
+    <div class="test-track">
+      <!-- Cards 1–5 (live) + duplicates for seamless loop -->
+      <div class="test-card">
+        <div class="test-quote-mark" aria-hidden="true">"</div>
+        <p class="test-text">Liberty completely transformed our estate driveway. The attention to detail was unlike anything we had experienced. The pavers look better than the day they were installed.</p>
+        <div class="test-stars" aria-label="5 out of 5 stars">★★★★★</div>
+        <div class="test-author">[Client Name]</div>
+        <div class="test-location">Palm Beach, FL</div>
+      </div>
+      <div class="test-card">
+        <div class="test-quote-mark" aria-hidden="true">"</div>
+        <p class="test-text">After three other companies failed to properly strip our old sealer, Liberty came in and did it flawlessly. Their knowledge is in a completely different league.</p>
+        <div class="test-stars" aria-label="5 out of 5 stars">★★★★★</div>
+        <div class="test-author">[Client Name]</div>
+        <div class="test-location">Boca Raton, FL</div>
+      </div>
+      <div class="test-card">
+        <div class="test-quote-mark" aria-hidden="true">"</div>
+        <p class="test-text">Our pool deck looks absolutely stunning. The color restoration alone was worth every penny. We get compliments from every guest. Truly world-class work.</p>
+        <div class="test-stars" aria-label="5 out of 5 stars">★★★★★</div>
+        <div class="test-author">[Client Name]</div>
+        <div class="test-location">Fort Lauderdale, FL</div>
+      </div>
+      <div class="test-card">
+        <div class="test-quote-mark" aria-hidden="true">"</div>
+        <p class="test-text">Professional from start to finish. They showed up on time, communicated every step, and left our property cleaner than they found it. Highly recommend.</p>
+        <div class="test-stars" aria-label="5 out of 5 stars">★★★★★</div>
+        <div class="test-author">[Client Name]</div>
+        <div class="test-location">Coral Gables, FL</div>
+      </div>
+      <div class="test-card">
+        <div class="test-quote-mark" aria-hidden="true">"</div>
+        <p class="test-text">The soft wash on our tile roof was done to perfection. Our HOA actually reached out to compliment us on how the house looks. That says everything.</p>
+        <div class="test-stars" aria-label="5 out of 5 stars">★★★★★</div>
+        <div class="test-author">[Client Name]</div>
+        <div class="test-location">Weston, FL</div>
+      </div>
+      <!-- Duplicates for seamless loop -->
+      <div class="test-card">
+        <div class="test-quote-mark" aria-hidden="true">"</div>
+        <p class="test-text">Liberty completely transformed our estate driveway. The attention to detail was unlike anything we had experienced. The pavers look better than the day they were installed.</p>
+        <div class="test-stars" aria-label="5 out of 5 stars">★★★★★</div>
+        <div class="test-author">[Client Name]</div>
+        <div class="test-location">Palm Beach, FL</div>
+      </div>
+      <div class="test-card">
+        <div class="test-quote-mark" aria-hidden="true">"</div>
+        <p class="test-text">After three other companies failed to properly strip our old sealer, Liberty came in and did it flawlessly. Their knowledge is in a completely different league.</p>
+        <div class="test-stars" aria-label="5 out of 5 stars">★★★★★</div>
+        <div class="test-author">[Client Name]</div>
+        <div class="test-location">Boca Raton, FL</div>
+      </div>
+      <div class="test-card">
+        <div class="test-quote-mark" aria-hidden="true">"</div>
+        <p class="test-text">Our pool deck looks absolutely stunning. The color restoration alone was worth every penny. We get compliments from every guest. Truly world-class work.</p>
+        <div class="test-stars" aria-label="5 out of 5 stars">★★★★★</div>
+        <div class="test-author">[Client Name]</div>
+        <div class="test-location">Fort Lauderdale, FL</div>
+      </div>
+      <div class="test-card">
+        <div class="test-quote-mark" aria-hidden="true">"</div>
+        <p class="test-text">Professional from start to finish. They showed up on time, communicated every step, and left our property cleaner than they found it. Highly recommend.</p>
+        <div class="test-stars" aria-label="5 out of 5 stars">★★★★★</div>
+        <div class="test-author">[Client Name]</div>
+        <div class="test-location">Coral Gables, FL</div>
+      </div>
+      <div class="test-card">
+        <div class="test-quote-mark" aria-hidden="true">"</div>
+        <p class="test-text">The soft wash on our tile roof was done to perfection. Our HOA actually reached out to compliment us on how the house looks. That says everything.</p>
+        <div class="test-stars" aria-label="5 out of 5 stars">★★★★★</div>
+        <div class="test-author">[Client Name]</div>
+        <div class="test-location">Weston, FL</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     SERVICE AREA
+═══════════════════════════════════════════ -->
+<section class="service-area" id="service-area" aria-labelledby="area-heading">
+  <div class="area-text reveal">
+    <p class="section-eyebrow">Where We Work</p>
+    <h2 class="section-title" id="area-heading">Proudly Serving<br><em style="color:var(--gold-light);font-style:italic">South Florida</em></h2>
+    <p>From the exclusive estates of Palm Beach to the waterfront communities of Miami, Liberty Paver Restoration serves the most distinguished addresses across South Florida.</p>
+    <ul class="area-list" aria-label="Service area cities">
+      <li>Miami-Dade County</li>
+      <li>Broward County</li>
+      <li>Palm Beach County</li>
+      <li>Boca Raton</li>
+      <li>Fort Lauderdale</li>
+      <li>Palm Beach Gardens</li>
+      <li>Coral Gables</li>
+      <li>Weston</li>
+      <li>Delray Beach</li>
+      <li>Aventura</li>
+      <li>Parkland</li>
+      <li>[Additional Areas]</li>
+    </ul>
+    <a href="#contact" class="btn-primary"><span>Check Your Area</span></a>
+  </div>
+  <div class="area-visual reveal reveal-delay-1">
+    <div class="area-map-placeholder" role="img" aria-label="Map placeholder — replace with Google Maps embed">
+      <svg width="48" height="48" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+        <circle cx="24" cy="20" r="8"/>
+        <path d="M24 12C17.37 12 12 17.37 12 24c0 9 12 24 12 24s12-15 12-24c0-6.63-5.37-12-12-12z"/>
+      </svg>
+      <span>[ Insert Google Maps Embed Here ]</span>
+      <span style="font-size:0.65rem;opacity:0.6">Serving All of South Florida</span>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     CTA BAND
+═══════════════════════════════════════════ -->
+<div class="cta-band" aria-label="Call to action">
+  <div class="cta-band-left">
+    <h2 class="cta-title">Ready to restore your<br>property's full potential?</h2>
+    <p class="cta-sub">Contact us today for a complimentary on-site assessment.</p>
+  </div>
+  <a href="#contact" class="btn-dark" aria-label="Request your free estimate">Request Free Estimate →</a>
 </div>
 
+<!-- ═══════════════════════════════════════════
+     CONTACT
+═══════════════════════════════════════════ -->
+<section class="contact" id="contact" aria-labelledby="contact-heading">
+  <div class="contact-inner">
+    <div class="contact-text reveal">
+      <p class="section-eyebrow">Get In Touch</p>
+      <h2 class="section-title" id="contact-heading" style="font-size:clamp(2rem,4vw,3.5rem)">
+        Request Your<br><em style="color:var(--gold-light);font-style:italic">Free Estimate</em>
+      </h2>
+      <p>Every great restoration begins with a conversation. Tell us about your property and we'll schedule your complimentary on-site assessment at your convenience.</p>
+      <div class="contact-details">
+        <div class="contact-item">
+          <div class="contact-item-icon" aria-hidden="true">📞</div>
+          <div>
+            <div class="contact-item-label">Phone / Text</div>
+            <div class="contact-item-value"><a href="tel:[YOUR-PHONE]" style="color:inherit;text-decoration:none;">[YOUR-PHONE-NUMBER]</a></div>
+          </div>
+        </div>
+        <div class="contact-item">
+          <div class="contact-item-icon" aria-hidden="true">✉️</div>
+          <div>
+            <div class="contact-item-label">Email</div>
+            <div class="contact-item-value"><a href="mailto:[YOUR-EMAIL]" style="color:inherit;text-decoration:none;">[YOUR-EMAIL-ADDRESS]</a></div>
+          </div>
+        </div>
+        <div class="contact-item">
+          <div class="contact-item-icon" aria-hidden="true">📍</div>
+          <div>
+            <div class="contact-item-label">Service Area</div>
+            <div class="contact-item-value">South Florida — Miami, Broward & Palm Beach Counties</div>
+          </div>
+        </div>
+        <div class="contact-item">
+          <div class="contact-item-icon" aria-hidden="true">🕐</div>
+          <div>
+            <div class="contact-item-label">Hours</div>
+            <div class="contact-item-value">[Mon–Fri: 8am–6pm · Sat: 8am–2pm]</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <form class="contact-form reveal reveal-delay-1" action="[YOUR-FORM-ACTION-URL]" method="POST" novalidate aria-label="Contact form">
+      <input type="hidden" name="_subject" value="New Liberty Paver Estimate Request" />
+      <div class="form-row">
+        <div class="form-group">
+          <label for="fname">First Name *</label>
+          <input type="text" id="fname" name="first_name" placeholder="John" required autocomplete="given-name" />
+        </div>
+        <div class="form-group">
+          <label for="lname">Last Name *</label>
+          <input type="text" id="lname" name="last_name" placeholder="Smith" required autocomplete="family-name" />
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="email">Email Address *</label>
+          <input type="email" id="email" name="email" placeholder="john@email.com" required autocomplete="email" />
+        </div>
+        <div class="form-group">
+          <label for="phone">Phone Number</label>
+          <input type="tel" id="phone" name="phone" placeholder="(555) 000-0000" autocomplete="tel" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="address">Property Address</label>
+        <input type="text" id="address" name="address" placeholder="123 Palm Drive, Boca Raton, FL" autocomplete="street-address" />
+      </div>
+      <div class="form-group">
+        <label for="service">Service Interested In *</label>
+        <select id="service" name="service" required>
+          <option value="" disabled selected>Select a service…</option>
+          <option value="sealer-strip-reseal">Sealer Stripping & Re-seal</option>
+          <option value="exterior-soft-wash">House / Exterior Soft Wash</option>
+          <option value="roof-soft-wash">Roof Soft Wash</option>
+          <option value="pool-deck">Pool Deck Wash & Seal</option>
+          <option value="weed-moss">Weed & Moss Removal</option>
+          <option value="releveling">Paver Re-leveling / Reset</option>
+          <option value="color-restoration">Color Restoration</option>
+          <option value="multiple">Multiple Services</option>
+          <option value="other">Other / Not Sure</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="message">Additional Details</label>
+        <textarea id="message" name="message" placeholder="Tell us about your property, the scope of work, or any questions you have…"></textarea>
+      </div>
+      <button type="submit" class="form-submit">Submit Estimate Request</button>
+    </form>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     FOOTER
+═══════════════════════════════════════════ -->
+<footer role="contentinfo">
+  <div class="footer-top">
+    <div class="footer-brand">
+      <div class="footer-brand-logo">Liberty Paver</div>
+      <div class="footer-brand-sub">Restoration, Inc.</div>
+      <p>South Florida's premier paver and exterior restoration specialists. 20+ years of uncompromising quality serving the region's most distinguished properties.</p>
+      <div class="footer-social" aria-label="Social media links">
+        <a href="https://www.facebook.com/[YOUR-PAGE]" class="social-icon" aria-label="Facebook" target="_blank" rel="noopener noreferrer">f</a>
+        <a href="https://www.instagram.com/[YOUR-HANDLE]" class="social-icon" aria-label="Instagram" target="_blank" rel="noopener noreferrer">in</a>
+        <a href="https://nextdoor.com/[YOUR-PAGE]" class="social-icon" aria-label="Nextdoor" target="_blank" rel="noopener noreferrer">n</a>
+        <a href="https://www.google.com/maps/[YOUR-LISTING]" class="social-icon" aria-label="Google Reviews" target="_blank" rel="noopener noreferrer">g</a>
+      </div>
+    </div>
+    <div class="footer-col">
+      <h4>Services</h4>
+      <ul>
+        <li><a href="#services">Sealer Stripping & Re-seal</a></li>
+        <li><a href="#services">Exterior Soft Wash</a></li>
+        <li><a href="#services">Roof Soft Wash</a></li>
+        <li><a href="#services">Pool Deck Wash & Seal</a></li>
+        <li><a href="#services">Weed & Moss Removal</a></li>
+        <li><a href="#services">Paver Re-leveling</a></li>
+        <li><a href="#services">Color Restoration</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Company</h4>
+      <ul>
+        <li><a href="#about">About Us</a></li>
+        <li><a href="#why-us">Why Liberty</a></li>
+        <li><a href="#process">Our Process</a></li>
+        <li><a href="#testimonials">Reviews</a></li>
+        <li><a href="#service-area">Service Area</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Contact</h4>
+      <ul>
+        <li><a href="tel:[YOUR-PHONE]">[YOUR-PHONE-NUMBER]</a></li>
+        <li><a href="mailto:[YOUR-EMAIL]">[YOUR-EMAIL-ADDRESS]</a></li>
+        <li><a href="#service-area">South Florida</a></li>
+        <li><a href="https://g.page/[YOUR-GOOGLE]" target="_blank" rel="noopener noreferrer">Google Reviews ↗</a></li>
+        <li><a href="[YOUR-LICENSE-URL]" target="_blank" rel="noopener noreferrer">License: [LICENSE #]</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p class="footer-copy">© <span id="year"></span> Liberty Paver Restoration, Inc. All rights reserved. | Licensed & Insured | South Florida</p>
+    <div class="footer-legal">
+      <a href="[/privacy-policy]">Privacy Policy</a>
+      <a href="[/terms]">Terms of Service</a>
+      <a href="[/sitemap.xml]">Sitemap</a>
+    </div>
+  </div>
+</footer>
+
+<!-- ═══════════════════════════════════════════
+     JAVASCRIPT
+═══════════════════════════════════════════ -->
 <script>
-// ─── STATE ───────────────────────────────────────────────────────
-let map = null;
-let drawingManager = null;
-let geocoder = null;
-let staticMapUrl = '';
-let areas = []; // { id, type, label, sqft, polygon }
-let currentTool = 'driveway';
-let isDrawing = false;
-let quoteNumber = 'PQ-' + Date.now().toString().slice(-6);
+  // ── Year ──
+  document.getElementById('year').textContent = new Date().getFullYear();
 
-const TOOL_COLORS = {
-  driveway: { fill: '#4AA8FF', stroke: '#2080E0', label: 'Driveway' },
-  patio:    { fill: '#3ED97A', stroke: '#22A050', label: 'Patio'    },
-  walkway:  { fill: '#FFD04A', stroke: '#CC9A00', label: 'Walkway'  },
-  roof:     { fill: '#FF5E5E', stroke: '#CC2020', label: 'Roof'     }
-};
+  // ── Nav scroll ──
+  const nav = document.getElementById('mainNav');
+  window.addEventListener('scroll', () => {
+    nav.classList.toggle('scrolled', window.scrollY > 60);
+  }, { passive: true });
 
-// ─── API KEY / MAP LOADING ────────────────────────────────────────
-function loadMapsWithKey() {
-  const key = document.getElementById('apiKeyInput').value.trim();
-  if (!key) { alert('Please enter your Google Maps API key.'); return; }
-  localStorage.setItem('gmaps_key', key);
-  injectMapsScript(key);
-}
+  // ── Mobile nav ──
+  const hamburger = document.getElementById('hamburger');
+  const mobileNav = document.getElementById('mobileNav');
+  const navOverlay = document.getElementById('navOverlay');
+  const closeNav = document.getElementById('closeNav');
 
-function injectMapsScript(key) {
-  const s = document.createElement('script');
-  s.src = `https://maps.googleapis.com/maps/api/js?key=${key}&libraries=drawing,geometry&callback=initMap`;
-  s.async = true; s.defer = true;
-  document.head.appendChild(s);
-}
-
-window.onload = () => {
-  const saved = localStorage.getItem('gmaps_key');
-  if (saved) {
-    document.getElementById('apiKeyInput').value = saved;
-    injectMapsScript(saved);
+  function openNav() {
+    mobileNav.classList.add('open');
+    navOverlay.classList.add('open');
+    hamburger.setAttribute('aria-expanded', 'true');
+    document.body.style.overflow = 'hidden';
   }
-};
-
-// ─── MAP INIT ────────────────────────────────────────────────────
-window.initMap = function() {
-  document.getElementById('apiOverlay').style.display = 'none';
-
-  map = new google.maps.Map(document.getElementById('map'), {
-    center: { lat: 27.33, lng: -80.35 }, // Port Saint Lucie default
-    zoom: 19,
-    mapTypeId: 'satellite',
-    tilt: 0,
-    disableDefaultUI: false,
-    mapTypeControl: false,
-    streetViewControl: false,
-    fullscreenControl: true,
-    styles: []
+  function closeNavFn() {
+    mobileNav.classList.remove('open');
+    navOverlay.classList.remove('open');
+    hamburger.setAttribute('aria-expanded', 'false');
+    document.body.style.overflow = '';
+  }
+  hamburger.addEventListener('click', openNav);
+  closeNav.addEventListener('click', closeNavFn);
+  navOverlay.addEventListener('click', closeNavFn);
+  document.querySelectorAll('.mob-link').forEach(a => {
+    a.addEventListener('click', closeNavFn);
   });
 
-  geocoder = new google.maps.Geocoder();
-
-  drawingManager = new google.maps.drawing.DrawingManager({
-    drawingMode: null,
-    drawingControl: false,
-    polygonOptions: {
-      fillColor: TOOL_COLORS[currentTool].fill,
-      fillOpacity: 0.35,
-      strokeColor: TOOL_COLORS[currentTool].stroke,
-      strokeWeight: 2,
-      editable: true,
-      draggable: true
-    }
-  });
-  drawingManager.setMap(map);
-
-  google.maps.event.addListener(drawingManager, 'polygoncomplete', function(polygon) {
-    finishPolygon(polygon);
-  });
-
-  showStatus('Map loaded! Enter an address and click "Find Property on Map"');
-};
-
-// ─── GEOCODING ───────────────────────────────────────────────────
-function geocodeAddress() {
-  if (!geocoder) { alert('Map not loaded yet. Please enter your API key first.'); return; }
-  const addr = document.getElementById('addressInput').value.trim();
-  if (!addr) { alert('Please enter a property address.'); return; }
-
-  geocoder.geocode({ address: addr }, function(results, status) {
-    if (status === 'OK') {
-      const loc = results[0].geometry.location;
-      map.setCenter(loc);
-      map.setZoom(20);
-      map.setMapTypeId('satellite');
-
-      // Build static map URL for quote PDF
-      const apiKey = localStorage.getItem('gmaps_key');
-      staticMapUrl = `https://maps.googleapis.com/maps/api/staticmap?center=${loc.lat()},${loc.lng()}&zoom=19&size=640x200&maptype=satellite&key=${apiKey}`;
-
-      showStatus(`📍 Showing: ${results[0].formatted_address}`);
-    } else {
-      alert('Address not found. Try adding the city and state.');
-    }
-  });
-}
-
-// ─── DRAWING ─────────────────────────────────────────────────────
-function selectTool(tool) {
-  currentTool = tool;
-  document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('tool-' + tool).classList.add('active');
-
-  if (drawingManager) {
-    drawingManager.setOptions({
-      polygonOptions: {
-        fillColor: TOOL_COLORS[tool].fill,
-        fillOpacity: 0.35,
-        strokeColor: TOOL_COLORS[tool].stroke,
-        strokeWeight: 2,
-        editable: true,
-        draggable: true
+  // ── Scroll reveal ──
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('visible');
+        observer.unobserve(e.target);
       }
     });
-  }
-}
+  }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+  reveals.forEach(el => observer.observe(el));
 
-function startDrawing() {
-  if (!map) { alert('Please load the map first.'); return; }
-  isDrawing = true;
-  drawingManager.setDrawingMode(google.maps.drawing.OverlayType.POLYGON);
-  document.getElementById('drawingNotice').classList.add('show');
-  showStatus('Click on the map to start drawing. Double-click to finish.');
-}
-
-function cancelDrawing() {
-  isDrawing = false;
-  drawingManager.setDrawingMode(null);
-  document.getElementById('drawingNotice').classList.remove('show');
-  clearStatus();
-}
-
-function finishPolygon(polygon) {
-  isDrawing = false;
-  drawingManager.setDrawingMode(null);
-  document.getElementById('drawingNotice').classList.remove('show');
-
-  const sqft = computeSqFt(polygon);
-  const id = Date.now();
-  const tool = TOOL_COLORS[currentTool];
-
-  const area = {
-    id, 
-    type: currentTool,
-    label: tool.label + ' #' + (areas.filter(a => a.type === currentTool).length + 1),
-    sqft,
-    polygon
-  };
-
-  // Attach listeners so edits recalc
-  polygon.getPaths().forEach(path => {
-    google.maps.event.addListener(path, 'set_at', () => updateAreaSqft(id, polygon));
-    google.maps.event.addListener(path, 'insert_at', () => updateAreaSqft(id, polygon));
-    google.maps.event.addListener(path, 'remove_at', () => updateAreaSqft(id, polygon));
+  // ── Smooth scroll for anchor links ──
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+      const target = document.querySelector(a.getAttribute('href'));
+      if (target) {
+        e.preventDefault();
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
   });
-
-  areas.push(area);
-  renderAreaList();
-  calcQuote();
-  showStatus(`✅ ${area.label} measured: ${Math.round(sqft).toLocaleString()} ft²`);
-}
-
-function updateAreaSqft(id, polygon) {
-  const area = areas.find(a => a.id === id);
-  if (area) {
-    area.sqft = computeSqFt(polygon);
-    renderAreaList();
-    calcQuote();
-  }
-}
-
-function computeSqFt(polygon) {
-  const areaMeters = google.maps.geometry.spherical.computeArea(polygon.getPath());
-  return areaMeters * 10.7639; // m² to ft²
-}
-
-// ─── AREA LIST UI ────────────────────────────────────────────────
-function renderAreaList() {
-  const list = document.getElementById('areaList');
-  if (!areas.length) {
-    list.innerHTML = '<div class="no-areas">No areas drawn yet.<br>Use tools above to measure.</div>';
-    updateTotals();
-    return;
-  }
-
-  list.innerHTML = areas.map(area => {
-    const c = TOOL_COLORS[area.type];
-    return `
-      <div class="area-item">
-        <div class="area-dot" style="background:${c.fill};border:1px solid ${c.stroke}"></div>
-        <div class="area-info">
-          <div class="area-name">${area.label}</div>
-          <div class="area-sqft">${Math.round(area.sqft).toLocaleString()} ft²</div>
-        </div>
-        <div class="area-actions">
-          <button class="icon-btn del" onclick="deleteArea(${area.id})" title="Delete">✕</button>
-        </div>
-      </div>
-    `;
-  }).join('');
-
-  updateTotals();
-}
-
-function deleteArea(id) {
-  const idx = areas.findIndex(a => a.id === id);
-  if (idx !== -1) {
-    areas[idx].polygon.setMap(null);
-    areas.splice(idx, 1);
-    renderAreaList();
-    calcQuote();
-  }
-}
-
-function updateTotals() {
-  const pavedTypes = ['driveway','patio','walkway'];
-  const pavedSqft = areas.filter(a => pavedTypes.includes(a.type)).reduce((s, a) => s + a.sqft, 0);
-  const roofSqft  = areas.filter(a => a.type === 'roof').reduce((s, a) => s + a.sqft, 0);
-  const totalSqft = pavedSqft + roofSqft;
-
-  document.getElementById('totalPaved').textContent = Math.round(pavedSqft).toLocaleString() + ' ft²';
-  document.getElementById('totalRoof').textContent  = Math.round(roofSqft).toLocaleString() + ' ft²';
-  document.getElementById('totalAll').textContent   = Math.round(totalSqft).toLocaleString() + ' ft²';
-}
-
-// ─── QUOTE CALC ──────────────────────────────────────────────────
-function calcQuote() {
-  const pavedTypes = ['driveway','patio','walkway'];
-  const pavedSqft = areas.filter(a => pavedTypes.includes(a.type)).reduce((s, a) => s + a.sqft, 0);
-  const roofSqft  = areas.filter(a => a.type === 'roof').reduce((s, a) => s + a.sqft, 0);
-
-  const ps = parseFloat(document.getElementById('priceSealing').value) || 0;
-  const pw = parseFloat(document.getElementById('priceWash').value) || 0;
-  const psa= parseFloat(document.getElementById('priceSand').value) || 0;
-  const pr = parseFloat(document.getElementById('priceRoof').value) || 0;
-
-  let sub = 0;
-  if (document.getElementById('svcSealing').checked) sub += pavedSqft * ps;
-  if (document.getElementById('svcWash').checked)    sub += pavedSqft * pw;
-  if (document.getElementById('svcSand').checked)    sub += pavedSqft * psa;
-  if (document.getElementById('svcRoof').checked)    sub += roofSqft * pr;
-
-  const disc = Math.min(parseFloat(document.getElementById('discount').value) || 0, 100);
-  const discAmt = sub * (disc / 100);
-  const total = sub - discAmt;
-
-  document.getElementById('subtotalDisplay').textContent = '$' + sub.toFixed(2);
-  document.getElementById('discountDisplay').textContent = '-$' + discAmt.toFixed(2);
-  document.getElementById('totalDisplay').textContent    = '$' + total.toFixed(2);
-}
-
-// ─── MAP UTILS ───────────────────────────────────────────────────
-function setMapType(type) {
-  if (map) map.setMapTypeId(type);
-}
-
-function clearAll() {
-  if (!confirm('Clear all measured areas?')) return;
-  areas.forEach(a => a.polygon.setMap(null));
-  areas = [];
-  renderAreaList();
-  calcQuote();
-}
-
-function showStatus(msg) {
-  const el = document.getElementById('mapStatus');
-  el.textContent = msg;
-  el.classList.add('show');
-  setTimeout(() => el.classList.remove('show'), 4000);
-}
-function clearStatus() {
-  document.getElementById('mapStatus').classList.remove('show');
-}
-
-// ─── QUOTE GENERATION ────────────────────────────────────────────
-function generateQuote() {
-  const pavedTypes = ['driveway','patio','walkway'];
-  const pavedSqft = areas.filter(a => pavedTypes.includes(a.type)).reduce((s, a) => s + a.sqft, 0);
-  const roofSqft  = areas.filter(a => a.type === 'roof').reduce((s, a) => s + a.sqft, 0);
-
-  const ps = parseFloat(document.getElementById('priceSealing').value) || 0;
-  const pw = parseFloat(document.getElementById('priceWash').value) || 0;
-  const psa= parseFloat(document.getElementById('priceSand').value) || 0;
-  const pr = parseFloat(document.getElementById('priceRoof').value) || 0;
-
-  const services = [];
-  if (document.getElementById('svcSealing').checked && pavedSqft > 0)
-    services.push({ name: 'Paver Sealing', sqft: pavedSqft, rate: ps, total: pavedSqft * ps });
-  if (document.getElementById('svcWash').checked && pavedSqft > 0)
-    services.push({ name: 'Pressure Washing (Paved)', sqft: pavedSqft, rate: pw, total: pavedSqft * pw });
-  if (document.getElementById('svcSand').checked && pavedSqft > 0)
-    services.push({ name: 'Polymeric Joint Sand Re-fill', sqft: pavedSqft, rate: psa, total: pavedSqft * psa });
-  if (document.getElementById('svcRoof').checked && roofSqft > 0)
-    services.push({ name: 'Roof Soft Wash', sqft: roofSqft, rate: pr, total: roofSqft * pr });
-
-  const sub = services.reduce((s, sv) => s + sv.total, 0);
-  const disc = Math.min(parseFloat(document.getElementById('discount').value) || 0, 100);
-  const discAmt = sub * (disc / 100);
-  const total = sub - discAmt;
-
-  const today = new Date().toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' });
-  const validUntil = new Date(Date.now() + 30*24*60*60*1000).toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' });
-
-  const name    = document.getElementById('custName').value || 'Valued Customer';
-  const phone   = document.getElementById('custPhone').value || '—';
-  const email   = document.getElementById('custEmail').value || '—';
-  const address = document.getElementById('addressInput').value || '—';
-  const notes   = document.getElementById('quoteNotes').value;
-
-  // Area breakdown rows
-  const areaRows = areas.map(a => {
-    const c = TOOL_COLORS[a.type];
-    return `<tr><td><span style="display:inline-block;width:10px;height:10px;background:${c.fill};border-radius:2px;margin-right:6px;"></span>${a.label}</td><td class="num">${Math.round(a.sqft).toLocaleString()}</td><td class="num">ft²</td></tr>`;
-  }).join('');
-
-  const serviceRows = services.map(sv =>
-    `<tr><td>${sv.name}</td><td class="num">${Math.round(sv.sqft).toLocaleString()} ft²</td><td class="num">$${sv.rate.toFixed(2)}/ft²</td><td class="num">$${sv.total.toFixed(2)}</td></tr>`
-  ).join('');
-
-  const mapImg = staticMapUrl
-    ? `<img src="${staticMapUrl}" alt="Property Satellite View" style="width:100%;height:100%;object-fit:cover;">`
-    : `🛰 Satellite map — ${address}`;
-
-  const html = `
-    <div style="font-family:'DM Sans',sans-serif;background:#fff;color:#111;padding:40px;">
-      <div class="q-header">
-        <div>
-          <div class="q-logo">PRO<span style="color:#111;">PAVE</span></div>
-          <div class="q-logo-sub">Paver Restoration & Pressure Washing</div>
-          <div style="font-size:11px;color:#aaa;margin-top:4px;">Licensed & Insured · Serving South Florida</div>
-        </div>
-        <div class="q-meta">
-          <strong>ESTIMATE #${quoteNumber}</strong>
-          Date: ${today}<br>
-          Valid Until: ${validUntil}<br>
-          Prepared by: ProPave Team
-        </div>
-      </div>
-
-      <div class="q-customer">
-        <h3>Prepared For</h3>
-        <p><strong style="font-size:16px;">${name}</strong><br>
-        ${address}<br>
-        📞 ${phone} &nbsp;|&nbsp; ✉️ ${email}</p>
-      </div>
-
-      <div class="q-map-placeholder">${mapImg}</div>
-
-      ${areaRows ? `
-      <div class="q-section-title">Measured Areas</div>
-      <table class="q-table" style="margin-bottom:20px;">
-        <thead><tr><th>Area</th><th class="num">Size</th><th class="num">Unit</th></tr></thead>
-        <tbody>${areaRows}</tbody>
-      </table>` : ''}
-
-      <div class="q-section-title">Scope of Work & Pricing</div>
-      <table class="q-table">
-        <thead><tr><th>Service</th><th class="num">Area</th><th class="num">Rate</th><th class="num">Amount</th></tr></thead>
-        <tbody>${serviceRows || '<tr><td colspan="4" style="color:#aaa;text-align:center;padding:20px;">No services selected</td></tr>'}</tbody>
-      </table>
-
-      <div class="q-totals">
-        <div class="q-total-row"><span>Subtotal</span><span style="font-family:monospace;">$${sub.toFixed(2)}</span></div>
-        ${disc > 0 ? `<div class="q-total-row" style="color:green;"><span>Discount (${disc}%)</span><span>-$${discAmt.toFixed(2)}</span></div>` : ''}
-        <div class="q-total-final"><span>TOTAL</span><span>$${total.toFixed(2)}</span></div>
-      </div>
-
-      ${notes ? `<div class="q-section-title">Notes & Special Conditions</div><p style="font-size:13px;line-height:1.7;color:#444;margin-bottom:20px;">${notes}</p>` : ''}
-
-      <div class="q-sig-line">
-        <div class="q-sig">Customer Signature &amp; Date</div>
-        <div class="q-sig">Authorized by ProPave</div>
-      </div>
-
-      <div class="q-terms">
-        <strong>Terms:</strong> Quote valid for 30 days. 50% deposit required to schedule. Balance due upon completion. 
-        Price based on measured square footage above. Additional charges may apply for severely stained or damaged surfaces. 
-        All work guaranteed for 12 months. We are fully licensed and insured.
-      </div>
-    </div>
-  `;
-
-  document.getElementById('quotePreview').innerHTML = html;
-  document.getElementById('quoteModal').classList.add('show');
-}
-
-function closeModal() {
-  document.getElementById('quoteModal').classList.remove('show');
-}
-
-function downloadQuote() {
-  window.print();
-}
-
-// Close modal on overlay click
-document.getElementById('quoteModal').addEventListener('click', function(e) {
-  if (e.target === this) closeModal();
-});
 </script>
 
 </body>
