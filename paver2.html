@@ -676,12 +676,29 @@
 
     <div class="map-toolbar">
       <span class="map-toolbar-lbl">View:</span>
-      <button class="btn btn-secondary btn-sm" onclick="setMT('satellite')">🛰 Satellite</button>
-      <button class="btn btn-secondary btn-sm" onclick="setMT('hybrid')">🗺 Hybrid</button>
-      <button class="btn btn-secondary btn-sm" onclick="setMT('roadmap')">📍 Road</button>
-      <span style="width:1px;background:var(--border);height:18px;display:inline-block;"></span>
+      <button class="btn btn-secondary btn-sm" onclick="setMT('satellite')" title="Top-down satellite">🛰 Satellite</button>
+      <button class="btn btn-secondary btn-sm" onclick="setMT('hybrid')" title="Satellite + street labels">🗺 Hybrid</button>
+      <button class="btn btn-secondary btn-sm" onclick="setMT('roadmap')" title="Street map">📍 Road</button>
+      <span style="width:1px;background:var(--border);height:20px;display:inline-block;margin:0 2px;"></span>
+      <span class="map-toolbar-lbl">3D:</span>
+      <button class="btn btn-secondary btn-sm" id="btn45" onclick="toggle45()" title="Toggle 45° oblique aerial view — see building height and areas under overhangs">⛰ Tilt 45°</button>
+      <button class="btn btn-secondary btn-sm" onclick="rotateStep(-45)" title="Orbit left 45°">↺</button>
+      <button class="btn btn-secondary btn-sm" onclick="rotateStep(45)"  title="Orbit right 45°">↻</button>
+      <button class="btn btn-secondary btn-sm" onclick="resetView()" title="Back to flat top-down view">⊙ Flat</button>
+      <span style="width:1px;background:var(--border);height:20px;display:inline-block;margin:0 2px;"></span>
       <button class="btn btn-outline btn-sm" onclick="clearAll()">🗑 Clear All</button>
     </div>
+
+    <!-- tilt hint badge — shows when 45° is active -->
+    <div id="tiltHint" style="
+      position:absolute;top:54px;left:50%;transform:translateX(-50%);
+      background:rgba(244,97,26,0.92);color:#fff;
+      font-size:11px;font-weight:600;letter-spacing:.5px;
+      padding:5px 14px;border-radius:20px;
+      pointer-events:none;opacity:0;
+      transition:opacity .3s;white-space:nowrap;z-index:11;
+    ">⛰ 45° tilt active — ↺ ↻ to orbit all sides of the property</div>
+
     <div class="map-status" id="mapSt"></div>
 
     <div class="api-overlay" id="apiOvr">
@@ -766,6 +783,7 @@ window.initMap=function(){
   map=new google.maps.Map(document.getElementById('map'),{
     center:{lat:27.3364,lng:-80.3420},zoom:19,mapTypeId:'satellite',tilt:0,
     mapTypeControl:false,streetViewControl:false,fullscreenControl:true,
+    rotateControl:true,
     gestureHandling:'greedy'
   });
   geocoder=new google.maps.Geocoder();
@@ -907,6 +925,45 @@ function calcChem(){
     </div>`;
   }).join('');
   results.innerHTML=rows;
+}
+
+// ── 3D TILT & ROTATE ──
+let tilt45On=false;
+
+function setTiltUI(on){
+  tilt45On=on;
+  const btn=document.getElementById('btn45');
+  const hint=document.getElementById('tiltHint');
+  btn.style.background=on?'var(--orange)':'';
+  btn.style.color=on?'#fff':'';
+  hint.style.opacity=on?'1':'0';
+}
+
+function toggle45(){
+  if(!map){alert('Load map first.');return;}
+  const next=!tilt45On;
+  map.setTilt(next?45:0);
+  if(!next) map.setHeading(0);
+  setTiltUI(next);
+  showSt(next
+    ? '⛰ 45° tilt ON — use ↺ ↻ buttons to orbit all four sides of the property'
+    : '🔲 Flat top-down view restored');
+}
+
+function rotateStep(deg){
+  if(!map) return;
+  // Auto-enable tilt if not already on
+  if(!tilt45On){ map.setTilt(45); setTiltUI(true); }
+  const cur=map.getHeading()||0;
+  map.setHeading(cur+deg);
+}
+
+function resetView(){
+  if(!map) return;
+  map.setTilt(0);
+  map.setHeading(0);
+  setTiltUI(false);
+  showSt('🔲 Top-down north-up view restored');
 }
 
 // ── MAP UTILS ──
