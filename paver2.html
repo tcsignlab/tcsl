@@ -488,166 +488,21 @@
     <div class="card">
       <div class="card-head">🧪 Chemical Calculator</div>
       <div class="card-body">
-        <p style="font-size:10px;color:var(--muted);line-height:1.5;">Check chemicals needed for this job. Set dilution rate (oz per gallon) and coverage (ft² per gallon). Gallons auto-calculate from total measured area.</p>
+        <p style="font-size:10px;color:var(--muted);line-height:1.6;">Chemicals are auto-suggested based on checked services above. Each chemical uses <em>only the square footage of its associated service</em>. Adjust coverage rate per chemical. Check/uncheck to include in the job.</p>
 
-        <div class="svc-scroll-box" style="max-height:340px;">
-
-          <!-- Cleaning / Organic -->
-          <div class="chem-cat" style="color:#3ED97A;">🌿 Cleaning / Organic</div>
-
-          <div class="chem-row">
-            <input type="checkbox" class="chem-check" id="ch1" onchange="calcChem()">
-            <div class="chem-info"><div class="chem-name">Sodium Hypochlorite (SH)</div></div>
-            <div class="chem-rate-wrap">
-              <span>Cov.</span><input type="number" id="cv1" value="200" min="1" step="1" oninput="calcChem()" title="ft² per gallon"><span>ft²/gal</span>
-            </div>
+        <!-- Coverage rate inputs — one per unique chemical, hidden input fields used by calcChem -->
+        <!-- These are the master rate inputs rendered dynamically by renderChemPanel() -->
+        <div class="svc-scroll-box" style="max-height:360px;" id="chemPanel">
+          <div style="padding:14px;text-align:center;color:var(--muted);font-size:11px;">
+            ✅ Check services above — chemicals will appear here automatically.
           </div>
+        </div>
 
-          <div class="chem-row">
-            <input type="checkbox" class="chem-check" id="ch2" onchange="calcChem()">
-            <div class="chem-info"><div class="chem-name">Surfactant (Lauramine Oxide / Non-ionic)</div></div>
-            <div class="chem-rate-wrap">
-              <span>Cov.</span><input type="number" id="cv2" value="500" min="1" step="1" oninput="calcChem()" title="ft² per gallon"><span>ft²/gal</span>
-            </div>
-          </div>
-
-          <!-- Degreasing / Oil -->
-          <div class="chem-cat" style="color:#FFD04A;">🔩 Degreasing / Oil</div>
-
-          <div class="chem-row">
-            <input type="checkbox" class="chem-check" id="ch3" onchange="calcChem()">
-            <div class="chem-info"><div class="chem-name">Sodium Hydroxide</div></div>
-            <div class="chem-rate-wrap">
-              <span>Cov.</span><input type="number" id="cv3" value="150" min="1" step="1" oninput="calcChem()"><span>ft²/gal</span>
-            </div>
-          </div>
-
-          <div class="chem-row">
-            <input type="checkbox" class="chem-check" id="ch4" onchange="calcChem()">
-            <div class="chem-info"><div class="chem-name">Sodium Metasilicate</div></div>
-            <div class="chem-rate-wrap">
-              <span>Cov.</span><input type="number" id="cv4" value="150" min="1" step="1" oninput="calcChem()"><span>ft²/gal</span>
-            </div>
-          </div>
-
-          <div class="chem-row">
-            <input type="checkbox" class="chem-check" id="ch5" onchange="calcChem()">
-            <div class="chem-info"><div class="chem-name">Butyl Degreaser</div></div>
-            <div class="chem-rate-wrap">
-              <span>Cov.</span><input type="number" id="cv5" value="200" min="1" step="1" oninput="calcChem()"><span>ft²/gal</span>
-            </div>
-          </div>
-
-          <!-- Rust Removal -->
-          <div class="chem-cat" style="color:#FF9A3C;">🦀 Rust Removal</div>
-
-          <div class="chem-row">
-            <input type="checkbox" class="chem-check" id="ch6" onchange="calcChem()">
-            <div class="chem-info"><div class="chem-name">Oxalic Acid</div></div>
-            <div class="chem-rate-wrap">
-              <span>Cov.</span><input type="number" id="cv6" value="100" min="1" step="1" oninput="calcChem()"><span>ft²/gal</span>
-            </div>
-          </div>
-
-          <div class="chem-row">
-            <input type="checkbox" class="chem-check" id="ch7" onchange="calcChem()">
-            <div class="chem-info"><div class="chem-name">Citric Acid</div></div>
-            <div class="chem-rate-wrap">
-              <span>Cov.</span><input type="number" id="cv7" value="120" min="1" step="1" oninput="calcChem()"><span>ft²/gal</span>
-            </div>
-          </div>
-
-          <!-- Efflorescence / Mineral -->
-          <div class="chem-cat" style="color:#FF5E5E;">🪨 Efflorescence / Mineral Removal</div>
-
-          <div class="chem-row">
-            <input type="checkbox" class="chem-check" id="ch8" onchange="calcChem()">
-            <div class="chem-info"><div class="chem-name">Muriatic Acid (Hydrochloric Acid)</div></div>
-            <div class="chem-rate-wrap">
-              <span>Cov.</span><input type="number" id="cv8" value="100" min="1" step="1" oninput="calcChem()"><span>ft²/gal</span>
-            </div>
-          </div>
-
-          <div class="chem-row">
-            <input type="checkbox" class="chem-check" id="ch9" onchange="calcChem()">
-            <div class="chem-info"><div class="chem-name">Phosphoric Acid</div></div>
-            <div class="chem-rate-wrap">
-              <span>Cov.</span><input type="number" id="cv9" value="120" min="1" step="1" oninput="calcChem()"><span>ft²/gal</span>
-            </div>
-          </div>
-
-          <div class="chem-row">
-            <input type="checkbox" class="chem-check" id="ch10" onchange="calcChem()">
-            <div class="chem-info"><div class="chem-name">Sulfamic Acid</div></div>
-            <div class="chem-rate-wrap">
-              <span>Cov.</span><input type="number" id="cv10" value="120" min="1" step="1" oninput="calcChem()"><span>ft²/gal</span>
-            </div>
-          </div>
-
-          <!-- Neutralizers -->
-          <div class="chem-cat" style="color:#B07AFF;">⚗️ Neutralizers</div>
-
-          <div class="chem-row">
-            <input type="checkbox" class="chem-check" id="ch11" onchange="calcChem()">
-            <div class="chem-info"><div class="chem-name">Sodium Bicarbonate (Baking Soda)</div></div>
-            <div class="chem-rate-wrap">
-              <span>Cov.</span><input type="number" id="cv11" value="300" min="1" step="1" oninput="calcChem()"><span>ft²/gal</span>
-            </div>
-          </div>
-
-          <div class="chem-row">
-            <input type="checkbox" class="chem-check" id="ch12" onchange="calcChem()">
-            <div class="chem-info"><div class="chem-name">Sodium Carbonate (Soda Ash)</div></div>
-            <div class="chem-rate-wrap">
-              <span>Cov.</span><input type="number" id="cv12" value="300" min="1" step="1" oninput="calcChem()"><span>ft²/gal</span>
-            </div>
-          </div>
-
-          <!-- Jointing -->
-          <div class="chem-cat" style="color:#4AA8FF;">🧱 Jointing</div>
-
-          <div class="chem-row">
-            <input type="checkbox" class="chem-check" id="ch13" onchange="calcChem()">
-            <div class="chem-info"><div class="chem-name">Polymeric Sand</div></div>
-            <div class="chem-rate-wrap">
-              <span>Cov.</span><input type="number" id="cv13" value="40" min="1" step="1" oninput="calcChem()" title="ft² per bag (50lb)"><span>ft²/bag</span>
-            </div>
-          </div>
-
-          <!-- Sealing -->
-          <div class="chem-cat" style="color:#F4611A;">🛡 Sealing</div>
-
-          <div class="chem-row">
-            <input type="checkbox" class="chem-check" id="ch14" onchange="calcChem()">
-            <div class="chem-info"><div class="chem-name">Acrylic Sealer (Solvent-Based)</div></div>
-            <div class="chem-rate-wrap">
-              <span>Cov.</span><input type="number" id="cv14" value="150" min="1" step="1" oninput="calcChem()"><span>ft²/gal</span>
-            </div>
-          </div>
-
-          <div class="chem-row">
-            <input type="checkbox" class="chem-check" id="ch15" onchange="calcChem()">
-            <div class="chem-info"><div class="chem-name">Acrylic Sealer (Water-Based)</div></div>
-            <div class="chem-rate-wrap">
-              <span>Cov.</span><input type="number" id="cv15" value="200" min="1" step="1" oninput="calcChem()"><span>ft²/gal</span>
-            </div>
-          </div>
-
-          <div class="chem-row">
-            <input type="checkbox" class="chem-check" id="ch16" onchange="calcChem()">
-            <div class="chem-info"><div class="chem-name">Silane / Siloxane Sealer</div></div>
-            <div class="chem-rate-wrap">
-              <span>Cov.</span><input type="number" id="cv16" value="100" min="1" step="1" oninput="calcChem()"><span>ft²/gal</span>
-            </div>
-          </div>
-
-        </div><!-- /svc-scroll-box -->
-
-        <!-- Gallon summary output -->
-        <div id="chemResults" style="display:flex;flex-direction:column;gap:6px;margin-top:4px;">
+        <!-- Results summary -->
+        <div id="chemResults" style="display:flex;flex-direction:column;gap:6px;margin-top:6px;">
           <div class="chem-gal-chip">
-            <span class="chem-gal-lbl">Select chemicals above to see quantities →</span>
-            <span class="chem-gal-val" id="chemTotal">—</span>
+            <span class="chem-gal-lbl">Enable services above to calculate chemicals</span>
+            <span class="chem-gal-val">—</span>
           </div>
         </div>
 
@@ -825,9 +680,9 @@ function onPoly(poly){
   const sqft=sqF(poly),id=Date.now();
   const a={id,type:curTool,lbl:TC[curTool].label+' #'+(areas.filter(x=>x.type===curTool).length+1),sqft,poly};
   poly.getPaths().forEach(p=>{google.maps.event.addListener(p,'set_at',()=>updA(id,poly));google.maps.event.addListener(p,'insert_at',()=>updA(id,poly));});
-  areas.push(a);renderA();calcQ();calcChem();showSt('✅ '+a.lbl+': '+Math.round(sqft).toLocaleString()+' ft²');
+  areas.push(a);renderA();calcQ();showSt('✅ '+a.lbl+': '+Math.round(sqft).toLocaleString()+' ft²');
 }
-function updA(id,poly){const a=areas.find(x=>x.id===id);if(a){a.sqft=sqF(poly);renderA();calcQ();calcChem();}}
+function updA(id,poly){const a=areas.find(x=>x.id===id);if(a){a.sqft=sqF(poly);renderA();calcQ();}}
 function sqF(poly){return google.maps.geometry.spherical.computeArea(poly.getPath())*10.7639;}
 
 // ── AREA LIST ──
@@ -837,7 +692,7 @@ function renderA(){
   el.innerHTML=areas.map(a=>{const c=TC[a.type];return`<div class="area-item"><div class="area-dot" style="background:${c.fill};border:1px solid ${c.stroke}"></div><div class="area-info"><div class="area-name">${a.lbl}</div><div class="area-sqft">${Math.round(a.sqft).toLocaleString()} ft²</div></div><button class="icon-btn del" onclick="delA(${a.id})">✕</button></div>`;}).join('');
   updTot();
 }
-function delA(id){const i=areas.findIndex(a=>a.id===id);if(i!==-1){areas[i].poly.setMap(null);areas.splice(i,1);renderA();calcQ();calcChem();}}
+function delA(id){const i=areas.findIndex(a=>a.id===id);if(i!==-1){areas[i].poly.setMap(null);areas.splice(i,1);renderA();calcQ();}}
 function updTot(){
   const pv=areas.filter(a=>PAVED.includes(a.type)).reduce((s,a)=>s+a.sqft,0);
   const ro=areas.filter(a=>a.type==='roof').reduce((s,a)=>s+a.sqft,0);
@@ -865,6 +720,7 @@ function calcQ(){
   document.getElementById('subDisp').textContent='$'+sub.toFixed(2);
   document.getElementById('discDisp').textContent='-$'+da.toFixed(2);
   document.getElementById('totDisp').textContent='$'+tot.toFixed(2);
+  renderChemPanel();
 }
 
 // ── CUSTOM ──
@@ -880,52 +736,162 @@ function renderCI(){
   el.innerHTML=customs.map(c=>`<div class="ci"><span class="ci-name">${c.d}</span><span class="ci-val">$${c.a.toFixed(2)}</span><button class="icon-btn del" onclick="delCI(${c.id})">✕</button></div>`).join('');
 }
 
-// ── CHEMICALS ──
-const CHEMS=[
-  {id:'ch1', cv:'cv1', name:'Sodium Hypochlorite (SH)',              unit:'gal'},
-  {id:'ch2', cv:'cv2', name:'Surfactant (Lauramine Oxide/Non-ionic)', unit:'gal'},
-  {id:'ch3', cv:'cv3', name:'Sodium Hydroxide',                       unit:'gal'},
-  {id:'ch4', cv:'cv4', name:'Sodium Metasilicate',                    unit:'gal'},
-  {id:'ch5', cv:'cv5', name:'Butyl Degreaser',                        unit:'gal'},
-  {id:'ch6', cv:'cv6', name:'Oxalic Acid',                            unit:'gal'},
-  {id:'ch7', cv:'cv7', name:'Citric Acid',                            unit:'gal'},
-  {id:'ch8', cv:'cv8', name:'Muriatic Acid (Hydrochloric Acid)',      unit:'gal'},
-  {id:'ch9', cv:'cv9', name:'Phosphoric Acid',                        unit:'gal'},
-  {id:'ch10',cv:'cv10',name:'Sulfamic Acid',                          unit:'gal'},
-  {id:'ch11',cv:'cv11',name:'Sodium Bicarbonate (Baking Soda)',       unit:'gal'},
-  {id:'ch12',cv:'cv12',name:'Sodium Carbonate (Soda Ash)',            unit:'gal'},
-  {id:'ch13',cv:'cv13',name:'Polymeric Sand',                         unit:'bag'},
-  {id:'ch14',cv:'cv14',name:'Acrylic Sealer (Solvent-Based)',         unit:'gal'},
-  {id:'ch15',cv:'cv15',name:'Acrylic Sealer (Water-Based)',           unit:'gal'},
-  {id:'ch16',cv:'cv16',name:'Silane/Siloxane Sealer',                 unit:'gal'},
-];
+// ── CHEMICAL MASTER LIST ──
+// Each chemical: key, display name, default coverage rate, unit
+const CHEM_MASTER = {
+  'SH':       { name:'Sodium Hypochlorite (SH)',         rate:200, unit:'gal' },
+  'SURF':     { name:'Surfactant (Lauramine Oxide)',      rate:500, unit:'gal' },
+  'NAOH':     { name:'Sodium Hydroxide',                 rate:150, unit:'gal' },
+  'BUTYL':    { name:'Butyl Degreaser',                  rate:200, unit:'gal' },
+  'OXALIC':   { name:'Oxalic Acid',                      rate:100, unit:'gal' },
+  'MUR':      { name:'Muriatic Acid (Hydrochloric)',     rate:100, unit:'gal' },
+  'ACRYLS':   { name:'Acrylic Sealer (Solvent-Based)',   rate:150, unit:'gal' },
+  'ACRYLW':   { name:'Acrylic Sealer (Water-Based)',     rate:200, unit:'gal' },
+  'SILANE':   { name:'Silane/Siloxane Sealer',           rate:100, unit:'gal' },
+  'POLYSAND': { name:'Polymeric Sand',                   rate:40,  unit:'bag' },
+  'XYLENE':   { name:'Xylene (Sealer Stripper)',         rate:200, unit:'gal' },
+  'DYE':      { name:'Paver Dye / Tint',                 rate:300, unit:'gal' },
+};
 
-function totalSqft(){
-  return areas.reduce((s,a)=>s+a.sqft,0);
-}
+// Service → chemicals mapping
+// area: which sqft to use for the calculation
+const SVC_CHEMS = {
+  'svc1':  { area:'paved', chems:['SH','SURF','NAOH','OXALIC','MUR'] },         // Paver Pressure Washing
+  'svc2':  { area:'paved', chems:['ACRYLS','ACRYLW','SILANE'] },                // Paver Sealing
+  'svc3':  { area:'paved', chems:['POLYSAND'] },                                // Polymeric Joint Sand
+  'svc4':  { area:'paved', chems:['NAOH','BUTYL','XYLENE','ACRYLS'] },          // Sealer Stripping & Re-seal
+  'svc5':  { area:'house', chems:['SH','SURF'] },                               // House Soft Wash
+  'svc6':  { area:'roof',  chems:['SH','SURF'] },                               // Roof Soft Wash
+  'svc7':  { area:'pool',  chems:['SH','SURF','ACRYLS','SILANE'] },             // Pool Deck Wash & Seal
+  'svc8':  { area:'paved', chems:['SH','NAOH'] },                               // Weed & Moss Removal
+  'svc9':  { area:'paved', chems:['POLYSAND'] },                                // Paver Re-leveling
+  'svc10': { area:'paved', chems:['ACRYLS','DYE'] },                            // Color Restoration
+};
 
-function calcChem(){
-  const totalSq=totalSqft();
-  const results=document.getElementById('chemResults');
-  const checked=CHEMS.filter(c=>document.getElementById(c.id).checked);
-  if(!checked.length){
-    results.innerHTML=`<div class="chem-gal-chip"><span class="chem-gal-lbl">Select chemicals above to see quantities →</span><span class="chem-gal-val">—</span></div>`;
+// Store user-edited rates in memory so they persist when panel re-renders
+const chemRates = {};
+Object.keys(CHEM_MASTER).forEach(k => { chemRates[k] = CHEM_MASTER[k].rate; });
+
+// Store user checkbox state
+const chemEnabled = {};
+Object.keys(CHEM_MASTER).forEach(k => { chemEnabled[k] = true; });
+
+// ── RENDER CHEMICAL PANEL (called when services change) ──
+function renderChemPanel() {
+  const panel = document.getElementById('chemPanel');
+
+  // Gather which chemicals are needed, grouped by service
+  // chemKey → { sqft contributions from each service }
+  const needed = {}; // chemKey → [ {svcName, area, sqft} ]
+
+  SVCS.forEach(s => {
+    const chk = document.getElementById(s.id);
+    if (!chk || !chk.checked) return;
+    const map = SVC_CHEMS[s.id];
+    if (!map) return;
+    const sqft = getSq(map.area);
+    map.chems.forEach(ck => {
+      if (!needed[ck]) needed[ck] = [];
+      needed[ck].push({ svcName: s.name, area: map.area, sqft });
+    });
+  });
+
+  const chemKeys = Object.keys(needed);
+  if (!chemKeys.length) {
+    panel.innerHTML = '<div style="padding:14px;text-align:center;color:var(--muted);font-size:11px;">✅ Check services above — chemicals will appear here automatically.</div>';
+    document.getElementById('chemResults').innerHTML = '<div class="chem-gal-chip"><span class="chem-gal-lbl">Enable services to calculate chemicals</span><span class="chem-gal-val">—</span></div>';
     return;
   }
-  const rows=checked.map(c=>{
-    const cov=parseFloat(document.getElementById(c.cv).value)||1;
-    const qty=totalSq>0?Math.ceil(totalSq/cov):0;
-    const sqLabel=totalSq>0?`${Math.round(totalSq).toLocaleString()} ft² ÷ ${cov} ft²/${c.unit}`:'No areas measured yet';
+
+  // Group chemicals by category for display
+  const CAT_ORDER = [
+    { label:'🌿 Cleaning / Organic',          color:'#3ED97A', keys:['SH','SURF'] },
+    { label:'🔩 Degreasing / Stripping',       color:'#FFD04A', keys:['NAOH','BUTYL','XYLENE'] },
+    { label:'🦀 Rust / Acid Treatment',        color:'#FF9A3C', keys:['OXALIC','MUR'] },
+    { label:'🧱 Jointing',                     color:'#4AA8FF', keys:['POLYSAND'] },
+    { label:'🛡 Sealing',                      color:'#F4611A', keys:['ACRYLS','ACRYLW','SILANE'] },
+    { label:'🎨 Color',                        color:'#B07AFF', keys:['DYE'] },
+  ];
+
+  let html = '';
+  CAT_ORDER.forEach(cat => {
+    const catChems = cat.keys.filter(k => needed[k]);
+    if (!catChems.length) return;
+    html += `<div class="chem-cat" style="color:${cat.color};">${cat.label}</div>`;
+    catChems.forEach(ck => {
+      const cm = CHEM_MASTER[ck];
+      const contributions = needed[ck];
+      const svcTip = contributions.map(c => c.svcName).join(', ');
+      const enabled = chemEnabled[ck] !== false;
+      html += `
+        <div class="chem-row">
+          <input type="checkbox" class="chem-check" id="cen_${ck}" ${enabled?'checked':''} onchange="chemEnabled['${ck}']=this.checked;calcChem();">
+          <div class="chem-info">
+            <div class="chem-name">${cm.name}</div>
+            <div class="chem-desc" style="font-size:9px;color:var(--muted);margin-top:1px;">Used in: ${svcTip}</div>
+          </div>
+          <div class="chem-rate-wrap">
+            <span>Cov.</span>
+            <input type="number" id="cr_${ck}" value="${chemRates[ck]}" min="1" step="1"
+              oninput="chemRates['${ck}']=parseFloat(this.value)||1;calcChem();">
+            <span>${cm.unit==='bag'?'ft²/bag':'ft²/gal'}</span>
+          </div>
+        </div>`;
+    });
+  });
+
+  panel.innerHTML = html;
+  calcChem();
+}
+
+// ── CALC CHEMICALS — accumulates sqft per chemical across all services ──
+function calcChem() {
+  const results = document.getElementById('chemResults');
+
+  // For each active chemical, sum up sqft from all services that use it
+  const needed = {};
+  SVCS.forEach(s => {
+    const chk = document.getElementById(s.id);
+    if (!chk || !chk.checked) return;
+    const mapping = SVC_CHEMS[s.id];
+    if (!mapping) return;
+    const sqft = getSq(mapping.area);
+    mapping.chems.forEach(ck => {
+      if (!needed[ck]) needed[ck] = 0;
+      needed[ck] += sqft;
+    });
+  });
+
+  const activeKeys = Object.keys(needed).filter(ck => chemEnabled[ck] !== false);
+  if (!activeKeys.length) {
+    results.innerHTML = '<div class="chem-gal-chip"><span class="chem-gal-lbl">Enable services to calculate chemicals</span><span class="chem-gal-val">—</span></div>';
+    return;
+  }
+
+  const rows = activeKeys.map(ck => {
+    const cm = CHEM_MASTER[ck];
+    const sqft = needed[ck];
+    const rate = chemRates[ck] || cm.rate;
+    const qty = sqft > 0 ? Math.ceil(sqft / rate) : 0;
+    // Find which services contributed
+    const svcNames = SVCS.filter(s => {
+      const chk = document.getElementById(s.id);
+      return chk && chk.checked && SVC_CHEMS[s.id] && SVC_CHEMS[s.id].chems.includes(ck);
+    }).map(s => s.name).join(' + ');
     return `<div class="chem-gal-chip">
-      <div>
-        <div style="font-size:12px;font-weight:600;color:var(--text)">${c.name}</div>
-        <div style="font-size:10px;color:var(--muted);margin-top:2px">${sqLabel}</div>
+      <div style="min-width:0;flex:1;">
+        <div style="font-size:12px;font-weight:600;color:var(--text);">${cm.name}</div>
+        <div style="font-size:9px;color:var(--muted);margin-top:2px;">${sqft>0?Math.round(sqft).toLocaleString()+' ft² ÷ '+rate+' ft²/'+cm.unit:'No area drawn yet'}</div>
+        <div style="font-size:9px;color:var(--orange);margin-top:1px;">↳ ${svcNames}</div>
       </div>
-      <span class="chem-gal-val">${qty > 0 ? qty : '—'} ${c.unit}</span>
+      <span class="chem-gal-val" style="margin-left:10px;flex-shrink:0;">${qty>0?qty:'—'} ${cm.unit}</span>
     </div>`;
   }).join('');
-  results.innerHTML=rows;
+
+  results.innerHTML = rows;
 }
+
+function totalSqft(){ return areas.reduce((s,a)=>s+a.sqft,0); }
 
 // ── 3D TILT & ROTATE ──
 let tilt45On=false;
@@ -995,14 +961,32 @@ function genQuote(){
   const aRows=areas.map(a=>{const c=TC[a.type];return`<tr><td><span style="display:inline-block;width:9px;height:9px;background:${c.fill};border-radius:2px;margin-right:5px"></span>${a.lbl}</td><td class="n">${Math.round(a.sqft).toLocaleString()} ft²</td></tr>`;}).join('');
   const sRows=svcs.map(v=>v.flat?`<tr><td>${v.name} <span style="font-size:10px;color:#aaa">(flat rate)</span></td><td class="n">—</td><td class="n">—</td><td class="n">$${v.tot.toFixed(2)}</td></tr>`:`<tr><td>${v.name}</td><td class="n">${Math.round(v.sq).toLocaleString()} ft²</td><td class="n">$${v.rate.toFixed(2)}/ft²</td><td class="n">$${v.tot.toFixed(2)}</td></tr>`).join('');
   const mapImg=staticUrl?`<img src="${staticUrl}" alt="Property satellite view">`:'🛰 Satellite view — '+addr;
-  // ── CHEMICALS FOR QUOTE ──
-  const totalSq=totalSqft();
-  const chemItems=CHEMS.filter(c=>document.getElementById(c.id).checked).map(c=>{
-    const cov=parseFloat(document.getElementById(c.cv).value)||1;
-    const qty=totalSq>0?Math.ceil(totalSq/cov):0;
-    return {name:c.name,qty,unit:c.unit,cov};
-  }).filter(c=>c.qty>0);
-  const chemRows=chemItems.map(c=>`<tr><td>${c.name}</td><td class="n">${Math.round(totalSq).toLocaleString()} ft²</td><td class="n">${c.cov} ft²/${c.unit}</td><td class="n">${c.qty} ${c.unit}</td></tr>`).join('');
+
+  // ── CHEMICALS FOR QUOTE — service-driven, correct sqft per chemical ──
+  const chemAccum = {};
+  SVCS.forEach(s=>{
+    if(!document.getElementById(s.id).checked) return;
+    const mapping = SVC_CHEMS[s.id]; if(!mapping) return;
+    const sqft = getSq(mapping.area);
+    mapping.chems.forEach(ck=>{
+      if(chemEnabled[ck]===false) return;
+      if(!chemAccum[ck]) chemAccum[ck]=0;
+      chemAccum[ck]+=sqft;
+    });
+  });
+  const chemRows=Object.keys(chemAccum).map(ck=>{
+    const cm=CHEM_MASTER[ck];
+    const sqft=chemAccum[ck];
+    const rate=chemRates[ck]||cm.rate;
+    const qty=sqft>0?Math.ceil(sqft/rate):0;
+    if(!qty) return '';
+    // which services use this chemical
+    const svcNames=SVCS.filter(s=>{
+      const chk=document.getElementById(s.id);
+      return chk&&chk.checked&&SVC_CHEMS[s.id]&&SVC_CHEMS[s.id].chems.includes(ck);
+    }).map(s=>s.name).join(', ');
+    return `<tr><td>${cm.name}<br><span style="font-size:10px;color:#aaa">${svcNames}</span></td><td class="n">${Math.round(sqft).toLocaleString()} ft²</td><td class="n">${rate} ft²/${cm.unit}</td><td class="n">${qty} ${cm.unit}</td></tr>`;
+  }).filter(Boolean).join('');
 
   document.getElementById('qPreview').innerHTML=`<div style="font-family:'DM Sans',sans-serif;background:#fff;color:#111;padding:34px"><div class="qh"><div><div class="ql">LIBERTY <span style="color:#111">PAVER RESTORATION INC.</span></div><div class="qls">Paver Restoration · Pressure Washing · Roof Soft Wash · House Wash</div><div style="font-size:10px;color:#aaa;margin-top:3px">Licensed & Insured · Serving South Florida</div></div><div class="qm"><strong>ESTIMATE #${qNum}</strong>Date: ${today}<br>Valid Until: ${valid}<br>Liberty Paver Restoration Inc.</div></div><div class="qcust"><h3>Prepared For</h3><p><strong style="font-size:15px">${name}</strong><br>${addr}<br>📞 ${phone} &nbsp;|&nbsp; ✉️ ${email}</p></div><div class="qmap">${mapImg}</div>${aRows?`<div class="qst">Measured Property Areas</div><table class="qtbl" style="margin-bottom:14px"><thead><tr><th>Area</th><th class="n">Square Footage</th></tr></thead><tbody>${aRows}</tbody></table>`:''}<div class="qst">Scope of Work &amp; Pricing</div><table class="qtbl"><thead><tr><th>Service</th><th class="n">Area</th><th class="n">Rate</th><th class="n">Amount</th></tr></thead><tbody>${sRows||'<tr><td colspan="4" style="color:#aaa;text-align:center;padding:14px">No services selected</td></tr>'}</tbody></table><div class="qtot"><div class="qtr"><span>Subtotal</span><span style="font-family:monospace">$${sub.toFixed(2)}</span></div>${disc>0?`<div class="qtr" style="color:green"><span>Discount (${disc}%)</span><span>-$${da.toFixed(2)}</span></div>`:''}<div class="qtf"><span>TOTAL</span><span>$${tot.toFixed(2)}</span></div></div>${chemRows?`<div class="qst">Chemical Requirements</div><table class="qtbl" style="margin-bottom:14px"><thead><tr><th>Chemical</th><th class="n">Total Area</th><th class="n">Coverage Rate</th><th class="n">Qty Needed</th></tr></thead><tbody>${chemRows}</tbody></table>`:''}${notes?`<div class="qst">Notes & Special Conditions</div><p style="font-size:12px;line-height:1.7;color:#444;margin-bottom:16px">${notes}</p>`:''}<div class="qsig"><div class="qsl">Customer Signature &amp; Date</div><div class="qsl">Authorized — Liberty Paver Restoration Inc.</div></div><div class="qterms"><strong>Terms &amp; Conditions:</strong> Quote valid 30 days. 50% deposit required to schedule. Balance due upon completion. Pricing based on measured square footage. Additional charges may apply for severely stained or damaged surfaces. All sealing work carries a 12-month warranty. Liberty Paver Restoration Inc. is fully licensed and insured. Customer is responsible for clearing furniture and vehicles prior to service date.</div></div>`;
   document.getElementById('qModal').classList.add('show');
