@@ -1,0 +1,1407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PedalForge — Effects Board Builder</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600;700&family=Barlow+Condensed:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+:root {
+  --bg: #0b0b0e;
+  --bg2: #13131a;
+  --bg3: #1c1c26;
+  --border: #2a2a38;
+  --amber: #e8820a;
+  --amber2: #f0a030;
+  --glow: rgba(232,130,10,0.35);
+  --cream: #f0e8d8;
+  --muted: #7a7a90;
+  /* ── BLACK BOARD ── */
+  --board-frame: #0a0a0c;
+  --board-rail: #2a2a2e;
+  --velcro: #111116;
+  --velcro-fx: #0d0d14;
+  --shadow: 0 4px 24px rgba(0,0,0,0.8);
+  --font-display: 'Bebas Neue', sans-serif;
+  --font-mono: 'IBM Plex Mono', monospace;
+  --font-ui: 'Barlow Condensed', sans-serif;
+  /* routing colors */
+  --route-pre: #e8820a;
+  --route-fx: #30b8e0;
+  --route-send: #a040e0;
+  --route-return: #40c080;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; overflow: hidden; background: var(--bg); color: var(--cream); font-family: var(--font-ui); }
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+/* ═══════════════════════ HEADER ═══════════════════════ */
+#header {
+  display: flex; align-items: center; gap: 16px;
+  padding: 10px 20px;
+  background: linear-gradient(180deg, #0f0f16 0%, var(--bg) 100%);
+  border-bottom: 1px solid var(--border);
+  position: relative; z-index: 100; flex-shrink: 0;
+}
+#logo {
+  font-family: var(--font-display); font-size: 32px; letter-spacing: 3px;
+  color: var(--amber); text-shadow: 0 0 20px var(--glow), 0 0 40px rgba(232,130,10,0.2);
+  line-height: 1;
+}
+#logo span { color: var(--cream); }
+.header-divider { width: 1px; height: 28px; background: var(--border); margin: 0 4px; }
+.header-label { font-size: 10px; font-weight: 700; letter-spacing: 2px; color: var(--muted); text-transform: uppercase; margin-bottom: 2px; }
+#board-size-wrap { display: flex; flex-direction: column; }
+#board-size-select {
+  background: var(--bg3); border: 1px solid var(--border);
+  color: var(--cream); font-family: var(--font-ui); font-size: 14px; font-weight: 600;
+  padding: 5px 10px; border-radius: 4px; cursor: pointer; outline: none;
+}
+#board-size-select:hover { border-color: var(--amber); }
+#layout-wrap { display: flex; gap: 6px; }
+.layout-btn {
+  background: var(--bg3); border: 1px solid var(--border);
+  color: var(--muted); padding: 5px 10px; border-radius: 4px;
+  cursor: pointer; font-size: 13px; font-weight: 700; font-family: var(--font-ui); transition: all 0.15s;
+}
+.layout-btn:hover { border-color: var(--amber); color: var(--amber); }
+.layout-btn.active { background: var(--amber); border-color: var(--amber); color: #000; }
+.hdr-btn {
+  display: flex; align-items: center; gap: 7px; padding: 7px 16px; border-radius: 5px;
+  font-family: var(--font-ui); font-weight: 700; font-size: 13px;
+  letter-spacing: 1px; text-transform: uppercase; cursor: pointer; border: none; transition: all 0.18s;
+}
+#btn-export { background: var(--amber); color: #000; margin-left: auto; }
+#btn-export:hover { background: var(--amber2); box-shadow: 0 0 16px var(--glow); }
+#btn-clear { background: transparent; border: 1px solid var(--border); color: var(--muted); }
+#btn-clear:hover { border-color: #c03030; color: #c03030; }
+#btn-cables { background: transparent; border: 1px solid var(--border); color: var(--muted); }
+#btn-cables.active { border-color: #30a0c0; color: #30a0c0; }
+#btn-routing { background: transparent; border: 1px solid var(--border); color: var(--muted); }
+#btn-routing.active { border-color: var(--amber); color: var(--amber); }
+/* ═══════════════════════ WORKSPACE ═══════════════════════ */
+#workspace { display: flex; height: calc(100vh - 61px); overflow: hidden; }
+/* ═══════════════════════ LIBRARY ═══════════════════════ */
+#library {
+  width: 220px; flex-shrink: 0; background: var(--bg2);
+  border-right: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden;
+}
+#lib-header { padding: 12px 14px 8px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+#lib-title { font-family: var(--font-display); font-size: 18px; letter-spacing: 2px; color: var(--amber); }
+#lib-search-wrap { position: relative; margin-top: 8px; }
+#lib-search {
+  width: 100%; padding: 7px 10px 7px 30px; background: var(--bg3); border: 1px solid var(--border);
+  color: var(--cream); font-family: var(--font-mono); font-size: 11px; border-radius: 4px; outline: none;
+}
+#lib-search:focus { border-color: var(--amber); }
+.search-icon { position: absolute; left: 9px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 13px; pointer-events: none; }
+#lib-scroll { overflow-y: auto; flex: 1; padding: 8px 0; }
+.cat-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 6px 14px 4px; cursor: pointer; user-select: none;
+}
+.cat-name { font-size: 10px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; }
+.cat-arrow { color: var(--muted); font-size: 11px; transition: transform 0.2s; }
+.cat-header.open .cat-arrow { transform: rotate(90deg); }
+.cat-body.collapsed { display: none; }
+.lib-pedal {
+  display: flex; align-items: center; gap: 10px; padding: 6px 14px;
+  cursor: grab; user-select: none; transition: background 0.12s; border-left: 2px solid transparent;
+}
+.lib-pedal:hover { background: rgba(255,255,255,0.04); }
+.lib-pedal:active { cursor: grabbing; }
+.lib-pedal.dragging { opacity: 0.4; }
+.lib-pedal-icon {
+  width: 32px; height: 44px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; border-radius: 3px; overflow: hidden;
+}
+.lib-pedal-name { font-size: 12px; font-weight: 700; color: var(--cream); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lib-pedal-brand { font-size: 10px; color: var(--muted); font-family: var(--font-mono); }
+#btn-add-pedal {
+  margin: 10px 14px; padding: 9px; background: transparent; border: 1px dashed var(--border);
+  color: var(--muted); border-radius: 5px; cursor: pointer; font-family: var(--font-ui);
+  font-size: 13px; font-weight: 700; text-align: center; transition: all 0.15s; flex-shrink: 0;
+}
+#btn-add-pedal:hover { border-color: var(--amber); color: var(--amber); }
+/* ═══════════════════════ BOARD AREA ═══════════════════════ */
+#board-area {
+  flex: 1; display: flex; flex-direction: column; overflow: hidden;
+  background: var(--bg); position: relative;
+}
+#board-area::before {
+  content: ''; position: absolute; inset: 0;
+  background-image: radial-gradient(circle, rgba(255,255,255,0.035) 1px, transparent 1px);
+  background-size: 28px 28px; pointer-events: none; z-index: 0;
+}
+#board-scroll-wrap {
+  flex: 1; overflow: auto; display: flex; align-items: center; justify-content: center;
+  padding: 40px; position: relative; z-index: 1;
+}
+/* ═══════════════════════ PEDALBOARD OUTER FRAME ═══════════════════════ */
+#pedalboard-outer { position: relative; display: inline-block; flex-shrink: 0; }
+/* Black frame */
+#pedalboard {
+  position: relative; border-radius: 12px; padding: 14px 18px 14px;
+  background: var(--board-frame);
+  box-shadow:
+    var(--shadow),
+    0 0 0 1px rgba(255,255,255,0.07),
+    inset 0 1px 0 rgba(255,255,255,0.06),
+    inset 0 -1px 0 rgba(0,0,0,0.5);
+  display: flex; flex-direction: column; gap: 10px;
+}
+/* Chrome / gunmetal rail bars */
+#pedalboard::before, #pedalboard::after {
+  content: ''; position: absolute; left: 16px; right: 16px; height: 7px;
+  background: linear-gradient(180deg,
+    rgba(255,255,255,0.35) 0%,
+    rgba(180,180,190,0.6) 30%,
+    rgba(80,80,90,0.8) 70%,
+    rgba(30,30,35,0.9) 100%);
+  border-radius: 2px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.8), 0 0 0 0.5px rgba(255,255,255,0.1);
+}
+#pedalboard::before { top: 4px; }
+#pedalboard::after { bottom: 4px; }
+/* ═══════════════════════ ZONES ═══════════════════════ */
+.zone-wrap { display: flex; flex-direction: column; gap: 0; }
+/* Zone label strip */
+.zone-header {
+  display: flex; align-items: center; gap: 10px; padding: 0 4px 5px;
+}
+.zone-badge {
+  font-size: 9px; font-weight: 800; letter-spacing: 2.5px; text-transform: uppercase;
+  padding: 2px 8px; border-radius: 3px;
+}
+.zone-badge-pre { background: rgba(232,130,10,0.15); color: var(--route-pre); border: 1px solid rgba(232,130,10,0.3); }
+.zone-badge-fx { background: rgba(48,184,224,0.12); color: var(--route-fx); border: 1px solid rgba(48,184,224,0.3); }
+/* ── ROUTING INDICATOR BAR ── */
+.routing-bar {
+  display: flex; align-items: center; gap: 0;
+  padding: 5px 10px 5px 8px;
+  background: rgba(0,0,0,0.4);
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  overflow-x: auto; overflow-y: hidden; flex-shrink: 0;
+  scrollbar-width: none; min-height: 28px;
+}
+.routing-bar::-webkit-scrollbar { display: none; }
+.route-node {
+  display: flex; align-items: center; gap: 5px;
+  padding: 2px 8px; border-radius: 12px; flex-shrink: 0;
+  font-size: 9px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase;
+  font-family: var(--font-mono); white-space: nowrap;
+}
+.route-node-guitar { background: rgba(232,130,10,0.2); color: var(--route-pre); border: 1px solid rgba(232,130,10,0.4); }
+.route-node-amp { background: rgba(232,130,10,0.2); color: var(--route-pre); border: 1px solid rgba(232,130,10,0.4); }
+.route-node-send { background: rgba(160,64,224,0.2); color: var(--route-send); border: 1px solid rgba(160,64,224,0.4); }
+.route-node-return { background: rgba(64,192,128,0.2); color: var(--route-return); border: 1px solid rgba(64,192,128,0.4); }
+.route-node-pedal {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.15);
+  color: rgba(240,232,216,0.7);
+  cursor: default; position: relative;
+}
+.route-node-pedal .route-num {
+  background: rgba(255,255,255,0.15); border-radius: 50%;
+  width: 14px; height: 14px; display: flex; align-items: center; justify-content: center;
+  font-size: 8px; font-weight: 700; flex-shrink: 0;
+}
+.route-arrow {
+  flex-shrink: 0; color: rgba(255,255,255,0.2); font-size: 10px;
+  padding: 0 3px; display: flex; align-items: center;
+}
+.route-arrow-pre { color: rgba(232,130,10,0.5); }
+.route-arrow-fx { color: rgba(48,184,224,0.5); }
+.route-bypass { opacity: 0.4; }
+.route-bypass::after { content: '⊘'; margin-left: 3px; font-size: 8px; }
+/* FX loop connector between zones */
+.fx-loop-connector {
+  display: flex; align-items: center; justify-content: center;
+  gap: 12px; padding: 6px 12px;
+  position: relative;
+}
+.fx-loop-connector::before {
+  content: ''; position: absolute; top: 50%; left: 50%;
+  transform: translateX(-50%) translateY(-50%);
+  width: calc(100% - 24px); height: 1px;
+  background: linear-gradient(90deg, transparent 0%, rgba(160,64,224,0.4) 20%, rgba(160,64,224,0.4) 80%, transparent 100%);
+}
+.fx-connector-label {
+  font-size: 9px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase;
+  font-family: var(--font-mono); padding: 2px 10px; border-radius: 10px;
+  background: var(--bg); position: relative; z-index: 1;
+}
+.fx-send-tag { color: var(--route-send); border: 1px solid rgba(160,64,224,0.4); }
+.fx-return-tag{ color: var(--route-return); border: 1px solid rgba(64,192,128,0.4); }
+/* ── VELCRO SURFACE ── */
+.board-surface {
+  position: relative; border-radius: 4px; min-height: 130px;
+  background-color: var(--velcro);
+  background-image:
+    repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.2) 2px, rgba(0,0,0,0.2) 3px),
+    repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(0,0,0,0.12) 2px, rgba(0,0,0,0.12) 3px);
+  box-shadow: inset 0 2px 10px rgba(0,0,0,0.7), inset 0 0 0 1px rgba(0,0,0,0.5);
+  overflow: visible;
+}
+.board-surface.drag-over {
+  box-shadow: inset 0 0 0 2px var(--amber), inset 0 2px 8px rgba(0,0,0,0.6);
+}
+#fx-loop-surface {
+  background-color: var(--velcro-fx);
+  background-image:
+    repeating-linear-gradient(45deg, transparent, transparent 3px, rgba(48,184,224,0.025) 3px, rgba(48,184,224,0.025) 4px),
+    repeating-linear-gradient(-45deg, transparent, transparent 3px, rgba(0,0,0,0.1) 3px, rgba(0,0,0,0.1) 4px);
+  box-shadow: inset 0 2px 10px rgba(0,0,0,0.7), inset 0 0 0 1px rgba(48,184,224,0.12);
+}
+#fx-loop-surface.drag-over {
+  box-shadow: inset 0 0 0 2px var(--route-fx), inset 0 2px 8px rgba(0,0,0,0.6);
+}
+/* Pedal rows */
+.pedals-row {
+  display: flex; flex-wrap: nowrap; align-items: flex-end; gap: 10px;
+  padding: 14px 10px 10px; min-height: 100%; position: relative;
+}
+.board-surface.multi-row .pedals-row { flex-wrap: wrap; align-items: flex-start; }
+/* Cable SVG */
+.cable-svg {
+  position: absolute; top: 0; left: 0;
+  pointer-events: none; z-index: 5; overflow: visible;
+}
+/* ── BOARD PEDAL ── */
+.board-pedal {
+  position: relative; flex-shrink: 0; cursor: grab; user-select: none;
+  transition: transform 0.15s, filter 0.15s;
+  animation: pedalDrop 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes pedalDrop {
+  from { transform: scale(0.8) translateY(-10px); opacity: 0; }
+  to { transform: scale(1) translateY(0); opacity: 1; }
+}
+.board-pedal:hover { z-index: 10; transform: translateY(-4px); filter: brightness(1.1); }
+.board-pedal:active { cursor: grabbing; }
+.board-pedal.dragging-board { opacity: 0.3; transform: scale(0.93); }
+/* Order badge */
+.pedal-order-badge {
+  position: absolute; top: -8px; left: -6px;
+  width: 18px; height: 18px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 9px; font-weight: 800; font-family: var(--font-mono);
+  z-index: 15; box-shadow: 0 1px 4px rgba(0,0,0,0.7);
+}
+.badge-pre { background: var(--route-pre); color: #000; }
+.badge-fx { background: var(--route-fx); color: #000; }
+/* Arrow between pedals */
+.pedal-route-arrow {
+  position: absolute; right: -12px; top: 50%;
+  transform: translateY(-50%);
+  font-size: 10px; z-index: 12; pointer-events: none;
+}
+.arrow-pre { color: rgba(232,130,10,0.7); }
+.arrow-fx { color: rgba(48,184,224,0.7); }
+/* Remove button */
+.pedal-remove {
+  position: absolute; top: -8px; right: -8px;
+  width: 20px; height: 20px; background: #cc2222; border: 1.5px solid #ff4444;
+  border-radius: 50%; color: white; font-size: 13px; line-height: 1;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; opacity: 0; transition: opacity 0.15s; z-index: 20; font-weight: bold;
+}
+.board-pedal:hover .pedal-remove { opacity: 1; }
+/* Chain ends */
+.chain-end {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 3px; flex-shrink: 0; padding: 6px 8px;
+  color: var(--muted); font-size: 9px; font-weight: 800; letter-spacing: 1px;
+  text-transform: uppercase; font-family: var(--font-mono);
+}
+/* Empty state */
+.empty-state {
+  position: absolute; inset: 0; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 8px; pointer-events: none; z-index: 2;
+}
+.empty-state svg { opacity: 0.12; }
+.empty-state p { color: var(--muted); font-family: var(--font-mono); font-size: 11px; opacity: 0.5; text-align: center; padding: 0 20px; }
+.empty-state.hidden { display: none; }
+/* ═══════════════════════ BOARD INFO ═══════════════════════ */
+#board-info {
+  padding: 8px 20px; display: flex; align-items: center; gap: 20px;
+  border-top: 1px solid var(--border); background: var(--bg2); flex-shrink: 0; z-index: 10;
+}
+#board-name { font-family: var(--font-display); font-size: 20px; letter-spacing: 2px; color: var(--amber); }
+#board-dim { font-size: 12px; color: var(--muted); font-family: var(--font-mono); }
+#pedal-count { font-size: 12px; color: var(--muted); font-family: var(--font-mono); margin-left: auto; }
+/* ═══════════════════════ MODAL ═══════════════════════ */
+#modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 1000;
+  display: flex; align-items: center; justify-content: center;
+  backdrop-filter: blur(4px); opacity: 0; pointer-events: none; transition: opacity 0.2s;
+}
+#modal-overlay.open { opacity: 1; pointer-events: all; }
+#modal {
+  background: var(--bg2); border: 1px solid var(--border); border-radius: 10px;
+  width: 520px; max-width: 95vw; max-height: 80vh;
+  display: flex; flex-direction: column; box-shadow: 0 20px 60px rgba(0,0,0,0.8);
+}
+#modal-header {
+  padding: 16px 20px 12px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+#modal-title { font-family: var(--font-display); font-size: 24px; letter-spacing: 2px; color: var(--amber); }
+#modal-close { background: none; border: none; color: var(--muted); font-size: 22px; cursor: pointer; line-height: 1; transition: color 0.15s; }
+#modal-close:hover { color: var(--cream); }
+#modal-body { padding: 16px 20px; overflow-y: auto; flex: 1; }
+/* Destination selector */
+#modal-dest-wrap { display: flex; gap: 8px; margin-bottom: 14px; }
+.dest-btn {
+  flex: 1; padding: 8px; border-radius: 5px; cursor: pointer;
+  font-family: var(--font-ui); font-size: 12px; font-weight: 800; letter-spacing: 1px;
+  text-transform: uppercase; text-align: center; transition: all 0.15s; border: 1.5px solid;
+}
+.dest-btn-pre { border-color: rgba(232,130,10,0.4); color: var(--route-pre); background: rgba(232,130,10,0.08); }
+.dest-btn-pre.active { background: var(--route-pre); color: #000; border-color: var(--route-pre); }
+.dest-btn-fx { border-color: rgba(48,184,224,0.4); color: var(--route-fx); background: rgba(48,184,224,0.08); }
+.dest-btn-fx.active { background: var(--route-fx); color: #000; border-color: var(--route-fx); }
+.modal-search-row { display: flex; gap: 10px; margin-bottom: 14px; }
+#modal-search-input {
+  flex: 1; padding: 9px 14px; background: var(--bg3); border: 1px solid var(--border);
+  color: var(--cream); font-family: var(--font-mono); font-size: 13px; border-radius: 5px; outline: none;
+}
+#modal-search-input:focus { border-color: var(--amber); }
+#modal-search-btn {
+  padding: 9px 18px; background: var(--amber); color: #000; border: none; border-radius: 5px;
+  font-family: var(--font-ui); font-weight: 800; font-size: 13px; cursor: pointer; transition: background 0.15s;
+}
+#modal-search-btn:hover { background: var(--amber2); }
+#search-results { display: flex; flex-direction: column; gap: 8px; }
+.search-result-item {
+  display: flex; align-items: center; gap: 12px; padding: 10px 12px;
+  background: var(--bg3); border: 1px solid var(--border); border-radius: 6px;
+  cursor: pointer; transition: all 0.15s;
+}
+.search-result-item:hover { border-color: var(--amber); background: rgba(232,130,10,0.06); }
+.search-result-svg { width: 44px; height: 60px; flex-shrink: 0; }
+.search-result-info { flex: 1; min-width: 0; }
+.result-name { font-weight: 700; font-size: 14px; color: var(--cream); }
+.result-brand { font-size: 11px; color: var(--muted); font-family: var(--font-mono); margin-top: 2px; }
+.result-cat { font-size: 10px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; margin-top: 4px; }
+.result-add-btn {
+  padding: 6px 12px; background: transparent; border: 1px solid var(--border);
+  color: var(--muted); border-radius: 4px; font-family: var(--font-ui); font-weight: 700;
+  font-size: 12px; cursor: pointer; transition: all 0.15s; white-space: nowrap;
+}
+.result-add-btn:hover { border-color: var(--amber); color: var(--amber); }
+#search-status { text-align: center; padding: 16px; color: var(--muted); font-family: var(--font-mono); font-size: 13px; }
+.spinner {
+  display: inline-block; width: 18px; height: 18px;
+  border: 2px solid var(--border); border-top-color: var(--amber);
+  border-radius: 50%; animation: spin 0.7s linear infinite; vertical-align: middle; margin-right: 8px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+/* ── INFO PANEL ── */
+#info-panel {
+  position: fixed; bottom: 60px; right: 20px; width: 200px;
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 8px; padding: 12px; z-index: 50;
+  transform: translateY(16px); opacity: 0; transition: all 0.2s; pointer-events: none;
+}
+#info-panel.visible { transform: translateY(0); opacity: 1; pointer-events: all; }
+#info-pedal-name { font-family: var(--font-display); font-size: 20px; letter-spacing: 1px; color: var(--amber); }
+#info-pedal-brand { font-size: 11px; color: var(--muted); font-family: var(--font-mono); margin-bottom: 6px; }
+#info-pedal-cat { font-size: 10px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; }
+#info-pedal-zone { font-size: 10px; color: var(--muted); font-family: var(--font-mono); margin-top: 4px; }
+/* ── TOAST ── */
+#toast {
+  position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(60px);
+  background: var(--bg3); border: 1px solid var(--border); padding: 9px 20px;
+  border-radius: 6px; font-family: var(--font-mono); font-size: 13px;
+  z-index: 2000; transition: transform 0.3s; white-space: nowrap;
+}
+#toast.show { transform: translateX(-50%) translateY(0); }
+#toast.success { border-color: #30c060; color: #30c060; }
+#toast.error { border-color: #c03030; color: #c03030; }
+</style>
+</head>
+<body>
+<header id="header">
+  <div id="logo">Pedal<span>Forge</span></div>
+  <div class="header-divider"></div>
+  <div id="board-size-wrap">
+    <div class="header-label">Board Size</div>
+    <select id="board-size-select">
+      <option value="nano">Nano — 16″ × 6″ (2–4)</option>
+      <option value="pedalette">Pedalette — 22″ × 9″ (4–6)</option>
+      <option value="mini" selected>Mini Board — 28″ × 12″ (6–8)</option>
+      <option value="standard">Standard — 36″ × 16″ (9–12)</option>
+      <option value="large">Large — 48″ × 16″ (13–18)</option>
+      <option value="xl">XL — 60″ × 20″ (20+)</option>
+    </select>
+  </div>
+  <div class="header-divider"></div>
+  <div id="layout-wrap">
+    <div class="header-label" style="width:100%">Layout</div>
+    <button class="layout-btn active" data-rows="1">1 Row</button>
+    <button class="layout-btn" data-rows="2">2 Row</button>
+  </div>
+  <div class="header-divider"></div>
+  <button class="hdr-btn" id="btn-routing">⬡ <span>Routing</span></button>
+  <button class="hdr-btn" id="btn-cables">⚡ <span>Cables</span></button>
+  <button class="hdr-btn" id="btn-clear">✕ <span>Clear</span></button>
+  <button class="hdr-btn" id="btn-export">⬇ <span>Export PNG</span></button>
+</header>
+<div id="workspace">
+  <aside id="library">
+    <div id="lib-header">
+      <div id="lib-title">PEDALS</div>
+      <div id="lib-search-wrap">
+        <span class="search-icon">⌕</span>
+        <input id="lib-search" type="text" placeholder="Filter library…">
+      </div>
+    </div>
+    <div id="lib-scroll"></div>
+    <button id="btn-add-pedal">+ Search & Add Pedal</button>
+  </aside>
+  <div id="board-area">
+    <div id="board-scroll-wrap">
+      <div id="pedalboard-outer">
+        <div id="pedalboard">
+          <!-- PRE-AMP ZONE -->
+          <div class="zone-wrap">
+            <div class="zone-header">
+              <span class="zone-badge zone-badge-pre">▶ Guitar Pre-Amp Chain</span>
+            </div>
+            <div id="board-surface" class="board-surface">
+              <!-- Routing bar injected by JS -->
+              <div id="routing-pre-bar" class="routing-bar" style="display:none"></div>
+              <div id="pedals-row" class="pedals-row"></div>
+              <svg id="cable-svg-pre" class="cable-svg"></svg>
+              <div id="empty-state-pre" class="empty-state">
+                <svg width="60" height="60" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <rect x="10" y="20" width="60" height="40" rx="5" stroke="white" stroke-width="2"/>
+                  <circle cx="28" cy="36" r="7" stroke="white" stroke-width="2"/>
+                  <circle cx="52" cy="36" r="7" stroke="white" stroke-width="2"/>
+                  <circle cx="40" cy="50" r="5" stroke="white" stroke-width="2"/>
+                </svg>
+                <p>Drag pedals here — drives, filters, compressors</p>
+              </div>
+            </div>
+          </div>
+          <!-- FX LOOP CONNECTOR -->
+          <div class="fx-loop-connector">
+            <span class="fx-connector-label fx-send-tag">⬆ FX SEND</span>
+            <span class="fx-connector-label" style="color:var(--muted);border:1px solid var(--border)">AMP</span>
+            <span class="fx-connector-label fx-return-tag">FX RETURN ⬇</span>
+          </div>
+          <!-- FX LOOP ZONE -->
+          <div class="zone-wrap">
+            <div class="zone-header">
+              <span class="zone-badge zone-badge-fx">↻ Amplifier Effects Loop</span>
+            </div>
+            <div id="fx-loop-surface" class="board-surface">
+              <div id="routing-fx-bar" class="routing-bar" style="display:none"></div>
+              <div id="fx-pedals-row" class="pedals-row"></div>
+              <svg id="cable-svg-fx" class="cable-svg"></svg>
+              <div id="empty-state-fx" class="empty-state">
+                <svg width="60" height="60" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="40" cy="40" r="28" stroke="#30b8e0" stroke-width="2" stroke-dasharray="6 3"/>
+                  <path d="M28 40 Q40 28 52 40 Q40 52 28 40Z" stroke="#30b8e0" stroke-width="1.5" fill="none"/>
+                </svg>
+                <p>Drop time-based effects here — delay, reverb, modulation</p>
+              </div>
+            </div>
+          </div>
+        </div><!-- /pedalboard -->
+      </div>
+    </div>
+    <div id="board-info">
+      <div id="board-name">MINI BOARD</div>
+      <div id="board-dim">28″ × 12″</div>
+      <div id="pedal-count">0 pedals</div>
+    </div>
+  </div>
+</div>
+<!-- MODAL -->
+<div id="modal-overlay">
+  <div id="modal">
+    <div id="modal-header">
+      <div id="modal-title">ADD PEDAL</div>
+      <button id="modal-close">✕</button>
+    </div>
+    <div id="modal-body">
+      <div id="modal-dest-wrap">
+        <button class="dest-btn dest-btn-pre active" data-dest="pre">▶ Pre-Amp Chain</button>
+        <button class="dest-btn dest-btn-fx" data-dest="fx">↻ FX Loop</button>
+      </div>
+      <div class="modal-search-row">
+        <input id="modal-search-input" type="text" placeholder="Search Sweetwater e.g. Boss DD-7…">
+        <button id="modal-search-btn">SEARCH</button>
+      </div>
+      <div id="search-status"></div>
+      <div id="search-results"></div>
+    </div>
+  </div>
+</div>
+<div id="info-panel">
+  <div id="info-pedal-name">—</div>
+  <div id="info-pedal-brand"></div>
+  <div id="info-pedal-cat"></div>
+  <div id="info-pedal-zone"></div>
+</div>
+<div id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════════
+// CATEGORIES & PEDAL DATABASE
+// ══════════════════════════════════════════════
+const CATEGORIES = {
+  overdrive: { label:'Overdrive', color:'#e8621a' },
+  distortion: { label:'Distortion', color:'#cc2222' },
+  fuzz: { label:'Fuzz', color:'#9922cc' },
+  delay: { label:'Delay', color:'#1a6be8' },
+  reverb: { label:'Reverb', color:'#17a89e' },
+  modulation: { label:'Modulation', color:'#22a84e' },
+  filter: { label:'Filter / Wah', color:'#d4aa00' },
+  compressor: { label:'Compressor', color:'#607080' },
+  utility: { label:'Utility', color:'#404555' },
+  ambient: { label:'Ambient', color:'#6040a0' },
+};
+const PEDALS = [
+  { id:'ts9', brand:'Ibanez', name:'Tube Screamer TS-9', cat:'overdrive', bodyColor:'#2e7a1a', textColor:'#fff', knobs:['Drive','Tone','Level'], accent:'#60c030' },
+  { id:'ts808', brand:'Ibanez', name:'Tube Screamer TS-808', cat:'overdrive', bodyColor:'#266916', textColor:'#fff', knobs:['Drive','Tone','Level'], accent:'#50b020' },
+  { id:'ocd', brand:'Fulltone', name:'OCD Overdrive', cat:'overdrive', bodyColor:'#c8a020', textColor:'#111', knobs:['Drive','Tone','Vol'], accent:'#e8c040' },
+  { id:'sd1', brand:'Boss', name:'SD-1 Super OD', cat:'overdrive', bodyColor:'#e8b800', textColor:'#000', knobs:['Level','Tone','Drive'], accent:'#fff' },
+  { id:'bb', brand:'Xotic', name:'BB Preamp', cat:'overdrive', bodyColor:'#c0c0c0', textColor:'#000', knobs:['Vol','Gain','Treble','Bass'], accent:'#e0e0e0' },
+  { id:'klon', brand:'Klon', name:'Centaur', cat:'overdrive', bodyColor:'#c8a860', textColor:'#2a1800', knobs:['Treble','Output','Gain'], accent:'#d0b870' },
+  { id:'ds1', brand:'Boss', name:'DS-1 Distortion', cat:'distortion', bodyColor:'#f06010', textColor:'#fff', knobs:['Level','Tone','Dist'], accent:'#fff' },
+  { id:'rat', brand:'ProCo', name:'RAT2', cat:'distortion', bodyColor:'#c8b030', textColor:'#000', knobs:['Distortion','Filter','Volume'], accent:'#808030' },
+  { id:'mxrdist', brand:'MXR', name:'Distortion+', cat:'distortion', bodyColor:'#f0f0e8', textColor:'#000', knobs:['Output','Distortion'], accent:'#d0d0c0' },
+  { id:'metalzone',brand:'Boss', name:'MT-2 Metal Zone', cat:'distortion', bodyColor:'#1a1a1a', textColor:'#e8c820', knobs:['Level','Low','Mid','High','Dist'], accent:'#e8c820' },
+  { id:'hm2', brand:'Boss', name:'HM-2 Heavy Metal', cat:'distortion', bodyColor:'#e8d020', textColor:'#000', knobs:['Level','Color','High','Low'], accent:'#fff' },
+  { id:'bigmuff', brand:'EHX', name:'Big Muff Pi', cat:'fuzz', bodyColor:'#8c22bb', textColor:'#fff', knobs:['Volume','Tone','Sustain'], accent:'#cc66ff' },
+  { id:'ff', brand:'Dunlop', name:'Fuzz Face Mini', cat:'fuzz', bodyColor:'#d04020', textColor:'#fff', knobs:['Fuzz','Volume'], accent:'#ff8060', round:true },
+  { id:'zvex', brand:'ZVex', name:'Fuzz Factory', cat:'fuzz', bodyColor:'#e8e030', textColor:'#000', knobs:['Vol','Gate','Comp','Drive','Stab'], accent:'#c0b000' },
+  { id:'tonebend', brand:'Vox', name:'Tone Bender', cat:'fuzz', bodyColor:'#404040', textColor:'#e8c020', knobs:['Attack','Volume'], accent:'#c0a000' },
+  { id:'dd7', brand:'Boss', name:'DD-7 Digital Delay', cat:'delay', bodyColor:'#1a60d8', textColor:'#fff', knobs:['E.Level','F.Back','D.Time'], accent:'#60a0ff' },
+  { id:'timeline', brand:'Strymon', name:'Timeline', cat:'delay', bodyColor:'#202838', textColor:'#c0d8f0', knobs:['Time','Repeats','Mix','Speed','Depth','Level'], accent:'#4080b0' },
+  { id:'carbon', brand:'MXR', name:'Carbon Copy', cat:'delay', bodyColor:'#2a2a2a', textColor:'#60c840', knobs:['Mix','Regen','Delay'], accent:'#60c840' },
+  { id:'flashback',brand:'TC Electronic', name:'Flashback X4', cat:'delay', bodyColor:'#c04020', textColor:'#fff', knobs:['Delay','Feedback','FX Level'], accent:'#ff8060' },
+  { id:'memory', brand:'EHX', name:'Memory Man', cat:'delay', bodyColor:'#d8b818', textColor:'#000', knobs:['Blend','Depth','Rate','Feedback','Delay'], accent:'#fff' },
+  { id:'bigsky', brand:'Strymon', name:'BigSky', cat:'reverb', bodyColor:'#2a3868', textColor:'#a0c8f0', knobs:['Decay','Mix','Tone','Param1','Param2','PreDly'], accent:'#6090c0' },
+  { id:'rv6', brand:'Boss', name:'RV-6 Reverb', cat:'reverb', bodyColor:'#202028', textColor:'#40e0c0', knobs:['E.Level','Time','Tone'], accent:'#40e0c0' },
+  { id:'holygrail',brand:'EHX', name:'Holy Grail Neo', cat:'reverb', bodyColor:'#206820', textColor:'#fff', knobs:['Reverb'], accent:'#60c040' },
+  { id:'flint', brand:'Strymon', name:'Flint', cat:'reverb', bodyColor:'#3a2a1a', textColor:'#d0c0a0', knobs:['Tremolo','Reverb'], accent:'#c0a060' },
+  { id:'ce2', brand:'Boss', name:'CE-2W Chorus', cat:'modulation', bodyColor:'#3080c0', textColor:'#fff', knobs:['Rate','Depth'], accent:'#80c0f0' },
+  { id:'phase90', brand:'MXR', name:'Phase 90', cat:'modulation', bodyColor:'#e85010', textColor:'#fff', knobs:['Speed'], accent:'#fff' },
+  { id:'clone', brand:'EHX', name:'Small Clone', cat:'modulation', bodyColor:'#1a5070', textColor:'#fff', knobs:['Rate'], accent:'#30a0d0' },
+  { id:'bf3', brand:'Boss', name:'BF-3 Flanger', cat:'modulation', bodyColor:'#9820a0', textColor:'#fff', knobs:['Manual','Depth','Rate','Res'], accent:'#e060f0' },
+  { id:'univibe', brand:'Dunlop', name:'UniVibe', cat:'modulation', bodyColor:'#402010', textColor:'#e8c020', knobs:['Speed','Depth'], accent:'#c09000' },
+  { id:'crybaby', brand:'Dunlop', name:'Cry Baby Wah', cat:'filter', bodyColor:'#c09010', textColor:'#000', knobs:['Level'], accent:'#e0b020', wah:true },
+  { id:'aw3', brand:'Boss', name:'AW-3 Auto Wah', cat:'filter', bodyColor:'#d0a020', textColor:'#000', knobs:['Sens','Freq','Peak'], accent:'#fff' },
+  { id:'envelope', brand:'EHX', name:'Micro Q-Tron', cat:'filter', bodyColor:'#c04040', textColor:'#fff', knobs:['Q','Drive','Volume'], accent:'#ff8080' },
+  { id:'cs3', brand:'Boss', name:'CS-3 Compressor', cat:'compressor', bodyColor:'#c02020', textColor:'#fff', knobs:['Level','Tone','Attack','Sustain'], accent:'#ff6060' },
+  { id:'dynacomp', brand:'MXR', name:'Dyna Comp', cat:'compressor', bodyColor:'#e8e0d0', textColor:'#000', knobs:['Output','Sensitivity'], accent:'#a0a090' },
+  { id:'keeley', brand:'Keeley', name:'Compressor Plus', cat:'compressor', bodyColor:'#1a1a2a', textColor:'#e0c860', knobs:['Sustain','Level','Attack','Blend'], accent:'#e0c860' },
+  { id:'tu3', brand:'Boss', name:'TU-3 Chromatic Tuner', cat:'utility', bodyColor:'#1a6028', textColor:'#fff', knobs:[], accent:'#40c060', tuner:true },
+  { id:'ns2', brand:'Boss', name:'NS-2 Noise Suppressor',cat:'utility', bodyColor:'#204060', textColor:'#fff', knobs:['Threshold','Decay'], accent:'#4080a0' },
+  { id:'pog', brand:'EHX', name:'POG2', cat:'utility', bodyColor:'#c0c0c0', textColor:'#000', knobs:['Order1','Order2','Attack','LP Filter'], accent:'#808080' },
+  { id:'looper', brand:'Boss', name:'RC-5 Loop Station', cat:'utility', bodyColor:'#2a2040', textColor:'#a0c0e8', knobs:['Rhythm','Memory','Level'], accent:'#6080c0' },
+  { id:'el_cap', brand:'Strymon', name:'El Capistan', cat:'ambient', bodyColor:'#c08828', textColor:'#1a0800', knobs:['Time','Mix','Repeats','Wow&Flut','Age'], accent:'#e0a840' },
+  { id:'blooper', brand:'Chase Bliss', name:'Blooper', cat:'ambient', bodyColor:'#f0f0f0', textColor:'#000', knobs:['Params','Layers','Length','Mix'], accent:'#a0a0a0' },
+  { id:'tensor', brand:'Red Panda', name:'Tensor', cat:'ambient', bodyColor:'#d02040', textColor:'#fff', knobs:['Time','Mix','Pitch','Blend'], accent:'#ff8090' },
+];
+// ══════════════════════════════════════════════
+// SVG GENERATOR
+// ══════════════════════════════════════════════
+function makePedalSVG(pedal, w=82, h=120) {
+  const { bodyColor, textColor, knobs, accent, name, brand, round: isRound, tuner, wah } = pedal;
+  const hw = w / 2;
+  const dark = shade(bodyColor, -40), light = shade(bodyColor, 30);
+  const kCount = knobs.length;
+  const kY = h * 0.35;
+  const kRows = kCount > 3 ? 2 : 1;
+  const kPerRow = kRows === 2 ? Math.ceil(kCount / 2) : kCount;
+  let knobSVG = '';
+  if (kCount > 0) {
+    const kW = (w - 20) / kPerRow;
+    for (let i = 0; i < kCount; i++) {
+      const row = kRows === 2 ? Math.floor(i / kPerRow) : 0;
+      const col = i % kPerRow;
+      const cx = 10 + kW * col + kW / 2, cy = kY + row * 26;
+      const angle = -130 + Math.random() * 100;
+      const rad = angle * Math.PI / 180;
+      const kR = 8;
+      const lx = cx + Math.sin(rad) * (kR - 2.5), ly = cy - Math.cos(rad) * (kR - 2.5);
+      knobSVG += `
+        <circle cx="${cx}" cy="${cy}" r="${kR}" fill="${dark}" stroke="${shade(dark,20)}" stroke-width="1"/>
+        <circle cx="${cx}" cy="${cy}" r="${kR-1.5}" fill="url(#kg${pedal.id})"/>
+        <line x1="${cx}" y1="${cy}" x2="${lx}" y2="${ly}" stroke="${accent}" stroke-width="1.5" stroke-linecap="round"/>
+        <circle cx="${cx-kR*.35}" cy="${cy-kR*.35}" r="${kR*.2}" fill="rgba(255,255,255,0.18)"/>
+        <text x="${cx}" y="${cy+kR+8}" text-anchor="middle" fill="${textColor}" fill-opacity="0.65" font-size="5" font-family="IBM Plex Mono">${(knobs[i]||'').substring(0,7)}</text>`;
+    }
+  }
+  const tunerSVG = tuner ? `<rect x="8" y="${kY-10}" width="${w-16}" height="18" rx="2" fill="#000"/><text x="${hw}" y="${kY+3}" text-anchor="middle" fill="${accent}" font-size="9" font-family="IBM Plex Mono" font-weight="bold">A ♯ 440</text>` : '';
+  const wahSVG = wah ? `<ellipse cx="${hw}" cy="${h*0.38}" rx="${w*.38}" ry="${h*.12}" fill="${shade(bodyColor,-30)}" stroke="${accent}" stroke-width="1"/>` : '';
+  const shortName = name.replace(brand,'').trim().replace(/^[\s\-]+/,'');
+  return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="bg${pedal.id}" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="${light}"/>
+        <stop offset="100%" stop-color="${dark}"/>
+      </linearGradient>
+      <radialGradient id="kg${pedal.id}" cx="35%" cy="30%" r="70%">
+        <stop offset="0%" stop-color="${shade(dark,30)}"/>
+        <stop offset="100%" stop-color="${dark}"/>
+      </radialGradient>
+      <filter id="led${pedal.id}" x="-100%" y="-100%" width="300%" height="300%">
+        <feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+    </defs>
+    <rect x="4" y="6" width="${w-8}" height="${h-8}" rx="${isRound?hw:6}" fill="rgba(0,0,0,0.45)"/>
+    <rect x="2" y="2" width="${w-4}" height="${h-4}" rx="${isRound?hw-2:6}" fill="url(#bg${pedal.id})"/>
+    <rect x="2" y="2" width="${w-4}" height="${h/2}" rx="${isRound?hw-2:6}" fill="rgba(255,255,255,0.07)"/>
+    <rect x="5" y="5" width="${w-10}" height="${h-10}" rx="${isRound?hw-5:4}" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+    ${[6,w-6].map(x=>[6,h-6].map(y=>`<circle cx="${x}" cy="${y}" r="3" fill="${shade(bodyColor,-20)}" stroke="${shade(bodyColor,10)}" stroke-width=".7"/><line x1="${x-1.5}" y1="${y}" x2="${x+1.5}" y2="${y}" stroke="rgba(0,0,0,.5)" stroke-width=".7"/><line x1="${x}" y1="${y-1.5}" x2="${x}" y2="${y+1.5}" stroke="rgba(0,0,0,.5)" stroke-width=".7"/>`).join('')).join('')}
+    <circle cx="10" cy="10" r="4" fill="#111" stroke="#555" stroke-width="1"/><circle cx="10" cy="10" r="2" fill="#333"/>
+    <circle cx="22" cy="10" r="4" fill="#111" stroke="#555" stroke-width="1"/><circle cx="22" cy="10" r="2" fill="#333"/>
+    <rect x="${hw-4}" y="4" width="8" height="5" rx="1.5" fill="#222" stroke="#444" stroke-width=".7"/>
+    <circle cx="${w-12}" cy="12" r="4" fill="${accent}" filter="url(#led${pedal.id})"/>
+    <circle cx="${w-12}" cy="12" r="2" fill="white" fill-opacity=".6"/>
+    ${tunerSVG}${wahSVG}${knobSVG}
+    <text x="${hw}" y="${h-33}" text-anchor="middle" fill="${textColor}" fill-opacity=".9" font-size="7" font-family="Barlow Condensed" font-weight="700" letter-spacing=".5">${shortName.substring(0,14).toUpperCase()}</text>
+    <text x="${hw}" y="${h-25}" text-anchor="middle" fill="${textColor}" fill-opacity=".5" font-size="5.5" font-family="IBM Plex Mono">${brand.toUpperCase()}</text>
+    <circle cx="${hw}" cy="${h-18}" r="12" fill="#1a1a1a" stroke="#555" stroke-width="1.5"/>
+    <circle cx="${hw}" cy="${h-18}" r="9" fill="#2a2a2a"/>
+    <circle cx="${hw-3}" cy="${h-21}" r="3" fill="rgba(255,255,255,0.08)"/>
+  </svg>`;
+}
+function shade(hex, amt) {
+  const c = v => Math.max(0, Math.min(255, v));
+  const h = hex.replace('#','');
+  const [r,g,b] = [0,2,4].map(i => parseInt(h.substring(i,i+2),16));
+  return '#'+[r,g,b].map(v => c(v+amt).toString(16).padStart(2,'0')).join('');
+}
+// ══════════════════════════════════════════════
+// BOARD SIZES
+// ══════════════════════════════════════════════
+const BOARD_SIZES = {
+  nano: { label:'NANO BOARD', dim:'16″ × 6″', w:340, h:130, max:4 },
+  pedalette: { label:'PEDALETTE', dim:'22″ × 9″', w:480, h:160, max:6 },
+  mini: { label:'MINI BOARD', dim:'28″ × 12″', w:620, h:200, max:8 },
+  standard: { label:'STANDARD BOARD', dim:'36″ × 16″', w:780, h:240, max:12 },
+  large: { label:'LARGE BOARD', dim:'48″ × 16″', w:980, h:260, max:18 },
+  xl: { label:'XL BOARD', dim:'60″ × 20″', w:1180, h:300, max:28 },
+};
+// ══════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════
+let prePedals = []; // pre-amp chain pedal ids
+let fxPedals = []; // fx loop pedal ids
+let customPedals = [];
+let currentSize = 'mini';
+let showCables = false;
+let showRouting = true;
+let multiRow = false;
+let dragLibId = null;
+let dragSrcZone = null; // 'pre' | 'fx'
+let dragSrcIdx = null;
+let addDest = 'pre'; // where modal adds to
+
+function allPedals() { return [...PEDALS, ...customPedals]; }
+
+// ══════════════════════════════════════════════
+// RENDER LIBRARY
+// ══════════════════════════════════════════════
+function renderLibrary(filter='') {
+  const scroll = document.getElementById('lib-scroll');
+  const lc = filter.toLowerCase();
+  scroll.innerHTML = '';
+  for (const [cat, catData] of Object.entries(CATEGORIES)) {
+    const pedals = allPedals().filter(p => p.cat === cat && (lc==='' || p.name.toLowerCase().includes(lc) || p.brand.toLowerCase().includes(lc)));
+    if (!pedals.length) continue;
+    const div = document.createElement('div');
+    const hdr = document.createElement('div');
+    hdr.className = 'cat-header open';
+    hdr.innerHTML = `<span class="cat-name" style="color:${catData.color}">${catData.label}</span><span class="cat-arrow">▶</span>`;
+    const body = document.createElement('div');
+    body.className = 'cat-body';
+    hdr.addEventListener('click', () => { hdr.classList.toggle('open'); body.classList.toggle('collapsed'); });
+    for (const p of pedals) {
+      const el = document.createElement('div');
+      el.className = 'lib-pedal';
+      el.draggable = true;
+      el.dataset.id = p.id;
+      el.style.borderLeftColor = catData.color;
+      el.innerHTML = `
+        <div class="lib-pedal-icon" style="background:${p.bodyColor}">${makePedalSVG(p, 32, 44)}</div>
+        <div>
+          <div class="lib-pedal-name">${p.name.replace(p.brand,'').trim()||p.name}</div>
+          <div class="lib-pedal-brand">${p.brand}</div>
+        </div>`;
+      el.addEventListener('dragstart', e => {
+        dragLibId = p.id; 
+        dragSrcZone = null; 
+        dragSrcIdx = null;
+        el.classList.add('dragging');
+        e.dataTransfer.effectAllowed = 'copy';
+        e.dataTransfer.setData('text/plain', p.id);
+      });
+      el.addEventListener('dragend', () => {
+        el.classList.remove('dragging');
+        // CLEAR DRAG STATE (prevents stale references)
+        dragLibId = null;
+        dragSrcZone = null;
+        dragSrcIdx = null;
+      });
+      el.addEventListener('dblclick', () => addToZone(p.id, addDest));
+      body.appendChild(el);
+    }
+    div.appendChild(hdr); div.appendChild(body);
+    scroll.appendChild(div);
+  }
+}
+// ══════════════════════════════════════════════
+// RENDER BOARD
+// ══════════════════════════════════════════════
+function renderBoard() {
+  const size = BOARD_SIZES[currentSize];
+  ['board-surface','fx-loop-surface'].forEach(id => {
+    const s = document.getElementById(id);
+    s.style.width = size.w + 'px';
+    s.style.minHeight = (id==='fx-loop-surface' ? size.h * 0.75 : size.h) + 'px';
+    if (multiRow) s.classList.add('multi-row'); else s.classList.remove('multi-row');
+  });
+  renderZone('pre');
+  renderZone('fx');
+  if (showRouting) {
+    renderRoutingBar('pre');
+    renderRoutingBar('fx');
+  } else {
+    document.getElementById('routing-pre-bar').style.display = 'none';
+    document.getElementById('routing-fx-bar').style.display = 'none';
+  }
+  if (showCables) {
+    // Use RAF to ensure DOM has settled after re-render
+    requestAnimationFrame(() => { 
+      drawCables('pre'); 
+      drawCables('fx'); 
+    });
+  } else {
+    clearCables();
+  }
+  const total = prePedals.length + fxPedals.length;
+  document.getElementById('board-name').textContent = size.label;
+  document.getElementById('board-dim').textContent = size.dim;
+  document.getElementById('pedal-count').textContent =
+    `${total} pedal${total!==1?'s':''} · ${prePedals.length} pre · ${fxPedals.length} loop`;
+  saveState();
+}
+
+function renderZone(zone) {
+  const isPre = zone === 'pre';
+  const ids = isPre ? prePedals : fxPedals;
+  const rowEl = document.getElementById(isPre ? 'pedals-row' : 'fx-pedals-row');
+  const emptyEl = document.getElementById(isPre ? 'empty-state-pre' : 'empty-state-fx');
+  const badgeClass = isPre ? 'badge-pre' : 'badge-fx';
+  const arrowClass = isPre ? 'arrow-pre' : 'arrow-fx';
+  rowEl.innerHTML = '';
+  emptyEl.classList.toggle('hidden', ids.length > 0);
+
+  // Guitar or FX SEND end
+  const startEl = document.createElement('div');
+  startEl.className = 'chain-end';
+  startEl.innerHTML = isPre
+    ? `<span style="font-size:20px">🎸</span><span>GUITAR</span>`
+    : `<span style="font-size:13px;color:var(--route-send)">⬆</span><span style="color:var(--route-send)">FX SEND</span>`;
+  rowEl.appendChild(startEl);
+
+  ids.forEach((pid, idx) => {
+    const pedal = allPedals().find(p => p.id === pid);
+    if (!pedal) return;
+    const wrapper = document.createElement('div');
+    wrapper.className = 'board-pedal';
+    wrapper.draggable = true;
+    wrapper.dataset.idx = idx;
+    wrapper.dataset.zone = zone;
+    wrapper.innerHTML = makePedalSVG(pedal, 84, 124);
+
+    // Order badge
+    const badge = document.createElement('div');
+    badge.className = `pedal-order-badge ${badgeClass}`;
+    badge.textContent = idx + 1;
+    wrapper.appendChild(badge);
+
+    // Route arrow (not on last)
+    if (idx < ids.length - 1) {
+      const arr = document.createElement('div');
+      arr.className = `pedal-route-arrow ${arrowClass}`;
+      arr.textContent = '▶';
+      wrapper.appendChild(arr);
+    }
+
+    // Remove
+    const rm = document.createElement('div');
+    rm.className = 'pedal-remove';
+    rm.innerHTML = '✕';
+    rm.addEventListener('click', e => { 
+      e.stopPropagation(); 
+      removeFromZone(idx, zone); 
+    });
+    wrapper.appendChild(rm);
+
+    wrapper.addEventListener('mouseenter', () => showInfo(pedal, zone));
+    wrapper.addEventListener('mouseleave', hideInfo);
+
+    // Drag from board
+    wrapper.addEventListener('dragstart', e => {
+      dragSrcZone = zone; 
+      dragSrcIdx = idx; 
+      dragLibId = null;
+      wrapper.classList.add('dragging-board');
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', pid);
+    });
+    wrapper.addEventListener('dragend', () => {
+      wrapper.classList.remove('dragging-board');
+      // CLEAR DRAG STATE (prevents stale references)
+      dragLibId = null;
+      dragSrcZone = null;
+      dragSrcIdx = null;
+    });
+
+    // Drop onto this pedal (reorder / insert)
+    wrapper.addEventListener('dragover', e => { 
+      e.preventDefault(); 
+      e.dataTransfer.dropEffect = dragSrcZone ? 'move' : 'copy'; 
+    });
+    wrapper.addEventListener('drop', e => { 
+      e.preventDefault(); 
+      handleDropOnPedal(idx, zone); 
+    });
+
+    rowEl.appendChild(wrapper);
+  });
+
+  // Amp or FX RETURN end
+  const endEl = document.createElement('div');
+  endEl.className = 'chain-end';
+  endEl.innerHTML = isPre
+    ? `<span style="font-size:20px">🔊</span><span>AMP IN</span>`
+    : `<span style="font-size:13px;color:var(--route-return)">⬇</span><span style="color:var(--route-return)">FX RETURN</span>`;
+  rowEl.appendChild(endEl);
+}
+// ══════════════════════════════════════════════
+// ROUTING BAR
+// ══════════════════════════════════════════════
+function renderRoutingBar(zone) {
+  const isPre = zone === 'pre';
+  const ids = isPre ? prePedals : fxPedals;
+  const barEl = document.getElementById(isPre ? 'routing-pre-bar' : 'routing-fx-bar');
+  const arrowCls = isPre ? 'route-arrow-pre' : 'route-arrow-fx';
+  barEl.style.display = showRouting ? 'flex' : 'none';
+  if (!showRouting) return;
+  barEl.innerHTML = '';
+  // Start node
+  const startNode = document.createElement('div');
+  startNode.className = `route-node ${isPre ? 'route-node-guitar' : 'route-node-send'}`;
+  startNode.textContent = isPre ? '🎸 GUITAR IN' : '⬆ FX SEND';
+  barEl.appendChild(startNode);
+
+  ids.forEach((pid, idx) => {
+    const pedal = allPedals().find(p => p.id === pid);
+    if (!pedal) return;
+    const arrow = document.createElement('div');
+    arrow.className = `route-arrow ${arrowCls}`;
+    arrow.textContent = '▶';
+    barEl.appendChild(arrow);
+    const node = document.createElement('div');
+    node.className = 'route-node route-node-pedal';
+    const shortN = (pedal.name.replace(pedal.brand,'').trim() || pedal.name).substring(0,10);
+    node.innerHTML = `<span class="route-num">${idx+1}</span>${shortN}`;
+    node.title = `${pedal.brand} ${pedal.name}`;
+    barEl.appendChild(node);
+  });
+
+  // End node
+  const endArrow = document.createElement('div');
+  endArrow.className = `route-arrow ${arrowCls}`;
+  endArrow.textContent = '▶';
+  barEl.appendChild(endArrow);
+  const endNode = document.createElement('div');
+  endNode.className = `route-node ${isPre ? 'route-node-amp' : 'route-node-return'}`;
+  endNode.textContent = isPre ? '🔊 AMP INPUT' : '⬇ FX RETURN';
+  barEl.appendChild(endNode);
+}
+
+function removeFromZone(idx, zone) {
+  if (zone === 'pre') prePedals.splice(idx, 1);
+  else fxPedals.splice(idx, 1);
+  renderBoard();
+}
+
+function handleDropOnPedal(targetIdx, targetZone) {
+  const targetArr = targetZone === 'pre' ? prePedals : fxPedals;
+  if (dragLibId !== null) {
+    targetArr.splice(targetIdx, 0, dragLibId);
+    dragLibId = null;
+    renderBoard();
+    return;
+  }
+  if (dragSrcZone !== null && dragSrcIdx !== null) {
+    const srcArr = dragSrcZone === 'pre' ? prePedals : fxPedals;
+    if (dragSrcZone === targetZone) {
+      // Reorder in same zone
+      const [moved] = srcArr.splice(dragSrcIdx, 1);
+      const insertAt = dragSrcIdx < targetIdx ? targetIdx - 1 : targetIdx;
+      srcArr.splice(insertAt, 0, moved);
+    } else {
+      // Move between zones (insert before target pedal)
+      const [moved] = srcArr.splice(dragSrcIdx, 1);
+      targetArr.splice(targetIdx, 0, moved);
+    }
+    dragSrcZone = null; 
+    dragSrcIdx = null;
+    renderBoard();
+  }
+}
+// ══════════════════════════════════════════════
+// ZONE DROP SURFACES (FIXED: now supports same-zone reorder to end)
+// ══════════════════════════════════════════════
+function setupZoneDrop(surfaceId, zone) {
+  const el = document.getElementById(surfaceId);
+  el.addEventListener('dragover', e => { 
+    e.preventDefault(); 
+    el.classList.add('drag-over'); 
+    e.dataTransfer.dropEffect = 'copy'; 
+  });
+  el.addEventListener('dragleave', e => { 
+    if (!el.contains(e.relatedTarget)) el.classList.remove('drag-over'); 
+  });
+  el.addEventListener('drop', e => {
+    e.preventDefault(); 
+    el.classList.remove('drag-over');
+
+    if (dragLibId !== null) {
+      addToZone(dragLibId, zone); 
+      dragLibId = null;
+    }
+    else if (dragSrcZone !== null && dragSrcIdx !== null) {
+      const srcArr = dragSrcZone === 'pre' ? prePedals : fxPedals;
+      const targetArr = zone === 'pre' ? prePedals : fxPedals;
+      const [moved] = srcArr.splice(dragSrcIdx, 1);
+
+      // FIXED: same-zone drop on surface = reorder to END of chain
+      // different-zone = move to END of target zone
+      if (dragSrcZone === zone) {
+        targetArr.push(moved);
+      } else {
+        targetArr.push(moved);
+      }
+
+      dragSrcZone = null; 
+      dragSrcIdx = null;
+      renderBoard();
+    }
+  });
+}
+setupZoneDrop('board-surface', 'pre');
+setupZoneDrop('fx-loop-surface', 'fx');
+
+function addToZone(id, zone) {
+  const size = BOARD_SIZES[currentSize];
+  const arr = zone === 'pre' ? prePedals : fxPedals;
+  if (prePedals.length + fxPedals.length >= size.max) {
+    showToast(`Board full — max ${size.max} pedals for this size`, 'error'); 
+    return;
+  }
+  arr.push(id);
+  renderBoard();
+  showToast(`Added to ${zone === 'pre' ? 'Pre-Amp Chain' : 'FX Loop'} ✓`, 'success');
+}
+// ══════════════════════════════════════════════
+// CABLES
+// ══════════════════════════════════════════════
+const CABLE_COLORS = ['#e84040','#4080e8','#40c060','#e8c020','#e0e0e0','#c040e8','#e87020'];
+
+function drawCables(zone) {
+  const isPre = zone === 'pre';
+  const rowEl = document.getElementById(isPre ? 'pedals-row' : 'fx-pedals-row');
+  const surfEl = document.getElementById(isPre ? 'board-surface' : 'fx-loop-surface');
+  const svgEl = document.getElementById(isPre ? 'cable-svg-pre' : 'cable-svg-fx');
+
+  const srect = surfEl.getBoundingClientRect();
+  svgEl.setAttribute('width', surfEl.offsetWidth);
+  svgEl.setAttribute('height', surfEl.offsetHeight);
+  svgEl.innerHTML = '';
+
+  const items = rowEl.querySelectorAll('.board-pedal, .chain-end');
+  const pts = [];
+  items.forEach(el => {
+    const r = el.getBoundingClientRect();
+    pts.push({ 
+      x: r.left - srect.left + r.width / 2, 
+      y: r.bottom - srect.top - 8 
+    });
+  });
+
+  for (let i = 0; i < pts.length - 1; i++) {
+    const p1 = pts[i], p2 = pts[i+1];
+    const color = CABLE_COLORS[i % CABLE_COLORS.length];
+    const dy = 18 + Math.random() * 10;
+    const d = `M${p1.x},${p1.y} C${p1.x+18},${p1.y+dy} ${p2.x-18},${p2.y+dy} ${p2.x},${p2.y}`;
+
+    const shadow = document.createElementNS('http://www.w3.org/2000/svg','path');
+    shadow.setAttribute('d', d);
+    shadow.setAttribute('stroke', 'rgba(0,0,0,0.45)');
+    shadow.setAttribute('stroke-width', '4');
+    shadow.setAttribute('fill', 'none');
+    shadow.setAttribute('transform', 'translate(1,2)');
+
+    const path = document.createElementNS('http://www.w3.org/2000/svg','path');
+    path.setAttribute('d', d);
+    path.setAttribute('stroke', color);
+    path.setAttribute('stroke-width', '2.5');
+    path.setAttribute('fill', 'none');
+    path.setAttribute('stroke-linecap', 'round');
+    path.setAttribute('opacity', '0.75');
+
+    svgEl.appendChild(shadow);
+    svgEl.appendChild(path);
+  }
+}
+
+function clearCables() {
+  ['cable-svg-pre','cable-svg-fx'].forEach(id => { 
+    const svg = document.getElementById(id);
+    if (svg) svg.innerHTML = ''; 
+  });
+}
+// ══════════════════════════════════════════════
+// INFO PANEL
+// ══════════════════════════════════════════════
+function showInfo(pedal, zone) {
+  const panel = document.getElementById('info-panel');
+  const catData = CATEGORIES[pedal.cat];
+  document.getElementById('info-pedal-name').textContent = pedal.name.replace(pedal.brand,'').trim() || pedal.name;
+  document.getElementById('info-pedal-brand').textContent = pedal.brand;
+  document.getElementById('info-pedal-cat').textContent = catData.label;
+  document.getElementById('info-pedal-cat').style.color = catData.color;
+  document.getElementById('info-pedal-zone').textContent = zone === 'pre' ? '▶ Pre-Amp Chain' : '↻ FX Loop';
+  document.getElementById('info-pedal-zone').style.color = zone === 'pre' ? 'var(--route-pre)' : 'var(--route-fx)';
+  panel.classList.add('visible');
+}
+function hideInfo() { 
+  document.getElementById('info-panel').classList.remove('visible'); 
+}
+// ══════════════════════════════════════════════
+// TOAST
+// ══════════════════════════════════════════════
+let toastTimer;
+function showToast(msg, type='') {
+  const t = document.getElementById('toast');
+  t.textContent = msg; 
+  t.className = type ? `show ${type}` : 'show';
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2400);
+}
+// ══════════════════════════════════════════════
+// SCRAPER (unchanged — already robust with fallback)
+// ══════════════════════════════════════════════
+const CORS = 'https://api.allorigins.win/get?url=';
+async function searchPedals(query) {
+  const status = document.getElementById('search-status');
+  const results = document.getElementById('search-results');
+  results.innerHTML = '';
+  status.innerHTML = '<span class="spinner"></span>Searching Sweetwater…';
+  try {
+    const url = `https://www.sweetwater.com/store/search.php?s=${encodeURIComponent(query + ' effects pedal')}`;
+    const resp = await fetch(CORS + encodeURIComponent(url), { signal: AbortSignal.timeout(10000) });
+    const data = await resp.json();
+    const doc = new DOMParser().parseFromString(data.contents, 'text/html');
+    let parsed = [];
+    doc.querySelectorAll('[class*="product-listing"],[class*="ProductCard"],[class*="product-card"],.product').forEach(item => {
+      const n = item.querySelector('h2,h3,h4,.product-name,[class*="name"]');
+      if (n) { 
+        const t = n.textContent.trim(); 
+        if (t.length > 4 && t.length < 80) parsed.push({ name: t }); 
+      }
+    });
+    if (!parsed.length) {
+      doc.querySelectorAll('h2,h3,a[href*="effects"],a[href*="pedal"]').forEach(h => {
+        const t = h.textContent.trim();
+        if (t.length > 4 && t.length < 80 && (t.toLowerCase().includes('pedal')||t.toLowerCase().includes('effect')||t.toLowerCase().includes(query.toLowerCase().split(' ')[0])))
+          parsed.push({ name: t });
+      });
+    }
+    const seen = new Set();
+    parsed = parsed.filter(p => { 
+      if (seen.has(p.name)||p.name.length<5) return false; 
+      seen.add(p.name); 
+      return true; 
+    }).slice(0, 8);
+    if (!parsed.length) { 
+      status.innerHTML = 'No results. Showing built-in matches.'; 
+      showFallbackResults(query); 
+      return; 
+    }
+    status.innerHTML = `${parsed.length} results from Sweetwater`;
+    showScrapedResults(parsed, query);
+  } catch(e) {
+    status.innerHTML = 'Could not reach Sweetwater. Showing built-in matches.';
+    showFallbackResults(query);
+  }
+}
+
+function showScrapedResults(items, query) {
+  const results = document.getElementById('search-results');
+  results.innerHTML = '';
+  items.forEach(item => {
+    const brand = extractBrand(item.name);
+    const cat = guessCat(item.name);
+    const tmp = { 
+      id: 'custom_' + Date.now() + Math.random().toString(36).slice(2),
+      name: item.name.substring(0,40), 
+      brand, 
+      cat,
+      bodyColor: guessCatColor(item.name), 
+      textColor:'#fff', 
+      knobs: guessKnobs(item.name), 
+      accent:'#e8e8e8' 
+    };
+    const div = document.createElement('div'); 
+    div.className = 'search-result-item';
+    div.innerHTML = `
+      <div class="search-result-svg">${makePedalSVG(tmp, 44, 60)}</div>
+      <div class="search-result-info">
+        <div class="result-name">${tmp.name}</div>
+        <div class="result-brand">${brand}</div>
+        <div class="result-cat" style="color:${CATEGORIES[cat].color}">${CATEGORIES[cat].label}</div>
+      </div>
+      <button class="result-add-btn">+ ADD</button>`;
+    div.querySelector('.result-add-btn').addEventListener('click', () => {
+      tmp.id = 'custom_' + Date.now();
+      customPedals.push(tmp);
+      renderLibrary(document.getElementById('lib-search').value);
+      addToZone(tmp.id, addDest);
+      closeModal();
+    });
+    results.appendChild(div);
+  });
+}
+
+function showFallbackResults(query) {
+  const lq = query.toLowerCase();
+  const results = document.getElementById('search-results');
+  const matches = allPedals().filter(p => p.name.toLowerCase().includes(lq)||p.brand.toLowerCase().includes(lq)).slice(0,8);
+  if (!matches.length) { 
+    results.innerHTML = '<div style="color:var(--muted);font-family:var(--font-mono);font-size:12px;padding:10px">No matches found.</div>'; 
+    return; 
+  }
+  results.innerHTML = '';
+  matches.forEach(pedal => {
+    const div = document.createElement('div'); 
+    div.className = 'search-result-item';
+    div.innerHTML = `
+      <div class="search-result-svg">${makePedalSVG(pedal, 44, 60)}</div>
+      <div class="search-result-info">
+        <div class="result-name">${pedal.name}</div>
+        <div class="result-brand">${pedal.brand}</div>
+        <div class="result-cat" style="color:${CATEGORIES[pedal.cat].color}">${CATEGORIES[pedal.cat].label}</div>
+      </div>
+      <button class="result-add-btn">+ ADD</button>`;
+    div.querySelector('.result-add-btn').addEventListener('click', () => { 
+      addToZone(pedal.id, addDest); 
+      closeModal(); 
+    });
+    results.appendChild(div);
+  });
+}
+
+function guessCat(n) {
+  n = n.toLowerCase();
+  if (n.includes('reverb')||n.includes('spring')||n.includes('hall')) return 'reverb';
+  if (n.includes('delay')||n.includes('echo')||n.includes('tape')) return 'delay';
+  if (n.includes('chorus')||n.includes('flanger')||n.includes('phase')||n.includes('vibrato')||n.includes('tremolo')) return 'modulation';
+  if (n.includes('fuzz')||n.includes('muff')) return 'fuzz';
+  if (n.includes('distortion')||n.includes('metal')) return 'distortion';
+  if (n.includes('overdrive')||n.includes('screamer')||n.includes('boost')) return 'overdrive';
+  if (n.includes('wah')||n.includes('filter')||n.includes('envelope')) return 'filter';
+  if (n.includes('compressor')||n.includes('comp')) return 'compressor';
+  if (n.includes('tuner')||n.includes('looper')||n.includes('noise')) return 'utility';
+  return 'overdrive';
+}
+function guessCatColor(n) {
+  const map = { reverb:'#17a89e',delay:'#1a6be8',modulation:'#22a84e',fuzz:'#9922cc',distortion:'#cc2222',overdrive:'#e8621a',filter:'#d4aa00',compressor:'#607080',utility:'#404555' };
+  return map[guessCat(n)] || '#607080';
+}
+function guessKnobs(n) {
+  n = n.toLowerCase();
+  if (n.includes('reverb')) return ['Decay','Mix','Tone'];
+  if (n.includes('delay')) return ['Time','Mix','Feedback'];
+  if (n.includes('compressor')) return ['Sustain','Level','Attack'];
+  if (n.includes('distortion')) return ['Gain','Tone','Level'];
+  return ['Drive','Tone','Level'];
+}
+function extractBrand(name) {
+  const brands = ['Boss','MXR','Strymon','EHX','Electro-Harmonix','Ibanez','Dunlop','ProCo','TC Electronic','Keeley','ZVex','Chase Bliss','Red Panda','Fulltone','Walrus Audio','JHS','Way Huge','Earthquaker','Digitech','Line 6'];
+  for (const b of brands) if (name.toLowerCase().includes(b.toLowerCase())) return b;
+  return name.split(' ')[0];
+}
+// ══════════════════════════════════════════════
+// MODAL
+// ══════════════════════════════════════════════
+function openModal() { 
+  document.getElementById('modal-overlay').classList.add('open'); 
+}
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('open');
+  document.getElementById('search-results').innerHTML = '';
+  document.getElementById('search-status').innerHTML = '';
+  document.getElementById('modal-search-input').value = '';
+}
+document.getElementById('btn-add-pedal').addEventListener('click', openModal);
+document.getElementById('modal-close').addEventListener('click', closeModal);
+document.getElementById('modal-overlay').addEventListener('click', e => { 
+  if (e.target===document.getElementById('modal-overlay')) closeModal(); 
+});
+document.getElementById('modal-search-btn').addEventListener('click', () => { 
+  const q = document.getElementById('modal-search-input').value.trim(); 
+  if (q) searchPedals(q); 
+});
+document.getElementById('modal-search-input').addEventListener('keydown', e => { 
+  if (e.key==='Enter') { 
+    const q = e.target.value.trim(); 
+    if (q) searchPedals(q); 
+  } 
+});
+// Destination buttons
+document.querySelectorAll('.dest-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.dest-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    addDest = btn.dataset.dest;
+  });
+});
+// ══════════════════════════════════════════════
+// CONTROLS
+// ══════════════════════════════════════════════
+document.getElementById('board-size-select').addEventListener('change', e => {
+  currentSize = e.target.value;
+  const max = BOARD_SIZES[currentSize].max;
+  const total = prePedals.length + fxPedals.length;
+  if (total > max) {
+    prePedals = prePedals.slice(0, max);
+    fxPedals = fxPedals.slice(0, Math.max(0, max - prePedals.length));
+    showToast(`Resized — trimmed to ${max} pedals`, 'error');
+  }
+  renderBoard();
+});
+document.querySelectorAll('.layout-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.layout-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    multiRow = btn.dataset.rows === '2';
+    renderBoard();
+  });
+});
+document.getElementById('btn-cables').addEventListener('click', () => {
+  showCables = !showCables;
+  document.getElementById('btn-cables').classList.toggle('active', showCables);
+  if (showCables) {
+    requestAnimationFrame(() => { 
+      drawCables('pre'); 
+      drawCables('fx'); 
+    });
+  } else {
+    clearCables();
+  }
+});
+document.getElementById('btn-routing').addEventListener('click', () => {
+  showRouting = !showRouting;
+  document.getElementById('btn-routing').classList.toggle('active', showRouting);
+  renderBoard();
+});
+document.getElementById('btn-clear').addEventListener('click', () => {
+  if (!prePedals.length && !fxPedals.length) return;
+  if (confirm('Clear all pedals from the board?')) { 
+    prePedals = []; 
+    fxPedals = []; 
+    renderBoard(); 
+  }
+});
+document.getElementById('lib-search').addEventListener('input', e => renderLibrary(e.target.value));
+// ══════════════════════════════════════════════
+// EXPORT
+// ══════════════════════════════════════════════
+document.getElementById('btn-export').addEventListener('click', async () => {
+  const btn = document.getElementById('btn-export');
+  const originalHTML = btn.innerHTML;
+  btn.innerHTML = '⏳ <span>Rendering…</span>'; 
+  btn.disabled = true;
+  try {
+    const el = document.getElementById('pedalboard');
+    const canvas = await html2canvas(el, { 
+      backgroundColor: null, 
+      scale: 2, 
+      useCORS: true, 
+      logging: false,
+      // Improved quality for cables / SVGs
+      allowTaint: true
+    });
+    const a = document.createElement('a');
+    a.download = `pedalforge-${currentSize}.png`; 
+    a.href = canvas.toDataURL('image/png'); 
+    a.click();
+    showToast('PNG exported! ✓', 'success');
+  } catch(e) { 
+    console.error(e);
+    showToast('Export failed — try a different browser', 'error'); 
+  }
+  btn.innerHTML = originalHTML; 
+  btn.disabled = false;
+});
+// ══════════════════════════════════════════════
+// SAVE / LOAD
+// ══════════════════════════════════════════════
+function saveState() {
+  try {
+    localStorage.setItem('pf2_pre', JSON.stringify(prePedals));
+    localStorage.setItem('pf2_fx', JSON.stringify(fxPedals));
+    localStorage.setItem('pf2_size', currentSize);
+    localStorage.setItem('pf2_custom', JSON.stringify(customPedals));
+  } catch(e) {}
+}
+function loadState() {
+  try {
+    prePedals = JSON.parse(localStorage.getItem('pf2_pre') || '[]');
+    fxPedals = JSON.parse(localStorage.getItem('pf2_fx') || '[]');
+    customPedals = JSON.parse(localStorage.getItem('pf2_custom') || '[]');
+    const s = localStorage.getItem('pf2_size');
+    if (s && BOARD_SIZES[s]) { 
+      currentSize = s; 
+      document.getElementById('board-size-select').value = s; 
+    }
+  } catch(e) { 
+    prePedals = []; 
+    fxPedals = []; 
+    customPedals = [];
+  }
+}
+// ══════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════
+loadState();
+renderLibrary();
+renderBoard();
+window.addEventListener('resize', () => { 
+  if (showCables) {
+    requestAnimationFrame(() => { 
+      drawCables('pre'); 
+      drawCables('fx'); 
+    }); 
+  } 
+});
+</script>
+</body>
+</html>
