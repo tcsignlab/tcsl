@@ -121,11 +121,13 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--cream);fo
 .board-pedal:active{cursor:grabbing}
 .board-pedal.dragging-board{opacity:.25;transform:scale(.92)}
 
-/* PEDAL CARD */
-.pedal-card{width:84px;height:124px;border-radius:7px;overflow:hidden;position:relative;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:rgba(255,255,255,.03);box-shadow:0 2px 12px rgba(0,0,0,.7),0 0 0 1px rgba(255,255,255,.06)}
+#svg-filters{display:none}
 
-/* Real image with cartoon filter */
-.pedal-real-img{width:100%;height:100%;object-fit:contain;display:block;filter:url(#cartoon) saturate(2.2) contrast(1.4) drop-shadow(0 3px 9px rgba(0,0,0,.9))}
+/* PEDAL CARD */
+.pedal-card{width:84px;height:124px;border-radius:7px;overflow:hidden;position:relative;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:rgba(255,255,255,.02);box-shadow:0 3px 14px rgba(0,0,0,.75),0 0 0 1px rgba(255,255,255,.05)}
+
+/* Real image — clean, no filter */
+.pedal-real-img{width:100%;height:100%;object-fit:contain;display:block;filter:drop-shadow(0 4px 10px rgba(0,0,0,.8))}
 
 /* Shimmer loading state */
 .pedal-loading{width:84px;height:124px;border-radius:7px;flex-shrink:0;background:linear-gradient(110deg,#0f0f14 30%,#1a1a22 50%,#0f0f14 70%);background-size:200% 100%;animation:shimmer 1.4s infinite;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 12px rgba(0,0,0,.7)}
@@ -209,20 +211,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--cream);fo
 </head>
 <body>
 
-<!-- SVG cartoon filter definition -->
-<svg id="svg-filters">
-  <defs>
-    <filter id="cartoon" color-interpolation-filters="sRGB" x="-5%" y="-5%" width="110%" height="110%">
-      <feColorMatrix type="saturate" values="2.8" result="sat"/>
-      <feConvolveMatrix order="3" kernelMatrix="0 -0.8 0 -0.8 4.2 -0.8 0 -0.8 0" in="sat" result="sharp"/>
-      <feComponentTransfer in="sharp" result="poster">
-        <feFuncR type="discrete" tableValues="0 0.15 0.35 0.55 0.75 0.9 1"/>
-        <feFuncG type="discrete" tableValues="0 0.15 0.35 0.55 0.75 0.9 1"/>
-        <feFuncB type="discrete" tableValues="0 0.15 0.35 0.55 0.75 0.9 1"/>
-      </feComponentTransfer>
-    </filter>
-  </defs>
-</svg>
+<!-- no SVG filters -->
 
 <header id="header">
   <div id="logo">Pedal<span>Forge</span></div>
@@ -449,39 +438,65 @@ let dragLibId=null,dragSrcZone=null,dragSrcIdx=null,addDest='pre';
 const imgCache={};
 function allPedals(){return[...PEDALS,...customPedals]}
 
-// ── IMAGE PIPELINE ── Wikipedia API (works from GitHub Pages, CORS-open) ──
-// Wikipedia's API allows origin=* and their CDN serves images with CORS headers.
-// No API key, no proxy, no server needed.
+// ── IMAGE PIPELINE ─────────────────────────────────────────────────────────
+// Source: Wikimedia Commons file search API
+//   • CORS fully open (Access-Control-Allow-Origin: *)
+//   • Searches the FILE namespace (ns=6) so results are actual image files
+//   • upload.wikimedia.org also has CORS *, so images load directly onto canvas
+//   • No API key, no proxy, works from GitHub Pages
+//
+// Quality improvement over Wikipedia article images:
+//   Wikipedia article thumbnails often show a guitarist or live photo.
+//   Commons file-namespace search finds the actual product shot.
+//   We request iiurlwidth=1200 for crisp high-res output.
 
-const WIKI = 'https://en.wikipedia.org/w/api.php';
-const IMG_VER = 'v6';
+const COMMONS  = 'https://commons.wikimedia.org/w/api.php';
+const IMG_VER  = 'v7';   // bumped — flushes all old low-quality cached images
 const inFlight = new Set();
 
-// Known Wikipedia article titles for built-in pedals
-// Using exact article titles gives fastest, highest-quality images
-const WIKI_TITLES = {
-  ts9:       'Ibanez Tube Screamer',
-  ts808:     'Ibanez Tube Screamer',
-  ocd:       'Fulltone OCD',
-  sd1:       'Boss SD-1',
-  klon:      'Klon Centaur',
-  ds1:       'Boss DS-1',
-  rat:       'Pro Co RAT',
-  bigmuff:   'Big Muff',
-  ff:        'Fuzz Face',
-  zvex:      'ZVex Effects',
-  dd7:       'Boss DD-7',
-  timeline:  'Strymon',
-  carbon:    'MXR Carbon Copy',
-  bigsky:    'Strymon',
-  flint:     'Strymon',
-  el_cap:    'Strymon',
-  ce2:       'Boss CE-2',
-  phase90:   'MXR Phase 90',
-  crybaby:   'Cry Baby',
-  cs3:       'Boss CS-3',
-  dynacomp:  'MXR Dyna Comp',
-  tu3:       'Boss TU-3',
+// Targeted Commons search strings for every built-in pedal.
+// More specific = better first-result quality.
+const COMMONS_QUERIES = {
+  ts9:        'Ibanez TS-9 Tube Screamer guitar pedal',
+  ts808:      'Ibanez TS-808 Tube Screamer guitar pedal',
+  ocd:        'Fulltone OCD overdrive pedal',
+  sd1:        'Boss SD-1 Super Overdrive pedal',
+  klon:       'Klon Centaur effects pedal',
+  bb:         'Xotic BB Preamp pedal',
+  ds1:        'Boss DS-1 distortion pedal',
+  rat:        'Pro Co RAT2 distortion pedal',
+  mxrdist:    'MXR Distortion Plus pedal',
+  metalzone:  'Boss MT-2 Metal Zone distortion pedal',
+  hm2:        'Boss HM-2 Heavy Metal pedal',
+  bigmuff:    'Electro-Harmonix Big Muff Pi fuzz pedal',
+  ff:         'Dunlop Fuzz Face guitar pedal',
+  zvex:       'ZVex Fuzz Factory pedal',
+  tonebend:   'Vox Tone Bender fuzz pedal',
+  dd7:        'Boss DD-7 Digital Delay pedal',
+  timeline:   'Strymon Timeline delay pedal',
+  carbon:     'MXR Carbon Copy analog delay pedal',
+  flashback:  'TC Electronic Flashback delay pedal',
+  memory:     'Electro-Harmonix Memory Man delay pedal',
+  bigsky:     'Strymon BigSky reverb pedal',
+  rv6:        'Boss RV-6 reverb pedal',
+  holygrail:  'Electro-Harmonix Holy Grail reverb pedal',
+  flint:      'Strymon Flint reverb tremolo pedal',
+  ce2:        'Boss CE-2 chorus pedal',
+  phase90:    'MXR Phase 90 phaser pedal',
+  clone:      'Electro-Harmonix Small Clone chorus pedal',
+  bf3:        'Boss BF-3 Flanger pedal',
+  crybaby:    'Dunlop Cry Baby GCB-95 wah pedal',
+  aw3:        'Boss AW-3 Auto Wah pedal',
+  envelope:   'Electro-Harmonix Q-Tron envelope filter pedal',
+  cs3:        'Boss CS-3 Compression Sustainer pedal',
+  dynacomp:   'MXR Dyna Comp compressor pedal',
+  keeley:     'Keeley Compressor Plus pedal',
+  tu3:        'Boss TU-3 Chromatic Tuner pedal',
+  ns2:        'Boss NS-2 Noise Suppressor pedal',
+  looper:     'Boss RC-5 Loop Station pedal',
+  el_cap:     'Strymon El Capistan tape echo pedal',
+  blooper:    'Chase Bliss Audio Blooper looper pedal',
+  tensor:     'Red Panda Tensor pedal',
 };
 
 function imgKey(id) { return `pfimg_${IMG_VER}_${id}`; }
@@ -489,8 +504,8 @@ function imgKey(id) { return `pfimg_${IMG_VER}_${id}`; }
 function cacheSet(id, val) {
   imgCache[id] = val;
   try { localStorage.setItem(imgKey(id), val); } catch(e) {
-    // Quota hit — evict old versions then retry
     try {
+      // Evict old versions to free space
       for (let i = localStorage.length - 1; i >= 0; i--) {
         const k = localStorage.key(i);
         if (k && k.startsWith('pfimg_') && !k.startsWith('pfimg_' + IMG_VER))
@@ -507,7 +522,7 @@ async function loadPedalImage(pedal) {
     const v = localStorage.getItem(imgKey(pedal.id));
     if (v) { imgCache[pedal.id] = v; return v === 'FAILED' ? null : v; }
   } catch(e) {}
-  // Deduplicate concurrent requests
+  // Deduplicate concurrent loads for same pedal
   if (inFlight.has(pedal.id)) {
     return new Promise(resolve => {
       const t = setInterval(() => {
@@ -516,14 +531,14 @@ async function loadPedalImage(pedal) {
           const v = imgCache[pedal.id];
           resolve(v && v !== 'FAILED' ? v : null);
         }
-      }, 250);
+      }, 300);
     });
   }
   inFlight.add(pedal.id);
   try {
-    const imgUrl = await findImageUrl(pedal);
-    if (imgUrl) {
-      const processed = await processImage(imgUrl);
+    const url = await findImageUrl(pedal);
+    if (url) {
+      const processed = await processImage(url);
       if (processed) { cacheSet(pedal.id, processed); return processed; }
     }
     cacheSet(pedal.id, 'FAILED');
@@ -536,67 +551,71 @@ async function loadPedalImage(pedal) {
   }
 }
 
-// ── FIND IMAGE via Wikipedia API ──────────────────────────
+// ── FIND IMAGE URL via Wikimedia Commons ──────────────────
 async function findImageUrl(pedal) {
-  // Strategy 1: Known Wikipedia article title (fastest)
-  const knownTitle = WIKI_TITLES[pedal.id] || pedal.wikiTitle;
-  if (knownTitle) {
-    const img = await wikiPageImage(knownTitle);
-    if (img) return img;
+  // Build a list of queries to try, most specific first
+  const queries = [];
+  if (COMMONS_QUERIES[pedal.id])           queries.push(COMMONS_QUERIES[pedal.id]);
+  if (pedal.wikiTitle)                     queries.push(pedal.wikiTitle + ' guitar pedal');
+  queries.push(`${pedal.brand} ${pedal.name} guitar effects pedal`);
+  queries.push(`${pedal.brand} ${pedal.name} pedal`);
+
+  for (const q of queries) {
+    const url = await commonsFileSearch(q);
+    if (url) return url;
   }
-
-  // Strategy 2: Wikipedia search for the pedal
-  try {
-    const q = encodeURIComponent(`${pedal.brand} ${pedal.name} guitar pedal`);
-    const r = await fetch(`${WIKI}?action=query&list=search&srsearch=${q}&srlimit=4&format=json&origin=*`,
-      { signal: AbortSignal.timeout(8000) });
-    const d = await r.json();
-    for (const result of (d?.query?.search || [])) {
-      const img = await wikiPageImage(result.title);
-      if (img) return img;
-    }
-  } catch(e) {}
-
-  // Strategy 3: Brand name search fallback
-  try {
-    const r = await fetch(`${WIKI}?action=query&list=search&srsearch=${encodeURIComponent(pedal.brand + ' guitar effects')}&srlimit=2&format=json&origin=*`,
-      { signal: AbortSignal.timeout(6000) });
-    const d = await r.json();
-    for (const result of (d?.query?.search || [])) {
-      const img = await wikiPageImage(result.title);
-      if (img) return img;
-    }
-  } catch(e) {}
-
   return null;
 }
 
-// Fetch thumbnail for a Wikipedia article title (CORS-open endpoint)
-async function wikiPageImage(title) {
+// Search Commons FILE namespace and return a 1200px-wide image URL
+async function commonsFileSearch(query) {
   try {
-    const t = encodeURIComponent(title);
+    // Step 1: search for file names in namespace 6
+    const sq = encodeURIComponent(query);
     const r = await fetch(
-      `${WIKI}?action=query&titles=${t}&prop=pageimages&format=json&pithumbsize=600&piprop=thumbnail&origin=*`,
+      `${COMMONS}?action=query&list=search&srsearch=${sq}&srnamespace=6&srlimit=6&format=json&origin=*`,
+      { signal: AbortSignal.timeout(9000) }
+    );
+    const d = await r.json();
+    const hits = (d?.query?.search || []).filter(h =>
+      // Prefer files that look like product photos (contain model/brand words)
+      !/category|talk|user|wikipedia/i.test(h.title)
+    );
+    if (!hits.length) return null;
+
+    // Step 2: get the actual image URL at 1200px for the best hit
+    for (const hit of hits) {
+      const url = await commonsFileUrl(hit.title, 1200);
+      if (url) return url;
+    }
+    return null;
+  } catch(e) { return null; }
+}
+
+// Resolve a "File:..." title to a thumb URL at the requested width
+async function commonsFileUrl(fileTitle, width = 1200) {
+  try {
+    const t = encodeURIComponent(fileTitle);
+    const r = await fetch(
+      `${COMMONS}?action=query&titles=${t}&prop=imageinfo&iiprop=url&iiurlwidth=${width}&format=json&origin=*`,
       { signal: AbortSignal.timeout(7000) }
     );
     const d = await r.json();
     const page = Object.values(d?.query?.pages || {})[0];
-    const src = page?.thumbnail?.source;
-    return src || null;
+    // thumburl is the scaled version; url is the original
+    return page?.imageinfo?.[0]?.thumburl || page?.imageinfo?.[0]?.url || null;
   } catch(e) { return null; }
 }
 
-// ── LOAD & PROCESS IMAGE ─────────────────────────────────
-// Wikipedia images served from upload.wikimedia.org have
-// Access-Control-Allow-Origin: * so no proxy is needed.
+// ── LOAD IMAGE → CANVAS → BACKGROUND REMOVAL ─────────────
+// upload.wikimedia.org serves Access-Control-Allow-Origin: *
+// so images load directly onto canvas without any proxy.
 async function processImage(imgUrl) {
-  // Direct load first (works for Wikipedia/Wikimedia URLs)
-  const direct = await tryLoadImage(imgUrl);
-  if (direct) return direct;
-  // CORS proxy fallbacks for non-wiki sources
+  const result = await tryLoadImage(imgUrl);
+  if (result) return result;
+  // Fallback proxy for any non-wikimedia source
   const proxied = await tryLoadImage(`https://api.allorigins.win/raw?url=${encodeURIComponent(imgUrl)}`);
-  if (proxied) return proxied;
-  return null;
+  return proxied || null;
 }
 
 function tryLoadImage(src) {
@@ -607,9 +626,9 @@ function tryLoadImage(src) {
     const finish = v => { if (!done) { done = true; resolve(v); } };
     img.onload = () => {
       try {
-        const W = img.naturalWidth || img.width;
+        const W = img.naturalWidth  || img.width;
         const H = img.naturalHeight || img.height;
-        if (W < 40 || H < 40) { finish(null); return; }
+        if (W < 60 || H < 60) { finish(null); return; }
         const canvas = document.createElement('canvas');
         canvas.width = W; canvas.height = H;
         const ctx = canvas.getContext('2d');
@@ -620,91 +639,115 @@ function tryLoadImage(src) {
     };
     img.onerror = () => finish(null);
     img.src = src;
-    setTimeout(() => finish(null), 14000);
+    setTimeout(() => finish(null), 16000);
   });
 }
 
-// ── BACKGROUND REMOVAL: flood-fill from all border pixels ─
+// ── BACKGROUND REMOVAL ────────────────────────────────────
+// 1. Sample all 4 border strips to estimate background colour
+// 2. Flood-fill from every border pixel with colour-distance tolerance
+// 3. Global pass to catch isolated near-bg pixels (white spill)
+// 4. Feather the mask edge 2px for smooth anti-aliased cutout
 function removeBackground(ctx, w, h) {
   const id = ctx.getImageData(0, 0, w, h);
-  const d = id.data;
+  const d  = id.data;
 
-  // Sample border to estimate background colour
-  let rS=0,gS=0,bS=0,n=0;
-  const step = Math.max(1, Math.floor(Math.min(w,h)/28));
-  for (let x=0;x<w;x+=step){
-    let p=(0*w+x)*4;    rS+=d[p];gS+=d[p+1];bS+=d[p+2];n++;
-    p=((h-1)*w+x)*4;   rS+=d[p];gS+=d[p+1];bS+=d[p+2];n++;
+  // ── Step 1: sample border to characterise background ──────
+  let rS=0, gS=0, bS=0, n=0;
+  const step = Math.max(1, Math.floor(Math.min(w, h) / 32));
+  for (let x = 0; x < w; x += step) {
+    let p = x * 4;                 rS+=d[p]; gS+=d[p+1]; bS+=d[p+2]; n++;
+    p = ((h-1)*w + x) * 4;        rS+=d[p]; gS+=d[p+1]; bS+=d[p+2]; n++;
   }
-  for (let y=0;y<h;y+=step){
-    let p=(y*w)*4;      rS+=d[p];gS+=d[p+1];bS+=d[p+2];n++;
-    p=(y*w+(w-1))*4;   rS+=d[p];gS+=d[p+1];bS+=d[p+2];n++;
+  for (let y = 0; y < h; y += step) {
+    let p = y * w * 4;             rS+=d[p]; gS+=d[p+1]; bS+=d[p+2]; n++;
+    p = (y * w + w - 1) * 4;      rS+=d[p]; gS+=d[p+1]; bS+=d[p+2]; n++;
   }
-  const bgR=rS/n, bgG=gS/n, bgB=bS/n;
+  const bgR = rS/n, bgG = gS/n, bgB = bS/n;
   const bgLuma = bgR*0.299 + bgG*0.587 + bgB*0.114;
-  const tol = bgLuma > 210 ? 36 : bgLuma > 140 ? 26 : 18;
+
+  // Adaptive tolerance — looser for light/white backgrounds
+  const tol = bgLuma > 220 ? 42 : bgLuma > 180 ? 32 : bgLuma > 100 ? 22 : 15;
 
   const cdist = px => {
-    const dr=d[px]-bgR, dg=d[px+1]-bgG, db=d[px+2]-bgB;
-    return Math.sqrt(dr*dr+dg*dg+db*db);
+    const dr = d[px]-bgR, dg = d[px+1]-bgG, db = d[px+2]-bgB;
+    return Math.sqrt(dr*dr + dg*dg + db*db);
   };
 
-  // Flood-fill mask from all border pixels
-  const visited = new Uint8Array(w*h);
-  const mask    = new Uint8Array(w*h);
+  // ── Step 2: flood-fill mask from all border pixels ─────────
+  const visited = new Uint8Array(w * h);
+  const mask    = new Uint8Array(w * h);
   const stack   = [];
-  for (let x=0;x<w;x++)     { stack.push(x);           stack.push((h-1)*w+x); }
-  for (let y=1;y<h-1;y++)   { stack.push(y*w);         stack.push(y*w+(w-1)); }
+  for (let x = 0; x < w; x++) {
+    stack.push(x);            // top row
+    stack.push((h-1)*w + x); // bottom row
+  }
+  for (let y = 1; y < h-1; y++) {
+    stack.push(y * w);        // left col
+    stack.push(y * w + w-1); // right col
+  }
 
   while (stack.length) {
     const idx = stack.pop();
     if (idx < 0 || idx >= w*h || visited[idx]) continue;
     visited[idx] = 1;
-    if (cdist(idx*4) <= tol) {
+    if (cdist(idx * 4) <= tol) {
       mask[idx] = 1;
-      const x=idx%w, y=(idx/w)|0;
-      if (x>0)   stack.push(idx-1);
-      if (x<w-1) stack.push(idx+1);
-      if (y>0)   stack.push(idx-w);
-      if (y<h-1) stack.push(idx+w);
+      const x = idx % w, y = (idx / w) | 0;
+      if (x > 0)   stack.push(idx - 1);
+      if (x < w-1) stack.push(idx + 1);
+      if (y > 0)   stack.push(idx - w);
+      if (y < h-1) stack.push(idx + w);
     }
   }
 
-  // Extra pass: zap nearly-white stray pixels anywhere in image
-  if (bgLuma > 200) {
-    for (let i=0;i<w*h;i++) {
+  // ── Step 3: global pass — zap isolated near-white pixels ──
+  if (bgLuma > 190) {
+    for (let i = 0; i < w*h; i++) {
       if (mask[i]) continue;
-      const px=i*4;
-      const sat=Math.max(d[px],d[px+1],d[px+2])-Math.min(d[px],d[px+1],d[px+2]);
-      const luma=d[px]*0.299+d[px+1]*0.587+d[px+2]*0.114;
-      if (luma > 245 && sat < 8) mask[i] = 1;
+      const px  = i * 4;
+      const luma = d[px]*0.299 + d[px+1]*0.587 + d[px+2]*0.114;
+      const sat  = Math.max(d[px], d[px+1], d[px+2]) - Math.min(d[px], d[px+1], d[px+2]);
+      if (luma > 248 && sat < 6) mask[i] = 1;
     }
   }
 
-  // Apply mask + feather edges (1-pixel soft border)
-  for (let y=0;y<h;y++) {
-    for (let x=0;x<w;x++) {
-      const idx=y*w+x;
+  // ── Step 4: apply mask + 2px feathered edge ────────────────
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      const idx = y * w + x;
       if (!mask[idx]) continue;
-      d[idx*4+3] = 0;
-      for (const [nx,ny] of [[x-1,y],[x+1,y],[x,y-1],[x,y+1]]) {
+      d[idx * 4 + 3] = 0;
+      // Soften the 1st ring of kept pixels
+      for (const [nx, ny] of [[x-1,y],[x+1,y],[x,y-1],[x,y+1]]) {
         if (nx<0||nx>=w||ny<0||ny>=h) continue;
-        const ni=ny*w+nx;
-        if (!mask[ni]) d[ni*4+3] = Math.min(d[ni*4+3], 170);
+        const ni = ny * w + nx;
+        if (!mask[ni]) d[ni*4+3] = Math.min(d[ni*4+3], 160);
+      }
+      // Very slightly soften the 2nd ring
+      for (const [nx, ny] of [[x-2,y],[x+2,y],[x,y-2],[x,y+2],[x-1,y-1],[x+1,y-1],[x-1,y+1],[x+1,y+1]]) {
+        if (nx<0||nx>=w||ny<0||ny>=h) continue;
+        const ni = ny * w + nx;
+        if (!mask[ni]) d[ni*4+3] = Math.min(d[ni*4+3], 210);
       }
     }
   }
   ctx.putImageData(id, 0, 0);
 }
 
-// ── UPDATE UI elements live when an image loads ───────────
+// ── UPDATE UI elements live when image loads ──────────────
+const LIB_IMG_STYLE = 'width:100%;height:100%;object-fit:contain';
+const LIB_BG_STYLE  = 'background:transparent';
+
 function applyImageToUI(pedalId, dataUrl) {
   if (!dataUrl || dataUrl === 'FAILED') return;
-  const IMG_STYLE = 'width:100%;height:100%;object-fit:contain;filter:url(#cartoon) saturate(2) contrast(1.3)';
-  // Library icon
+  // Library icon — clean, no filter
   const icon = document.querySelector(`.lib-pedal[data-id="${pedalId}"] .lib-icon`);
-  if (icon) icon.innerHTML = `<img src="${dataUrl}" style="${IMG_STYLE}" alt="">`;
-  // Board cards (any zone)
+  if (icon) {
+    icon.style.background = 'transparent';
+    icon.innerHTML = `<img src="${dataUrl}" style="${LIB_IMG_STYLE}" alt="">`;
+  }
+  // Board cards — replace shimmer/fallback with real image
   document.querySelectorAll('.board-pedal').forEach(wrapper => {
     const zone = wrapper.dataset.zone;
     const idx  = parseInt(wrapper.dataset.idx);
@@ -712,6 +755,7 @@ function applyImageToUI(pedalId, dataUrl) {
     if (arr[idx] === pedalId) {
       const card = wrapper.querySelector('.pedal-card');
       if (card && !card.querySelector('.pedal-real-img')) {
+        card.style.background = 'transparent';
         card.innerHTML = `<img src="${dataUrl}" class="pedal-real-img" alt="">`;
       }
     }
@@ -719,7 +763,8 @@ function applyImageToUI(pedalId, dataUrl) {
 }
 
 // ── PREWARM: fetch images for all built-in pedals ─────────
-// Stagger 700ms apart to avoid hitting Wikipedia rate limits
+// Stagger 800ms apart — Commons has a rate limit around 200 req/s
+// so 800ms spacing keeps us well clear even on slow connections.
 function prewarmImages() {
   PEDALS.forEach((p, i) => {
     // Already in memory?
@@ -727,15 +772,15 @@ function prewarmImages() {
       applyImageToUI(p.id, imgCache[p.id]);
       return;
     }
-    // Check localStorage
+    // Check localStorage (versioned key)
     try {
       const v = localStorage.getItem(imgKey(p.id));
       if (v) { imgCache[p.id] = v; applyImageToUI(p.id, v); return; }
     } catch(e) {}
-    // Schedule fetch
+    // Schedule staggered fetch
     setTimeout(() => {
       loadPedalImage(p).then(url => { if (url) applyImageToUI(p.id, url); });
-    }, i * 700);
+    }, i * 800);
   });
 }
 
@@ -755,9 +800,10 @@ function renderLibrary(filter=''){
       const el=document.createElement('div');el.className='lib-pedal';el.draggable=true;el.dataset.id=p.id;el.style.borderLeftColor=cd.color;
       const cachedImg = imgCache[p.id];
       const iconContent = (cachedImg && cachedImg !== 'FAILED')
-        ? `<img src="${cachedImg}" style="width:100%;height:100%;object-fit:contain;filter:url(#cartoon) saturate(2.2) contrast(1.3)" alt="${p.name}">`
+        ? `<img src="${cachedImg}" style="width:100%;height:100%;object-fit:contain" alt="${p.name}">`
         : makePedalSVG(p, 30, 42);
-      el.innerHTML=`<div class="lib-icon" style="background:${p.bodyColor}">${iconContent}</div><div><div class="lib-name">${(p.name.replace(p.brand,'').trim()||p.name)}</div><div class="lib-brand">${p.brand}</div></div>`;
+      const iconBg = (cachedImg && cachedImg !== 'FAILED') ? 'transparent' : p.bodyColor;
+      el.innerHTML=`<div class="lib-icon" style="background:${iconBg}">${iconContent}</div><div><div class="lib-name">${(p.name.replace(p.brand,'').trim()||p.name)}</div><div class="lib-brand">${p.brand}</div></div>`;
       el.addEventListener('dragstart',e=>{dragLibId=p.id;dragSrcZone=null;dragSrcIdx=null;el.classList.add('dragging');e.dataTransfer.effectAllowed='copy';e.dataTransfer.setData('text/plain',p.id)});
       el.addEventListener('dragend',()=>el.classList.remove('dragging'));
       el.addEventListener('dblclick',()=>addToZone(p.id,addDest));
@@ -893,40 +939,38 @@ function hideInfo(){document.getElementById('info-panel').classList.remove('visi
 let _tt;
 function showToast(msg,type=''){const t=document.getElementById('toast');t.textContent=msg;t.className=type?`show ${type}`:'show';clearTimeout(_tt);_tt=setTimeout(()=>t.classList.remove('show'),2400)}
 
-// ── PEDAL SEARCH via Wikipedia API ───────────────────────
-// Wikipedia search is CORS-open and returns real product info
+// ── PEDAL SEARCH via Wikimedia Commons ───────────────────
 async function searchPedals(query) {
   const status  = document.getElementById('search-status');
   const results = document.getElementById('search-results');
   results.innerHTML = '';
-  status.innerHTML  = '<span class="spinner"></span>Searching Wikipedia…';
+  status.innerHTML  = '<span class="spinner"></span>Searching…';
 
   try {
-    // Full-text search
+    // Search Commons article namespace (ns=0) for pedal articles
     const q = encodeURIComponent(query + ' guitar effects pedal');
     const r = await fetch(
-      `${WIKI}?action=query&list=search&srsearch=${q}&srlimit=10&format=json&origin=*`,
+      `${COMMONS}?action=query&list=search&srsearch=${q}&srnamespace=0&srlimit=12&format=json&origin=*`,
       { signal: AbortSignal.timeout(9000) }
     );
     const d = await r.json();
-    const hits = (d?.query?.search || []).filter(s =>
-      /pedal|effects|overdrive|distortion|fuzz|delay|reverb|chorus|flanger|wah|compressor|guitar/i
-        .test(s.title + ' ' + s.snippet)
-    ).slice(0, 8);
+    const hits = (d?.query?.search || [])
+      .filter(s => /pedal|effects|overdrive|distortion|fuzz|delay|reverb|chorus|flanger|wah|compressor|guitar/i
+        .test(s.title + ' ' + s.snippet))
+      .slice(0, 8);
 
     if (hits.length) {
       status.innerHTML = `${hits.length} results found`;
       showSearchResults(hits.map(h => ({
-        name:  h.title,
-        brand: extractBrand(h.title),
-        cat:   guessCat(h.title + ' ' + h.snippet),
+        name:      h.title,
+        brand:     extractBrand(h.title),
+        cat:       guessCat(h.title + ' ' + h.snippet),
         wikiTitle: h.title,
       })));
       return;
     }
   } catch(e) {}
 
-  // Fallback: filter built-in library
   status.innerHTML = 'Showing built-in matches';
   showFallback(query);
 }
@@ -972,7 +1016,7 @@ function showSearchResults(items) {
     loadPedalImage(tmp).then(url => {
       if (!url) return;
       const el = document.getElementById(`sri-${uid}`);
-      if (el) el.innerHTML = `<img src="${url}" style="width:42px;height:58px;object-fit:contain;filter:url(#cartoon) saturate(2) contrast(1.3)" alt="">`;
+      if (el) el.innerHTML = `<img src="${url}" style="width:42px;height:58px;object-fit:contain" alt="">`;
     });
   });
 }
