@@ -8,108 +8,304 @@
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600;700&family=Barlow+Condensed:wght@300;400;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
-:root{--bg:#0b0b0e;--bg2:#13131a;--bg3:#1c1c26;--border:#2a2a38;--amber:#e8820a;--amber2:#f0a030;--glow:rgba(232,130,10,0.35);--cream:#f0e8d8;--muted:#7a7a90;--board-frame:#0a0a0c;--velcro:#111116;--velcro-fx:#0d0d14;--shadow:0 4px 24px rgba(0,0,0,0.8);--font-display:'Bebas Neue',sans-serif;--font-mono:'IBM Plex Mono',monospace;--font-ui:'Barlow Condensed',sans-serif;--route-pre:#e8820a;--route-fx:#30b8e0}
+:root {
+  --bg:#08080a;--bg2:#111114;--bg3:#18181e;--border:#252530;
+  --amber:#e8820a;--amber2:#f0a030;--glow:rgba(232,130,10,.35);
+  --cream:#f0e8d8;--muted:#686880;
+  --board-black:#07070a;--velcro:#0d0d11;--velcro-fx:#0a0a0f;
+  --route-pre:#e8820a;--route-fx:#28b8e0;--route-send:#a040e0;--route-return:#30c070;
+  --font-d:'Bebas Neue',sans-serif;--font-m:'IBM Plex Mono',monospace;--font-u:'Barlow Condensed',sans-serif;
+}
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--cream);font-family:var(--font-ui)}
-::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
-#header{display:flex;align-items:center;gap:16px;padding:10px 20px;background:linear-gradient(180deg,#0f0f16 0%,var(--bg)100%);border-bottom:1px solid var(--border);z-index:100;flex-shrink:0}
-#logo{font-family:var(--font-display);font-size:32px;letter-spacing:3px;color:var(--amber);text-shadow:0 0 20px var(--glow)}
-#board-size-select{background:var(--bg3);border:1px solid var(--border);color:var(--cream);padding:5px 10px;border-radius:4px;font-weight:600}
-.layout-btn{background:var(--bg3);border:1px solid var(--border);color:var(--muted);padding:5px 10px;border-radius:4px;cursor:pointer;font-weight:700}
-.layout-btn.active{background:var(--amber);color:#000;border-color:var(--amber)}
-.hdr-btn{padding:7px 16px;border-radius:5px;font-weight:700;font-size:13px;cursor:pointer;border:none;display:flex;align-items:center;gap:7px}
+html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--cream);font-family:var(--font-u)}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+#svg-filters{position:absolute;width:0;height:0;overflow:hidden}
+
+/* HEADER */
+#header{display:flex;align-items:center;gap:14px;padding:8px 18px;background:linear-gradient(180deg,#0d0d12,var(--bg));border-bottom:1px solid var(--border);position:relative;z-index:100;flex-shrink:0}
+#logo{font-family:var(--font-d);font-size:30px;letter-spacing:3px;color:var(--amber);text-shadow:0 0 18px var(--glow),0 0 36px rgba(232,130,10,.15);line-height:1}
+#logo span{color:var(--cream)}
+.hdiv{width:1px;height:26px;background:var(--border);margin:0 2px}
+.hlabel{font-size:9px;font-weight:700;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:2px}
+#board-size-select{background:var(--bg3);border:1px solid var(--border);color:var(--cream);font-family:var(--font-u);font-size:13px;font-weight:600;padding:5px 9px;border-radius:4px;cursor:pointer;outline:none}
+#board-size-select:hover{border-color:var(--amber)}
+#layout-wrap{display:flex;gap:5px}
+.layout-btn{background:var(--bg3);border:1px solid var(--border);color:var(--muted);padding:5px 9px;border-radius:4px;cursor:pointer;font-size:12px;font-weight:700;font-family:var(--font-u);transition:all .14s}
+.layout-btn:hover{border-color:var(--amber);color:var(--amber)}
+.layout-btn.active{background:var(--amber);border-color:var(--amber);color:#000}
+.hbtn{display:flex;align-items:center;gap:6px;padding:6px 14px;border-radius:5px;font-family:var(--font-u);font-weight:700;font-size:12px;letter-spacing:1px;text-transform:uppercase;cursor:pointer;border:none;transition:all .17s}
 #btn-export{background:var(--amber);color:#000;margin-left:auto}
-#btn-export:hover{background:var(--amber2);box-shadow:0 0 16px var(--glow)}
+#btn-export:hover{background:var(--amber2);box-shadow:0 0 14px var(--glow)}
 #btn-clear{background:transparent;border:1px solid var(--border);color:var(--muted)}
 #btn-clear:hover{border-color:#c03030;color:#c03030}
-#workspace{display:flex;height:calc(100vh - 61px);overflow:hidden}
-#library{width:220px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column}
-#lib-scroll{overflow-y:auto;flex:1;padding:8px 0}
-.lib-pedal{display:flex;align-items:center;gap:10px;padding:6px 14px;cursor:grab}
-.lib-pedal:hover{background:rgba(255,255,255,0.04)}
-.lib-pedal-icon{width:32px;height:44px;flex-shrink:0;border-radius:3px;overflow:hidden}
-#board-area{flex:1;display:flex;flex-direction:column;background:var(--bg)}
-#board-scroll-wrap{flex:1;overflow:auto;display:flex;align-items:center;justify-content:center;padding:40px}
-#pedalboard{position:relative;border-radius:12px;padding:14px 18px;background:var(--board-frame);box-shadow:var(--shadow),0 0 0 1px rgba(255,255,255,0.07),inset 0 1px 0 rgba(255,255,255,0.06),inset 0 -1px 0 rgba(0,0,0,0.5);display:flex;flex-direction:column;gap:10px}
-.board-surface{position:relative;border-radius:4px;min-height:130px;background-color:var(--velcro);box-shadow:inset 0 2px 10px rgba(0,0,0,0.7),inset 0 0 0 1px rgba(0,0,0,0.5);overflow:visible}
-#fx-loop-surface{background-color:var(--velcro-fx)}
-.pedals-row{display:flex;flex-wrap:nowrap;align-items:flex-end;gap:10px;padding:14px 10px 10px;min-height:100%;position:relative}
+#btn-routing{background:transparent;border:1px solid var(--border);color:var(--muted)}
+#btn-routing.active{border-color:var(--amber);color:var(--amber)}
+
+/* WORKSPACE */
+#workspace{display:flex;height:calc(100vh - 57px);overflow:hidden}
+
+/* LIBRARY */
+#library{width:215px;flex-shrink:0;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
+#lib-header{padding:10px 13px 7px;border-bottom:1px solid var(--border);flex-shrink:0}
+#lib-title{font-family:var(--font-d);font-size:17px;letter-spacing:2px;color:var(--amber)}
+#lib-search-wrap{position:relative;margin-top:7px}
+#lib-search{width:100%;padding:6px 9px 6px 28px;background:var(--bg3);border:1px solid var(--border);color:var(--cream);font-family:var(--font-m);font-size:11px;border-radius:4px;outline:none}
+#lib-search:focus{border-color:var(--amber)}
+.si{position:absolute;left:8px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:12px;pointer-events:none}
+#lib-scroll{overflow-y:auto;flex:1;padding:6px 0}
+.cat-header{display:flex;align-items:center;justify-content:space-between;padding:5px 13px 3px;cursor:pointer;user-select:none}
+.cat-name{font-size:9px;font-weight:800;letter-spacing:2px;text-transform:uppercase}
+.cat-arrow{color:var(--muted);font-size:10px;transition:transform .18s}
+.cat-header.open .cat-arrow{transform:rotate(90deg)}
+.cat-body.collapsed{display:none}
+.lib-pedal{display:flex;align-items:center;gap:9px;padding:5px 13px;cursor:grab;user-select:none;transition:background .1s;border-left:2px solid transparent}
+.lib-pedal:hover{background:rgba(255,255,255,.04)}
+.lib-pedal:active{cursor:grabbing}
+.lib-pedal.dragging{opacity:.4}
+.lib-icon{width:30px;height:42px;flex-shrink:0;display:flex;align-items:center;justify-content:center;border-radius:3px;overflow:hidden}
+.lib-name{font-size:11px;font-weight:700;color:var(--cream);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lib-brand{font-size:9px;color:var(--muted);font-family:var(--font-m)}
+#btn-add-pedal{margin:9px 13px;padding:8px;background:transparent;border:1px dashed var(--border);color:var(--muted);border-radius:5px;cursor:pointer;font-family:var(--font-u);font-size:12px;font-weight:700;text-align:center;transition:all .14s;flex-shrink:0}
+#btn-add-pedal:hover{border-color:var(--amber);color:var(--amber)}
+
+/* BOARD AREA */
+#board-area{flex:1;display:flex;flex-direction:column;overflow:hidden;background:var(--bg);position:relative}
+#board-area::before{content:'';position:absolute;inset:0;background-image:radial-gradient(circle,rgba(255,255,255,.03) 1px,transparent 1px);background-size:26px 26px;pointer-events:none;z-index:0}
+#board-scroll-wrap{flex:1;overflow:auto;display:flex;align-items:center;justify-content:center;padding:36px;position:relative;z-index:1}
+
+/* PEDALBOARD (BLACK) */
+#pedalboard{position:relative;border-radius:12px;padding:12px 16px;background:var(--board-black);box-shadow:0 6px 36px rgba(0,0,0,.95),0 0 0 1px rgba(255,255,255,.07),inset 0 1px 0 rgba(255,255,255,.06);display:flex;flex-direction:column;gap:8px;flex-shrink:0}
+#pedalboard::before,#pedalboard::after{content:'';position:absolute;left:14px;right:14px;height:6px;background:linear-gradient(180deg,rgba(255,255,255,.3) 0%,rgba(155,155,165,.48) 35%,rgba(55,55,65,.78) 70%,rgba(18,18,22,.9) 100%);border-radius:2px;box-shadow:0 1px 3px rgba(0,0,0,.8),0 0 0 .5px rgba(255,255,255,.07)}
+#pedalboard::before{top:3px}
+#pedalboard::after{bottom:3px}
+
+/* ZONES */
+.zone-header{display:flex;align-items:center;gap:8px;padding:0 2px 4px}
+.zone-badge{font-size:8px;font-weight:800;letter-spacing:2px;text-transform:uppercase;padding:2px 7px;border-radius:3px}
+.zbadge-pre{background:rgba(232,130,10,.12);color:var(--route-pre);border:1px solid rgba(232,130,10,.28)}
+.zbadge-fx{background:rgba(40,184,224,.1);color:var(--route-fx);border:1px solid rgba(40,184,224,.28)}
+
+/* ROUTING BAR */
+.routing-bar{display:flex;align-items:center;gap:0;padding:4px 8px;background:rgba(0,0,0,.45);border-bottom:1px solid rgba(255,255,255,.04);overflow-x:auto;overflow-y:hidden;flex-shrink:0;min-height:26px;scrollbar-width:none}
+.routing-bar::-webkit-scrollbar{display:none}
+.rnode{display:flex;align-items:center;gap:4px;padding:1px 7px;border-radius:10px;flex-shrink:0;font-size:8px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;font-family:var(--font-m);white-space:nowrap}
+.rnode-pedal{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.12);color:rgba(240,232,216,.65)}
+.rnum{background:rgba(255,255,255,.14);border-radius:50%;width:13px;height:13px;display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:700;flex-shrink:0}
+.rarr{flex-shrink:0;font-size:9px;padding:0 2px}
+.rarr-pre{color:rgba(232,130,10,.45)}
+.rarr-fx{color:rgba(40,184,224,.45)}
+
+/* FX LOOP CONNECTOR STRIP */
+.fx-strip{display:flex;align-items:center;justify-content:center;gap:10px;padding:5px 10px;position:relative}
+.fx-strip::before{content:'';position:absolute;top:50%;left:14px;right:14px;height:1px;background:linear-gradient(90deg,transparent,rgba(160,64,224,.4),rgba(160,64,224,.4),transparent)}
+.fxt{font-size:8px;font-weight:800;letter-spacing:2px;text-transform:uppercase;font-family:var(--font-m);padding:2px 9px;border-radius:9px;background:var(--bg);position:relative;z-index:1}
+.fxt-send{color:var(--route-send);border:1px solid rgba(160,64,224,.4)}
+.fxt-amp{color:var(--muted);border:1px solid var(--border)}
+.fxt-return{color:var(--route-return);border:1px solid rgba(48,192,112,.4)}
+
+/* VELCRO SURFACE */
+.board-surface{position:relative;border-radius:5px;min-height:120px;background-color:var(--velcro);background-image:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.22) 2px,rgba(0,0,0,.22) 3px),repeating-linear-gradient(90deg,transparent,transparent 2px,rgba(0,0,0,.14) 2px,rgba(0,0,0,.14) 3px);box-shadow:inset 0 2px 10px rgba(0,0,0,.7),inset 0 0 0 1px rgba(0,0,0,.5);overflow:visible}
+.board-surface.drag-over{box-shadow:inset 0 0 0 2px var(--amber),inset 0 2px 8px rgba(0,0,0,.6)}
+#fx-loop-surface{background-color:var(--velcro-fx);background-image:repeating-linear-gradient(45deg,transparent,transparent 3px,rgba(40,184,224,.018) 3px,rgba(40,184,224,.018) 4px),repeating-linear-gradient(-45deg,transparent,transparent 3px,rgba(0,0,0,.1) 3px,rgba(0,0,0,.1) 4px)}
+#fx-loop-surface.drag-over{box-shadow:inset 0 0 0 2px var(--route-fx),inset 0 2px 8px rgba(0,0,0,.6)}
+
+/* PEDAL ROWS */
+.pedals-row{display:flex;flex-wrap:nowrap;align-items:center;gap:0;padding:12px 10px 10px;min-height:100%;position:relative}
 .board-surface.multi-row .pedals-row{flex-wrap:wrap;align-items:flex-start}
-.cable-svg{position:absolute;top:0;left:0;pointer-events:none;z-index:5;overflow:visible}
-.board-pedal{position:relative;flex-shrink:0;cursor:grab;user-select:none;transition:transform .15s}
+
+/* BOARD PEDAL */
+.board-pedal{position:relative;flex-shrink:0;cursor:grab;user-select:none;transition:transform .15s,filter .15s;animation:pdrop .22s cubic-bezier(.34,1.56,.64,1)}
+@keyframes pdrop{from{transform:scale(.8) translateY(-8px);opacity:0}to{transform:scale(1) translateY(0);opacity:1}}
+.board-pedal:hover{z-index:10;transform:translateY(-5px) scale(1.04)}
 .board-pedal:active{cursor:grabbing}
-.pedal-order-badge{position:absolute;top:-8px;left:-6px;width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;font-family:var(--font-mono);z-index:15;background:var(--route-pre);color:#000}
-.pedal-remove{position:absolute;top:-8px;right:-8px;width:20px;height:20px;background:#cc2222;border:1.5px solid #ff4444;border-radius:50%;color:white;font-size:13px;display:flex;align-items:center;justify-content:center;cursor:pointer;opacity:0;z-index:20}
+.board-pedal.dragging-board{opacity:.25;transform:scale(.92)}
+
+/* PEDAL CARD */
+.pedal-card{width:84px;height:124px;border-radius:7px;overflow:hidden;position:relative;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:rgba(255,255,255,.03);box-shadow:0 2px 12px rgba(0,0,0,.7),0 0 0 1px rgba(255,255,255,.06)}
+
+/* Real image with cartoon filter */
+.pedal-real-img{width:100%;height:100%;object-fit:contain;display:block;filter:url(#cartoon) saturate(2.2) contrast(1.4) drop-shadow(0 3px 9px rgba(0,0,0,.9))}
+
+/* Shimmer loading state */
+.pedal-loading{width:84px;height:124px;border-radius:7px;flex-shrink:0;background:linear-gradient(110deg,#0f0f14 30%,#1a1a22 50%,#0f0f14 70%);background-size:200% 100%;animation:shimmer 1.4s infinite;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 12px rgba(0,0,0,.7)}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.pedal-loading-icon{opacity:.22}
+
+/* SVG fallback */
+.pedal-svg-fallback{flex-shrink:0;filter:drop-shadow(0 3px 7px rgba(0,0,0,.85))}
+
+/* ORDER BADGE */
+.pedal-badge{position:absolute;top:-7px;left:-5px;width:17px;height:17px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:800;font-family:var(--font-m);z-index:15;box-shadow:0 1px 4px rgba(0,0,0,.7)}
+.badge-pre{background:var(--route-pre);color:#000}
+.badge-fx{background:var(--route-fx);color:#000}
+
+/* REMOVE BUTTON */
+.pedal-remove{position:absolute;top:-7px;right:-7px;width:19px;height:19px;background:#c02020;border:1.5px solid #ff4444;border-radius:50%;color:white;font-size:12px;display:flex;align-items:center;justify-content:center;cursor:pointer;opacity:0;transition:opacity .14s;z-index:20;font-weight:bold}
 .board-pedal:hover .pedal-remove{opacity:1}
-.routing-bar{display:flex;align-items:center;gap:0;padding:5px 10px 5px 8px;background:rgba(0,0,0,0.4);border-bottom:1px solid rgba(255,255,255,0.05);overflow-x:auto;min-height:28px}
-.route-node-pedal{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.15);color:rgba(240,232,216,0.7);padding:2px 8px;border-radius:12px;font-size:9px;font-weight:800;font-family:var(--font-mono);white-space:nowrap}
-.route-arrow{color:rgba(255,255,255,0.2);font-size:10px;padding:0 3px}
-#modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:1000;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s}
+
+/* JUMPER CONNECTOR */
+.jumper-wrap{flex-shrink:0;display:flex;align-items:center;justify-content:center;width:28px;height:124px;z-index:2}
+
+/* EMPTY STATE */
+.empty-state{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;pointer-events:none;z-index:2}
+.empty-state svg{opacity:.1}
+.empty-state p{color:var(--muted);font-family:var(--font-m);font-size:10px;opacity:.5;text-align:center;padding:0 16px}
+.empty-state.hidden{display:none}
+
+/* BOARD INFO */
+#board-info{padding:7px 18px;display:flex;align-items:center;gap:18px;border-top:1px solid var(--border);background:var(--bg2);flex-shrink:0;z-index:10}
+#board-name{font-family:var(--font-d);font-size:19px;letter-spacing:2px;color:var(--amber)}
+#board-dim{font-size:11px;color:var(--muted);font-family:var(--font-m)}
+#pedal-count{font-size:11px;color:var(--muted);font-family:var(--font-m);margin-left:auto}
+
+/* MODAL */
+#modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:1000;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(5px);opacity:0;pointer-events:none;transition:opacity .2s}
 #modal-overlay.open{opacity:1;pointer-events:all}
-#search-results .search-result-item{display:flex;gap:12px;padding:10px 12px;background:var(--bg3);border-radius:6px;cursor:pointer;margin-bottom:8px}
+#modal{background:var(--bg2);border:1px solid var(--border);border-radius:10px;width:520px;max-width:95vw;max-height:82vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.85)}
+#modal-header{padding:14px 18px 11px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+#modal-title{font-family:var(--font-d);font-size:22px;letter-spacing:2px;color:var(--amber)}
+#modal-close{background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;transition:color .14s}
+#modal-close:hover{color:var(--cream)}
+#modal-body{padding:14px 18px;overflow-y:auto;flex:1}
+#modal-dest-wrap{display:flex;gap:8px;margin-bottom:12px}
+.dest-btn{flex:1;padding:7px;border-radius:5px;cursor:pointer;font-family:var(--font-u);font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;text-align:center;transition:all .14s;border:1.5px solid}
+.dest-pre{border-color:rgba(232,130,10,.35);color:var(--route-pre);background:rgba(232,130,10,.07)}
+.dest-pre.active{background:var(--route-pre);color:#000;border-color:var(--route-pre)}
+.dest-fx{border-color:rgba(40,184,224,.35);color:var(--route-fx);background:rgba(40,184,224,.07)}
+.dest-fx.active{background:var(--route-fx);color:#000;border-color:var(--route-fx)}
+.modal-row{display:flex;gap:9px;margin-bottom:12px}
+#modal-search-input{flex:1;padding:8px 12px;background:var(--bg3);border:1px solid var(--border);color:var(--cream);font-family:var(--font-m);font-size:12px;border-radius:5px;outline:none}
+#modal-search-input:focus{border-color:var(--amber)}
+#modal-search-btn{padding:8px 16px;background:var(--amber);color:#000;border:none;border-radius:5px;font-family:var(--font-u);font-weight:800;font-size:12px;cursor:pointer;transition:background .14s}
+#modal-search-btn:hover{background:var(--amber2)}
+#search-results{display:flex;flex-direction:column;gap:7px}
+.sri{display:flex;align-items:center;gap:11px;padding:9px 11px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;cursor:pointer;transition:all .14s}
+.sri:hover{border-color:var(--amber);background:rgba(232,130,10,.06)}
+.sri-svg{width:42px;height:58px;flex-shrink:0}
+.sri-name{font-weight:700;font-size:13px;color:var(--cream)}
+.sri-brand{font-size:10px;color:var(--muted);font-family:var(--font-m);margin-top:2px}
+.sri-cat{font-size:9px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;margin-top:3px}
+.sri-add{padding:5px 11px;background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:4px;font-family:var(--font-u);font-weight:700;font-size:11px;cursor:pointer;transition:all .14s;white-space:nowrap}
+.sri-add:hover{border-color:var(--amber);color:var(--amber)}
+#search-status{text-align:center;padding:14px;color:var(--muted);font-family:var(--font-m);font-size:12px}
+.spinner{display:inline-block;width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--amber);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:7px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* INFO PANEL */
+#info-panel{position:fixed;bottom:56px;right:18px;width:190px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:11px;z-index:50;transform:translateY(14px);opacity:0;transition:all .18s;pointer-events:none}
+#info-panel.visible{transform:translateY(0);opacity:1;pointer-events:all}
+#info-name{font-family:var(--font-d);font-size:18px;letter-spacing:1px;color:var(--amber)}
+#info-brand{font-size:10px;color:var(--muted);font-family:var(--font-m);margin-bottom:5px}
+#info-cat{font-size:9px;font-weight:800;letter-spacing:2px;text-transform:uppercase}
+#info-zone{font-size:9px;color:var(--muted);font-family:var(--font-m);margin-top:3px}
+
+/* TOAST */
+#toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%) translateY(55px);background:var(--bg3);border:1px solid var(--border);padding:8px 18px;border-radius:6px;font-family:var(--font-m);font-size:12px;z-index:2000;transition:transform .28s;white-space:nowrap}
+#toast.show{transform:translateX(-50%) translateY(0)}
+#toast.success{border-color:#30c060;color:#30c060}
+#toast.error{border-color:#c03030;color:#c03030}
 </style>
 </head>
 <body>
 
+<!-- SVG cartoon filter definition -->
+<svg id="svg-filters">
+  <defs>
+    <filter id="cartoon" color-interpolation-filters="sRGB" x="-5%" y="-5%" width="110%" height="110%">
+      <feColorMatrix type="saturate" values="2.8" result="sat"/>
+      <feConvolveMatrix order="3" kernelMatrix="0 -0.8 0 -0.8 4.2 -0.8 0 -0.8 0" in="sat" result="sharp"/>
+      <feComponentTransfer in="sharp" result="poster">
+        <feFuncR type="discrete" tableValues="0 0.15 0.35 0.55 0.75 0.9 1"/>
+        <feFuncG type="discrete" tableValues="0 0.15 0.35 0.55 0.75 0.9 1"/>
+        <feFuncB type="discrete" tableValues="0 0.15 0.35 0.55 0.75 0.9 1"/>
+      </feComponentTransfer>
+    </filter>
+  </defs>
+</svg>
+
 <header id="header">
   <div id="logo">Pedal<span>Forge</span></div>
-  <div class="header-divider"></div>
-  <div id="board-size-wrap">
-    <div class="header-label">Board Size</div>
+  <div class="hdiv"></div>
+  <div>
+    <div class="hlabel">Board Size</div>
     <select id="board-size-select">
-      <option value="mini" selected>Mini Board — 28″ × 12″ (6–8)</option>
+      <option value="nano">Nano — 16″ × 6″ (2–4)</option>
+      <option value="pedalette">Pedalette — 22″ × 9″ (4–6)</option>
+      <option value="mini" selected>Mini — 28″ × 12″ (6–8)</option>
       <option value="standard">Standard — 36″ × 16″ (9–12)</option>
       <option value="large">Large — 48″ × 16″ (13–18)</option>
+      <option value="xl">XL — 60″ × 20″ (20+)</option>
     </select>
   </div>
-  <div class="header-divider"></div>
-  <div id="layout-wrap">
-    <div class="header-label" style="width:100%">Layout</div>
-    <button class="layout-btn active" data-rows="1">1 Row</button>
-    <button class="layout-btn" data-rows="2">2 Row</button>
+  <div class="hdiv"></div>
+  <div>
+    <div class="hlabel">Layout</div>
+    <div id="layout-wrap">
+      <button class="layout-btn active" data-rows="1">1 Row</button>
+      <button class="layout-btn" data-rows="2">2 Row</button>
+    </div>
   </div>
-  <div class="header-divider"></div>
-  <button class="hdr-btn" id="btn-routing">⬡ <span>Routing</span></button>
-  <button class="hdr-btn" id="btn-clear">✕ <span>Clear</span></button>
-  <button class="hdr-btn" id="btn-export">⬇ <span>Export PNG</span></button>
+  <div class="hdiv"></div>
+  <button class="hbtn" id="btn-routing">⬡ <span>Routing</span></button>
+  <button class="hbtn" id="btn-clear">✕ <span>Clear</span></button>
+  <button class="hbtn" id="btn-export">⬇ <span>Export PNG</span></button>
 </header>
 
 <div id="workspace">
   <aside id="library">
-    <div id="lib-header"><div id="lib-title">PEDALS</div>
-      <div id="lib-search-wrap"><span class="search-icon">⌕</span><input id="lib-search" type="text" placeholder="Filter library…"></div>
+    <div id="lib-header">
+      <div id="lib-title">PEDALS</div>
+      <div id="lib-search-wrap">
+        <span class="si">⌕</span>
+        <input id="lib-search" type="text" placeholder="Filter library…">
+      </div>
     </div>
     <div id="lib-scroll"></div>
-    <button id="btn-add-pedal">+ Search & Add Pedal</button>
+    <button id="btn-add-pedal">+ Search &amp; Add Pedal</button>
   </aside>
+
   <div id="board-area">
     <div id="board-scroll-wrap">
-      <div id="pedalboard-outer">
-        <div id="pedalboard">
-          <div class="zone-wrap">
-            <div class="zone-header"><span class="zone-badge zone-badge-pre">▶ Guitar Pre-Amp Chain</span></div>
-            <div id="board-surface" class="board-surface">
-              <div id="routing-pre-bar" class="routing-bar" style="display:none"></div>
-              <div id="pedals-row" class="pedals-row"></div>
-              <svg id="cable-svg-pre" class="cable-svg"></svg>
-              <div id="empty-state-pre" class="empty-state">Drag pedals here</div>
-            </div>
+      <div id="pedalboard">
+
+        <!-- PRE-AMP ZONE -->
+        <div>
+          <div class="zone-header">
+            <span class="zone-badge zbadge-pre">▶ Guitar Pre-Amp Chain</span>
           </div>
-          <div class="fx-loop-connector">
-            <span class="fx-connector-label fx-send-tag">⬆ FX SEND</span>
-            <span class="fx-connector-label" style="color:var(--muted);border:1px solid var(--border)">AMP</span>
-            <span class="fx-connector-label fx-return-tag">FX RETURN ⬇</span>
-          </div>
-          <div class="zone-wrap">
-            <div class="zone-header"><span class="zone-badge zone-badge-fx">↻ Amplifier Effects Loop</span></div>
-            <div id="fx-loop-surface" class="board-surface">
-              <div id="routing-fx-bar" class="routing-bar" style="display:none"></div>
-              <div id="fx-pedals-row" class="pedals-row"></div>
-              <svg id="cable-svg-fx" class="cable-svg"></svg>
-              <div id="empty-state-fx" class="empty-state">Drop time-based effects here</div>
+          <div id="board-surface" class="board-surface">
+            <div id="routing-pre-bar" class="routing-bar" style="display:none"></div>
+            <div id="pedals-row" class="pedals-row"></div>
+            <div id="empty-pre" class="empty-state">
+              <svg width="56" height="56" viewBox="0 0 80 80" fill="none"><rect x="10" y="20" width="60" height="40" rx="5" stroke="white" stroke-width="2"/><circle cx="28" cy="36" r="7" stroke="white" stroke-width="2"/><circle cx="52" cy="36" r="7" stroke="white" stroke-width="2"/></svg>
+              <p>Drag pedals here — drives, wahs, compressors</p>
             </div>
           </div>
         </div>
+
+        <!-- FX LOOP DIVIDER -->
+        <div class="fx-strip">
+          <span class="fxt fxt-send">⬆ FX SEND</span>
+          <span class="fxt fxt-amp">AMP</span>
+          <span class="fxt fxt-return">FX RETURN ⬇</span>
+        </div>
+
+        <!-- FX LOOP ZONE -->
+        <div>
+          <div class="zone-header">
+            <span class="zone-badge zbadge-fx">↻ Amplifier Effects Loop</span>
+          </div>
+          <div id="fx-loop-surface" class="board-surface">
+            <div id="routing-fx-bar" class="routing-bar" style="display:none"></div>
+            <div id="fx-pedals-row" class="pedals-row"></div>
+            <div id="empty-fx" class="empty-state">
+              <svg width="56" height="56" viewBox="0 0 80 80" fill="none"><circle cx="40" cy="40" r="28" stroke="#28b8e0" stroke-width="2" stroke-dasharray="5 3"/><path d="M28 40 Q40 28 52 40 Q40 52 28 40Z" stroke="#28b8e0" stroke-width="1.5" fill="none"/></svg>
+              <p>Drop time-based effects here — delay, reverb, chorus</p>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
     <div id="board-info">
@@ -120,16 +316,20 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--cream);fo
   </div>
 </div>
 
+<!-- MODAL -->
 <div id="modal-overlay">
   <div id="modal">
-    <div id="modal-header"><div id="modal-title">ADD PEDAL</div><button id="modal-close">✕</button></div>
+    <div id="modal-header">
+      <div id="modal-title">ADD PEDAL</div>
+      <button id="modal-close">✕</button>
+    </div>
     <div id="modal-body">
       <div id="modal-dest-wrap">
-        <button class="dest-btn dest-btn-pre active" data-dest="pre">▶ Pre-Amp Chain</button>
-        <button class="dest-btn dest-btn-fx" data-dest="fx">↻ FX Loop</button>
+        <button class="dest-btn dest-pre active" data-dest="pre">▶ Pre-Amp Chain</button>
+        <button class="dest-btn dest-fx" data-dest="fx">↻ FX Loop</button>
       </div>
-      <div class="modal-search-row">
-        <input id="modal-search-input" type="text" placeholder="Search Sweetwater… e.g. Boss DD-7">
+      <div class="modal-row">
+        <input id="modal-search-input" type="text" placeholder="Search Sweetwater e.g. Boss DS-1…">
         <button id="modal-search-btn">SEARCH</button>
       </div>
       <div id="search-status"></div>
@@ -138,227 +338,723 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--cream);fo
   </div>
 </div>
 
+<div id="info-panel">
+  <div id="info-name">—</div>
+  <div id="info-brand"></div>
+  <div id="info-cat"></div>
+  <div id="info-zone"></div>
+</div>
+
 <div id="toast"></div>
 
 <script>
-// ==================== DATA ====================
-const CATEGORIES = {overdrive:{label:'Overdrive',color:'#e8621a'},distortion:{label:'Distortion',color:'#cc2222'},fuzz:{label:'Fuzz',color:'#9922cc'},delay:{label:'Delay',color:'#1a6be8'},reverb:{label:'Reverb',color:'#17a89e'},modulation:{label:'Modulation',color:'#22a84e'},filter:{label:'Filter / Wah',color:'#d4aa00'},compressor:{label:'Compressor',color:'#607080'},utility:{label:'Utility',color:'#404555'},ambient:{label:'Ambient',color:'#6040a0'}};
+// ── CATEGORIES ──────────────────────────────────────────
+const CATS={
+  overdrive:{label:'Overdrive',color:'#e8621a'},distortion:{label:'Distortion',color:'#cc2222'},
+  fuzz:{label:'Fuzz',color:'#9922cc'},delay:{label:'Delay',color:'#1a6be8'},
+  reverb:{label:'Reverb',color:'#17a89e'},modulation:{label:'Modulation',color:'#22a84e'},
+  filter:{label:'Filter/Wah',color:'#d4aa00'},compressor:{label:'Compressor',color:'#607080'},
+  utility:{label:'Utility',color:'#404555'},ambient:{label:'Ambient',color:'#6040a0'},
+};
 
-const PEDALS = [
-  {id:'ts9',brand:'Ibanez',name:'Tube Screamer TS-9',cat:'overdrive',bodyColor:'#2e7a1a'},
-  {id:'sd1',brand:'Boss',name:'SD-1 Super OD',cat:'overdrive',bodyColor:'#e8b800'},
-  {id:'ds1',brand:'Boss',name:'DS-1 Distortion',cat:'distortion',bodyColor:'#f06010'},
-  {id:'rat',brand:'ProCo',name:'RAT2',cat:'distortion',bodyColor:'#c8b030'},
-  {id:'dd7',brand:'Boss',name:'DD-7 Digital Delay',cat:'delay',bodyColor:'#1a60d8'},
-  {id:'rv6',brand:'Boss',name:'RV-6 Reverb',cat:'reverb',bodyColor:'#202028'},
-  {id:'ce2',brand:'Boss',name:'CE-2W Chorus',cat:'modulation',bodyColor:'#3080c0'},
-  {id:'crybaby',brand:'Dunlop',name:'Cry Baby Wah',cat:'filter',bodyColor:'#c09010'},
-  {id:'cs3',brand:'Boss',name:'CS-3 Compressor',cat:'compressor',bodyColor:'#c02020'},
-  {id:'tu3',brand:'Boss',name:'TU-3 Chromatic Tuner',cat:'utility',bodyColor:'#1a6028'}
+// ── PEDAL DATABASE ───────────────────────────────────────
+const PEDALS=[
+  {id:'ts9',     brand:'Ibanez',           name:'Tube Screamer TS-9',          cat:'overdrive', bodyColor:'#2e7a1a',textColor:'#fff',knobs:['Drive','Tone','Level'],accent:'#60c030'},
+  {id:'ts808',   brand:'Ibanez',           name:'Tube Screamer TS-808',        cat:'overdrive', bodyColor:'#266916',textColor:'#fff',knobs:['Drive','Tone','Level'],accent:'#50b020'},
+  {id:'ocd',     brand:'Fulltone',         name:'OCD Overdrive',               cat:'overdrive', bodyColor:'#c8a020',textColor:'#111',knobs:['Drive','Tone','Vol'],accent:'#e8c040'},
+  {id:'sd1',     brand:'Boss',             name:'SD-1 Super Overdrive',        cat:'overdrive', bodyColor:'#e8b800',textColor:'#000',knobs:['Level','Tone','Drive'],accent:'#fff'},
+  {id:'klon',    brand:'Klon',             name:'Centaur Professional',        cat:'overdrive', bodyColor:'#c8a860',textColor:'#2a1800',knobs:['Treble','Output','Gain'],accent:'#d0b870'},
+  {id:'bb',      brand:'Xotic',            name:'BB Preamp',                   cat:'overdrive', bodyColor:'#c0c0c0',textColor:'#000',knobs:['Vol','Gain','Treble','Bass'],accent:'#e0e0e0'},
+  {id:'ds1',     brand:'Boss',             name:'DS-1 Distortion',             cat:'distortion',bodyColor:'#f06010',textColor:'#fff',knobs:['Level','Tone','Dist'],accent:'#fff'},
+  {id:'rat',     brand:'ProCo',            name:'RAT2 Distortion',             cat:'distortion',bodyColor:'#c8b030',textColor:'#000',knobs:['Distortion','Filter','Volume'],accent:'#808030'},
+  {id:'mxrdist', brand:'MXR',              name:'Distortion+',                 cat:'distortion',bodyColor:'#f0f0e8',textColor:'#000',knobs:['Output','Distortion'],accent:'#d0d0c0'},
+  {id:'metalzone',brand:'Boss',            name:'MT-2 Metal Zone',             cat:'distortion',bodyColor:'#1a1a1a',textColor:'#e8c820',knobs:['Level','Low','Mid','High','Dist'],accent:'#e8c820'},
+  {id:'hm2',     brand:'Boss',             name:'HM-2 Heavy Metal',            cat:'distortion',bodyColor:'#e8d020',textColor:'#000',knobs:['Level','Color','High','Low'],accent:'#fff'},
+  {id:'bigmuff', brand:'Electro-Harmonix', name:'Big Muff Pi',                 cat:'fuzz',      bodyColor:'#8c22bb',textColor:'#fff',knobs:['Volume','Tone','Sustain'],accent:'#cc66ff'},
+  {id:'ff',      brand:'Dunlop',           name:'Fuzz Face Mini',              cat:'fuzz',      bodyColor:'#d04020',textColor:'#fff',knobs:['Fuzz','Volume'],accent:'#ff8060',round:true},
+  {id:'zvex',    brand:'ZVex',             name:'Fuzz Factory',                cat:'fuzz',      bodyColor:'#e8e030',textColor:'#000',knobs:['Vol','Gate','Comp','Drive','Stab'],accent:'#c0b000'},
+  {id:'tonebend',brand:'Vox',              name:'Tone Bender',                 cat:'fuzz',      bodyColor:'#404040',textColor:'#e8c020',knobs:['Attack','Volume'],accent:'#c0a000'},
+  {id:'dd7',     brand:'Boss',             name:'DD-7 Digital Delay',          cat:'delay',     bodyColor:'#1a60d8',textColor:'#fff',knobs:['E.Level','F.Back','D.Time'],accent:'#60a0ff'},
+  {id:'timeline',brand:'Strymon',          name:'Timeline Delay',              cat:'delay',     bodyColor:'#202838',textColor:'#c0d8f0',knobs:['Time','Repeats','Mix','Speed','Depth','Level'],accent:'#4080b0'},
+  {id:'carbon',  brand:'MXR',              name:'Carbon Copy Analog Delay',    cat:'delay',     bodyColor:'#2a2a2a',textColor:'#60c840',knobs:['Mix','Regen','Delay'],accent:'#60c840'},
+  {id:'flashback',brand:'TC Electronic',   name:'Flashback X4 Delay',          cat:'delay',     bodyColor:'#c04020',textColor:'#fff',knobs:['Delay','Feedback','FX Level'],accent:'#ff8060'},
+  {id:'memory',  brand:'Electro-Harmonix', name:'Deluxe Memory Man',           cat:'delay',     bodyColor:'#d8b818',textColor:'#000',knobs:['Blend','Depth','Rate','Feedback','Delay'],accent:'#fff'},
+  {id:'bigsky',  brand:'Strymon',          name:'BigSky Reverb',               cat:'reverb',    bodyColor:'#2a3868',textColor:'#a0c8f0',knobs:['Decay','Mix','Tone','Param1','Param2','Pre Dly'],accent:'#6090c0'},
+  {id:'rv6',     brand:'Boss',             name:'RV-6 Reverb',                 cat:'reverb',    bodyColor:'#202028',textColor:'#40e0c0',knobs:['E.Level','Time','Tone'],accent:'#40e0c0'},
+  {id:'holygrail',brand:'Electro-Harmonix',name:'Holy Grail Neo Reverb',       cat:'reverb',    bodyColor:'#206820',textColor:'#fff',knobs:['Reverb'],accent:'#60c040'},
+  {id:'flint',   brand:'Strymon',          name:'Flint Tremolo & Reverb',      cat:'reverb',    bodyColor:'#3a2a1a',textColor:'#d0c0a0',knobs:['Tremolo','Reverb'],accent:'#c0a060'},
+  {id:'ce2',     brand:'Boss',             name:'CE-2W Waza Craft Chorus',     cat:'modulation',bodyColor:'#3080c0',textColor:'#fff',knobs:['Rate','Depth'],accent:'#80c0f0'},
+  {id:'phase90', brand:'MXR',              name:'Phase 90',                    cat:'modulation',bodyColor:'#e85010',textColor:'#fff',knobs:['Speed'],accent:'#fff'},
+  {id:'clone',   brand:'Electro-Harmonix', name:'Small Clone Chorus',          cat:'modulation',bodyColor:'#1a5070',textColor:'#fff',knobs:['Rate'],accent:'#30a0d0'},
+  {id:'bf3',     brand:'Boss',             name:'BF-3 Flanger',                cat:'modulation',bodyColor:'#9820a0',textColor:'#fff',knobs:['Manual','Depth','Rate','Res'],accent:'#e060f0'},
+  {id:'crybaby', brand:'Dunlop',           name:'Cry Baby GCB-95 Wah',         cat:'filter',    bodyColor:'#c09010',textColor:'#000',knobs:['Level'],accent:'#e0b020',wah:true},
+  {id:'aw3',     brand:'Boss',             name:'AW-3 Dynamic Wah',            cat:'filter',    bodyColor:'#d0a020',textColor:'#000',knobs:['Sens','Freq','Peak'],accent:'#fff'},
+  {id:'envelope',brand:'Electro-Harmonix', name:'Micro Q-Tron',                cat:'filter',    bodyColor:'#c04040',textColor:'#fff',knobs:['Q','Drive','Volume'],accent:'#ff8080'},
+  {id:'cs3',     brand:'Boss',             name:'CS-3 Compression Sustainer',  cat:'compressor',bodyColor:'#c02020',textColor:'#fff',knobs:['Level','Tone','Attack','Sustain'],accent:'#ff6060'},
+  {id:'dynacomp',brand:'MXR',              name:'Dyna Comp Compressor',        cat:'compressor',bodyColor:'#e8e0d0',textColor:'#000',knobs:['Output','Sensitivity'],accent:'#a0a090'},
+  {id:'keeley',  brand:'Keeley',           name:'Compressor Plus',             cat:'compressor',bodyColor:'#1a1a2a',textColor:'#e0c860',knobs:['Sustain','Level','Attack','Blend'],accent:'#e0c860'},
+  {id:'tu3',     brand:'Boss',             name:'TU-3 Chromatic Tuner',        cat:'utility',   bodyColor:'#1a6028',textColor:'#fff',knobs:[],accent:'#40c060',tuner:true},
+  {id:'ns2',     brand:'Boss',             name:'NS-2 Noise Suppressor',       cat:'utility',   bodyColor:'#204060',textColor:'#fff',knobs:['Threshold','Decay'],accent:'#4080a0'},
+  {id:'looper',  brand:'Boss',             name:'RC-5 Loop Station',           cat:'utility',   bodyColor:'#2a2040',textColor:'#a0c0e8',knobs:['Rhythm','Memory','Level'],accent:'#6080c0'},
+  {id:'el_cap',  brand:'Strymon',          name:'El Capistan dTape Echo',      cat:'ambient',   bodyColor:'#c08828',textColor:'#1a0800',knobs:['Time','Mix','Repeats','Wow','Age'],accent:'#e0a840'},
+  {id:'blooper', brand:'Chase Bliss Audio',name:'Blooper Bottomless Looper',   cat:'ambient',   bodyColor:'#f0f0f0',textColor:'#000',knobs:['Params','Layers','Length','Mix'],accent:'#a0a0a0'},
+  {id:'tensor',  brand:'Red Panda',        name:'Tensor',                      cat:'ambient',   bodyColor:'#d02040',textColor:'#fff',knobs:['Time','Mix','Pitch','Blend'],accent:'#ff8090'},
 ];
 
-const BOARD_SIZES = {mini:{label:'MINI BOARD',dim:'28″ × 12″',w:620,h:200,max:8},standard:{label:'STANDARD BOARD',dim:'36″ × 16″',w:780,h:240,max:12},large:{label:'LARGE BOARD',dim:'48″ × 16″',w:980,h:260,max:18}};
-
-let prePedals = [], fxPedals = [], customPedals = [], currentSize = 'mini', showRouting = true, multiRow = false;
-let dragLibId = null, dragSrcZone = null, dragSrcIdx = null, addDest = 'pre';
-
-const CORS = 'https://api.allorigins.win/get?url=';
-
-// ==================== RENDER FUNCTIONS ====================
-function createPedalHTML(pedal, isBoard=false){
-  const w = isBoard?84:32, h = isBoard?124:44;
-  return `<div style="width:${w}px;height:${h}px;background:${pedal.bodyColor||'#333'};border-radius:4px;overflow:hidden;display:flex;align-items:center;justify-content:center;color:#fff;font-size:10px;text-align:center;padding:4px">${pedal.name.replace(pedal.brand||'','').trim()||pedal.name}</div>`;
+// ── SVG GENERATOR (library icons & fallback) ─────────────
+function shade(hex,amt){const h=hex.replace('#','');const c=v=>Math.max(0,Math.min(255,v));const[r,g,b]=[0,2,4].map(i=>parseInt(h.substring(i,i+2),16));return'#'+[r,g,b].map(v=>c(v+amt).toString(16).padStart(2,'0')).join('')}
+function makePedalSVG(p,w=82,h=120){
+  const{bodyColor:bc,textColor:tc,knobs,accent:ac,brand,round:isR,tuner,wah}=p;
+  const hw=w/2,dk=shade(bc,-40),lt=shade(bc,28);
+  const kN=knobs.length,kY=h*.35,kR2=kN>3?2:1,kPR=kR2===2?Math.ceil(kN/2):kN;
+  let ks='';
+  if(kN>0){const kW=(w-20)/kPR;for(let i=0;i<kN;i++){const row=kR2===2?Math.floor(i/kPR):0,col=i%kPR,cx=10+kW*col+kW/2,cy=kY+row*26;const ang=(-130+Math.random()*100)*Math.PI/180;const kr=8,lx=cx+Math.sin(ang)*(kr-2.5),ly=cy-Math.cos(ang)*(kr-2.5);ks+=`<circle cx="${cx}" cy="${cy}" r="${kr}" fill="${dk}" stroke="${shade(dk,18)}" stroke-width="1"/><circle cx="${cx}" cy="${cy}" r="${kr-1.5}" fill="url(#k${p.id})"/><line x1="${cx}" y1="${cy}" x2="${lx}" y2="${ly}" stroke="${ac}" stroke-width="1.5" stroke-linecap="round"/><text x="${cx}" y="${cy+kr+8}" text-anchor="middle" fill="${tc}" fill-opacity=".6" font-size="5" font-family="IBM Plex Mono">${(knobs[i]||'').substring(0,7)}</text>`;}}
+  const sn=(p.name.replace(brand,'').trim()||p.name).substring(0,14).toUpperCase();
+  return`<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="b${p.id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${lt}"/><stop offset="100%" stop-color="${dk}"/></linearGradient><radialGradient id="k${p.id}" cx="35%" cy="30%" r="70%"><stop offset="0%" stop-color="${shade(dk,28)}"/><stop offset="100%" stop-color="${dk}"/></radialGradient><filter id="gl${p.id}" x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur stdDeviation="2.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><rect x="4" y="5" width="${w-8}" height="${h-8}" rx="${isR?hw:6}" fill="rgba(0,0,0,.42)"/><rect x="2" y="2" width="${w-4}" height="${h-4}" rx="${isR?hw-2:6}" fill="url(#b${p.id})"/><rect x="2" y="2" width="${w-4}" height="${h/2}" rx="${isR?hw-2:6}" fill="rgba(255,255,255,.07)"/><rect x="5" y="5" width="${w-10}" height="${h-10}" rx="${isR?hw-5:4}" fill="none" stroke="rgba(255,255,255,.09)" stroke-width="1"/>${[6,w-6].map(x=>[6,h-6].map(y=>`<circle cx="${x}" cy="${y}" r="2.5" fill="${shade(bc,-22)}" stroke="${shade(bc,12)}" stroke-width=".7"/><line x1="${x-1.3}" y1="${y}" x2="${x+1.3}" y2="${y}" stroke="rgba(0,0,0,.5)" stroke-width=".7"/><line x1="${x}" y1="${y-1.3}" x2="${x}" y2="${y+1.3}" stroke="rgba(0,0,0,.5)" stroke-width=".7"/>`).join('')).join('')}<circle cx="10" cy="10" r="3.5" fill="#111" stroke="#555" stroke-width="1"/><circle cx="10" cy="10" r="1.8" fill="#333"/><circle cx="20" cy="10" r="3.5" fill="#111" stroke="#555" stroke-width="1"/><circle cx="20" cy="10" r="1.8" fill="#333"/><rect x="${hw-3}" y="4" width="7" height="4.5" rx="1.3" fill="#222" stroke="#444" stroke-width=".6"/><circle cx="${w-11}" cy="11" r="3.5" fill="${ac}" filter="url(#gl${p.id})"/><circle cx="${w-11}" cy="11" r="1.8" fill="white" fill-opacity=".55"/>${tuner?`<rect x="7" y="${kY-9}" width="${w-14}" height="16" rx="2" fill="#000"/><text x="${hw}" y="${kY+2}" text-anchor="middle" fill="${ac}" font-size="8" font-family="IBM Plex Mono" font-weight="bold">A ♯ 440</text>`:''} ${wah?`<ellipse cx="${hw}" cy="${h*.37}" rx="${w*.37}" ry="${h*.11}" fill="${shade(bc,-28)}" stroke="${ac}" stroke-width="1"/>`:''} ${ks}<text x="${hw}" y="${h-32}" text-anchor="middle" fill="${tc}" fill-opacity=".9" font-size="6.5" font-family="Barlow Condensed" font-weight="700" letter-spacing=".5">${sn}</text><text x="${hw}" y="${h-24}" text-anchor="middle" fill="${tc}" fill-opacity=".5" font-size="5" font-family="IBM Plex Mono">${brand.toUpperCase().substring(0,14)}</text><circle cx="${hw}" cy="${h-17}" r="11" fill="#1a1a1a" stroke="#555" stroke-width="1.4"/><circle cx="${hw}" cy="${h-17}" r="8" fill="#252525"/><circle cx="${hw-2.5}" cy="${h-19.5}" r="2.5" fill="rgba(255,255,255,.07)"/></svg>`;
 }
 
-function renderLibrary(filter=''){
-  const scroll = document.getElementById('lib-scroll');
-  scroll.innerHTML = '';
-  const lc = filter.toLowerCase();
-  Object.keys(CATEGORIES).forEach(cat=>{
-    const pedals = [...PEDALS,...customPedals].filter(p=>p.cat===cat && (lc===''||p.name.toLowerCase().includes(lc)||p.brand.toLowerCase().includes(lc)));
-    if(!pedals.length) return;
-    const div = document.createElement('div');
-    const hdr = document.createElement('div');
-    hdr.className = 'cat-header open';
-    hdr.innerHTML = `<span class="cat-name" style="color:${CATEGORIES[cat].color}">${CATEGORIES[cat].label}</span><span class="cat-arrow">▶</span>`;
-    const body = document.createElement('div'); body.className = 'cat-body';
-    hdr.onclick = ()=>{hdr.classList.toggle('open');body.classList.toggle('collapsed');};
-    pedals.forEach(p=>{
-      const el = document.createElement('div');
-      el.className = 'lib-pedal';
-      el.draggable = true;
-      el.dataset.id = p.id;
-      el.innerHTML = `<div class="lib-pedal-icon">${createPedalHTML(p,false)}</div><div><div class="lib-pedal-name">${p.name.replace(p.brand||'','').trim()||p.name}</div><div class="lib-pedal-brand">${p.brand||''}</div></div>`;
-      el.ondragstart = e=>{dragLibId = p.id; dragSrcZone = null; dragSrcIdx = null; el.classList.add('dragging'); e.dataTransfer.setData('text/plain',p.id);};
-      el.ondragend = ()=>{el.classList.remove('dragging'); dragLibId = null;};
-      el.ondblclick = ()=>{addToZone(p.id, addDest);};
-      body.appendChild(el);
+// ── JUMPER CONNECTOR ─────────────────────────────────────
+const CABLE_COLORS=['#d83030','#3070d8','#30b838','#d8c020','#d8d8d8','#b030d8','#d87020','#20c0b0'];
+function makeJumperSVG(idx, zone, h=124){
+  const col = zone==='fx' ? '#28b8e0' : CABLE_COLORS[idx%CABLE_COLORS.length];
+  const m=h/2, w=28;
+  return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg">
+    <ellipse cx="4" cy="${m}" rx="3.2" ry="4.2" fill="#c8a030" stroke="#7a5c10" stroke-width=".8"/>
+    <ellipse cx="4" cy="${m}" rx="1.6" ry="2" fill="#111"/>
+    <rect x="7" y="${m-1.4}" width="3" height="2.8" rx=".4" fill="#2a2a2a"/>
+    <path d="M10,${m} Q14,${m-20} ${w/2},${m-14} Q${w-5},${m-7} ${w-5},${m}" stroke="rgba(0,0,0,.6)" stroke-width="4.2" fill="none" stroke-linecap="round"/>
+    <path d="M10,${m} Q14,${m-20} ${w/2},${m-14} Q${w-5},${m-7} ${w-5},${m}" stroke="${col}" stroke-width="2.8" fill="none" stroke-linecap="round"/>
+    <path d="M10,${m} Q14,${m-20} ${w/2},${m-14} Q${w-5},${m-7} ${w-5},${m}" stroke="rgba(255,255,255,.12)" stroke-width="1.1" fill="none"/>
+    <rect x="${w-10}" y="${m-1.4}" width="3" height="2.8" rx=".4" fill="#2a2a2a"/>
+    <ellipse cx="${w-4}" cy="${m}" rx="3.2" ry="4.2" fill="#c8a030" stroke="#7a5c10" stroke-width=".8"/>
+    <ellipse cx="${w-4}" cy="${m}" rx="1.6" ry="2" fill="#111"/>
+    <text x="${w/2}" y="${m+15}" text-anchor="middle" fill="${col}" fill-opacity=".4" font-size="6" font-family="monospace">▶</text>
+  </svg>`;
+}
+
+// ── BOARD SIZES ──────────────────────────────────────────
+const SIZES={
+  nano:     {label:'NANO BOARD',    dim:'16″ × 6″', w:340, h:130,max:4},
+  pedalette:{label:'PEDALETTE',     dim:'22″ × 9″', w:480, h:155,max:6},
+  mini:     {label:'MINI BOARD',    dim:'28″ × 12″',w:620, h:195,max:8},
+  standard: {label:'STANDARD',      dim:'36″ × 16″',w:780, h:235,max:12},
+  large:    {label:'LARGE BOARD',   dim:'48″ × 16″',w:980, h:255,max:18},
+  xl:       {label:'XL BOARD',      dim:'60″ × 20″',w:1180,h:295,max:28},
+};
+
+// ── STATE ────────────────────────────────────────────────
+let prePedals=[],fxPedals=[],customPedals=[];
+let currentSize='mini',showRouting=true,multiRow=false;
+let dragLibId=null,dragSrcZone=null,dragSrcIdx=null,addDest='pre';
+const imgCache={};
+function allPedals(){return[...PEDALS,...customPedals]}
+
+// ── IMAGE PIPELINE ───────────────────────────────────────
+const PROXY = 'https://api.allorigins.win';
+const IMG_VERSION = 'v4'; // bump to bust all cached images
+
+// Concurrent fetch queue — max 3 at once so we don't spam proxies
+const fetchQueue = { running: 0, max: 3, pending: [] };
+function queuedFetch(fn) {
+  return new Promise((res, rej) => {
+    const run = () => { fetchQueue.running++; fn().then(res, rej).finally(() => { fetchQueue.running--; const next = fetchQueue.pending.shift(); if (next) next(); }); };
+    if (fetchQueue.running < fetchQueue.max) run(); else fetchQueue.pending.push(run);
+  });
+}
+
+async function loadPedalImage(pedal) {
+  const key = 'pfimg_' + IMG_VERSION + '_' + pedal.id;
+  if (imgCache[pedal.id]) return imgCache[pedal.id] === 'FAILED' ? null : imgCache[pedal.id];
+  try { const v = localStorage.getItem(key); if (v) { imgCache[pedal.id] = v; return v === 'FAILED' ? null : v; } } catch(e) {}
+  let url = null;
+  try { url = await findImageUrl(pedal); } catch(e) {}
+  if (!url) { cacheSet(pedal.id, key, 'FAILED'); return null; }
+  try {
+    const processed = await processImage(url);
+    if (processed) { cacheSet(pedal.id, key, processed); return processed; }
+  } catch(e) {}
+  cacheSet(pedal.id, key, 'FAILED');
+  return null;
+}
+
+function cacheSet(id, key, val) {
+  imgCache[id] = val;
+  try { localStorage.setItem(key, val); } catch(e) {
+    // Storage quota — clear old images and retry
+    try { clearOldImages(); localStorage.setItem(key, val); } catch(e2) {}
+  }
+}
+function clearOldImages() {
+  const toDelete = [];
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i);
+    if (k && k.startsWith('pfimg_') && !k.startsWith('pfimg_' + IMG_VERSION)) toDelete.push(k);
+  }
+  toDelete.forEach(k => localStorage.removeItem(k));
+}
+
+// ── MULTI-SOURCE IMAGE FINDER ─────────────────────────────
+// Tries sources in order, returns first working direct image URL
+async function findImageUrl(pedal) {
+  const q = `${pedal.brand} ${pedal.name}`;
+
+  // Helper: fetch page via allorigins and parse as DOM
+  const fetchPage = async (url, timeout = 9000) => {
+    const r = await fetch(`${PROXY}/get?url=${encodeURIComponent(url)}`, { signal: AbortSignal.timeout(timeout) });
+    const data = await r.json();
+    return new DOMParser().parseFromString(data.contents || '', 'text/html');
+  };
+
+  // Extract best image from a parsed doc
+  const extractImg = (doc, ...hostHints) => {
+    // Priority 1: og:image meta (most reliable for product pages)
+    const og = doc.querySelector('meta[property="og:image"],meta[name="og:image"]');
+    if (og) { const s = og.getAttribute('content'); if (isImgUrl(s)) return s; }
+    // Priority 2: JSON-LD product image
+    for (const script of doc.querySelectorAll('script[type="application/ld+json"]')) {
+      try {
+        const j = JSON.parse(script.textContent);
+        const imgs = [].concat(j?.image, j?.['@graph']?.map?.(n=>n.image)).flat().filter(Boolean);
+        for (const img of imgs) { const s = typeof img === 'string' ? img : img?.url || img?.contentUrl; if (isImgUrl(s)) return s; }
+      } catch(e) {}
+    }
+    // Priority 3: largest product img matching host hints
+    const allImgs = [...doc.querySelectorAll('img[src],img[data-src],img[data-lazy-src],img[data-original]')];
+    for (const hint of [...hostHints, '']) {
+      for (const el of allImgs) {
+        const src = el.getAttribute('src') || el.getAttribute('data-src') || el.getAttribute('data-lazy-src') || el.getAttribute('data-original') || '';
+        if (isImgUrl(src) && (!hint || src.includes(hint))) return src;
+      }
+    }
+    return null;
+  };
+
+  const isImgUrl = s => s && s.startsWith('http') && /\.(jpg|jpeg|png|webp)(\?|$)/i.test(s);
+
+  // ── SOURCE 1: SWEETWATER ─────────────────────────────────
+  try {
+    return await queuedFetch(async () => {
+      const doc = await fetchPage(`https://www.sweetwater.com/store/search.php?s=${encodeURIComponent(q)}`);
+      // Try inline search-result images first
+      const imgSelectors = [
+        'img[src*="media.sweetwater.com"]', 'img[data-src*="sweetwater"]',
+        '[class*="ProductCard"] img', '[class*="product-listing"] img',
+        '[class*="product-card"] img', '.product img',
+      ];
+      for (const sel of imgSelectors) {
+        const el = doc.querySelector(sel);
+        if (el) { const s = el.getAttribute('src') || el.getAttribute('data-src'); if (isImgUrl(s)) return s; }
+      }
+      // Follow first product detail link
+      const lnk = doc.querySelector('a[href*="/store/detail"],a[href*="sweetwater.com/store/"]');
+      if (lnk) {
+        const href = makeAbsolute(lnk, 'https://www.sweetwater.com');
+        const doc2 = await fetchPage(href, 8000);
+        const img = extractImg(doc2, 'media.sweetwater', 'sweetwater');
+        if (img) return img;
+      }
+      return null;
     });
-    div.append(hdr,body);
-    scroll.appendChild(div);
+  } catch(e) {}
+
+  // ── SOURCE 2: GUITAR CENTER ──────────────────────────────
+  try {
+    return await queuedFetch(async () => {
+      const doc = await fetchPage(`https://www.guitarcenter.com/search?Ntt=${encodeURIComponent(q)}`);
+      const og = doc.querySelector('meta[property="og:image"]');
+      if (og) { const s = og.getAttribute('content'); if (isImgUrl(s)) return s; }
+      const imgSels = ['[class*="product"] img[src*="gc.com"]','[class*="product"] img[src*="guitarcenter"]','[class*="ProductCard"] img','[class*="product-image"] img'];
+      for (const sel of imgSels) { const el = doc.querySelector(sel); if (el) { const s = el.getAttribute('src') || el.getAttribute('data-src'); if (isImgUrl(s)) return s; } }
+      // Follow product link
+      const lnk = doc.querySelector('a[href*="guitarcenter.com/"][href*=".gc"]') || doc.querySelector('[class*="product"] a[href]');
+      if (lnk) {
+        const href = makeAbsolute(lnk, 'https://www.guitarcenter.com');
+        const doc2 = await fetchPage(href, 8000);
+        const img = extractImg(doc2, 'gc.com', 'guitarcenter', 'media');
+        if (img) return img;
+      }
+      return null;
+    });
+  } catch(e) {}
+
+  // ── SOURCE 3: MUSICIANS FRIEND ───────────────────────────
+  try {
+    return await queuedFetch(async () => {
+      const doc = await fetchPage(`https://www.musiciansfriend.com/search?q=${encodeURIComponent(q)}`);
+      const img = extractImg(doc, 'musiciansfriend', 'musician');
+      if (img) return img;
+      const lnk = doc.querySelector('a[href*="musiciansfriend.com/"][href*="effects"]') || doc.querySelector('[class*="product"] a');
+      if (lnk) {
+        const doc2 = await fetchPage(makeAbsolute(lnk, 'https://www.musiciansfriend.com'), 8000);
+        return extractImg(doc2, 'musiciansfriend');
+      }
+      return null;
+    });
+  } catch(e) {}
+
+  // ── SOURCE 4: B&H PHOTO ──────────────────────────────────
+  try {
+    return await queuedFetch(async () => {
+      const doc = await fetchPage(`https://www.bhphotovideo.com/c/search?q=${encodeURIComponent(q)}`);
+      const img = extractImg(doc, 'bhphotovideo', 'bh');
+      return img;
+    });
+  } catch(e) {}
+
+  // ── SOURCE 5: REVERB.COM ─────────────────────────────────
+  try {
+    return await queuedFetch(async () => {
+      const doc = await fetchPage(`https://reverb.com/marketplace?query=${encodeURIComponent(q)}&item_region=worldwide&inventory_new_or_used=new`);
+      // Reverb uses data-src heavily
+      const el = doc.querySelector('[class*="product"] img,[class*="listing"] img,[class*="card"] img');
+      if (el) { const s = el.getAttribute('src') || el.getAttribute('data-src'); if (isImgUrl(s)) return s; }
+      const img = extractImg(doc, 'reverb-res', 'res.cloudinary');
+      return img;
+    });
+  } catch(e) {}
+
+  // ── SOURCE 6: ANTHROPIC WEB SEARCH (last resort) ─────────
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514', max_tokens: 400,
+        tools: [{ type: 'web_search_20250305', name: 'web_search' }],
+        messages: [{ role: 'user', content: `Find a direct top-down product photo image URL for the "${pedal.brand} ${pedal.name}" guitar effects pedal from sweetwater.com, guitarcenter.com, or the manufacturer's website. The URL must end in .jpg, .jpeg, .png, or .webp. Return ONLY the raw image URL with no other text.` }]
+      })
+    });
+    if (resp.ok) {
+      const data = await resp.json();
+      const txt = (data.content || []).filter(b => b.type === 'text').map(b => b.text).join('');
+      const m = txt.match(/https?:\/\/[^\s"'<>\n]+\.(jpg|jpeg|png|webp)(\?[^\s"'<>\n]*)?/i);
+      if (m) return m[0];
+    }
+  } catch(e) {}
+
+  return null;
+}
+
+function makeAbsolute(linkEl, base) {
+  const href = linkEl.getAttribute('href') || '';
+  return href.startsWith('http') ? href : base + (href.startsWith('/') ? '' : '/') + href;
+}
+
+// ── IMAGE PROCESSING: proxy load + advanced bg removal ────
+async function processImage(imgUrl) {
+  // Try multiple proxy strategies for CORS
+  const proxies = [
+    `${PROXY}/raw?url=${encodeURIComponent(imgUrl)}`,
+    `https://corsproxy.io/?${encodeURIComponent(imgUrl)}`,
+    `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(imgUrl)}`,
+  ];
+
+  for (const proxyUrl of proxies) {
+    const result = await tryLoadImage(proxyUrl);
+    if (result) return result;
+  }
+  return null;
+}
+
+function tryLoadImage(src) {
+  return new Promise(resolve => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      try {
+        const W = img.naturalWidth || img.width;
+        const H = img.naturalHeight || img.height;
+        if (W < 20 || H < 20) { resolve(null); return; }
+        const canvas = document.createElement('canvas');
+        canvas.width = W; canvas.height = H;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0);
+        removeBackground(ctx, W, H);
+        resolve(canvas.toDataURL('image/png'));
+      } catch(e) { resolve(null); }
+    };
+    img.onerror = () => resolve(null);
+    img.src = src;
+    setTimeout(() => { if (!img.complete) { img.src = ''; resolve(null); } }, 12000);
   });
 }
 
+// ── ADVANCED BACKGROUND REMOVAL ───────────────────────────
+// Uses flood-fill from all four corners + edge sampling to build
+// a background mask, then feathers the edges.
+function removeBackground(ctx, w, h) {
+  const id = ctx.getImageData(0, 0, w, h);
+  const d = id.data;
+
+  // Sample corner/edge pixels to characterise background colour
+  const samplePositions = [];
+  const step = Math.max(1, Math.floor(Math.min(w, h) / 20));
+  for (let x = 0; x < w; x += step) { samplePositions.push(x, 0); samplePositions.push(x, h - 1); }
+  for (let y = 0; y < h; y += step) { samplePositions.push(0, y); samplePositions.push(w - 1, y); }
+
+  // Accumulate avg border colour
+  let rSum = 0, gSum = 0, bSum = 0, n = 0;
+  for (let i = 0; i < samplePositions.length; i += 2) {
+    const px = (samplePositions[i + 1] * w + samplePositions[i]) * 4;
+    rSum += d[px]; gSum += d[px + 1]; bSum += d[px + 2]; n++;
+  }
+  const bgR = rSum / n, bgG = gSum / n, bgB = bSum / n;
+
+  // Decide: is background light (white/grey) or dark?
+  const bgLuma = bgR * 0.299 + bgG * 0.587 + bgB * 0.114;
+
+  // Flood-fill mask from four corners
+  const visited = new Uint8Array(w * h);
+  const mask = new Uint8Array(w * h); // 0 = keep, 1 = remove
+  const tolerance = bgLuma > 180 ? 28 : 22; // looser for light bg
+
+  function colorDist(px) {
+    const dr = d[px] - bgR, dg = d[px + 1] - bgG, db = d[px + 2] - bgB;
+    return Math.sqrt(dr * dr + dg * dg + db * db);
+  }
+
+  const stack = [];
+  const pushCorners = () => {
+    [[0,0],[w-1,0],[0,h-1],[w-1,h-1]].forEach(([x,y]) => { const idx = y * w + x; if (!visited[idx]) stack.push(idx); });
+    // Also seed from border pixels
+    for (let x = 0; x < w; x++) { stack.push(x); stack.push((h-1)*w+x); }
+    for (let y = 0; y < h; y++) { stack.push(y*w); stack.push(y*w+w-1); }
+  };
+  pushCorners();
+
+  while (stack.length > 0) {
+    const idx = stack.pop();
+    if (idx < 0 || idx >= w * h || visited[idx]) continue;
+    visited[idx] = 1;
+    const px = idx * 4;
+    if (colorDist(px) <= tolerance) {
+      mask[idx] = 1;
+      const x = idx % w, y = Math.floor(idx / w);
+      if (x > 0) stack.push(idx - 1);
+      if (x < w - 1) stack.push(idx + 1);
+      if (y > 0) stack.push(idx - w);
+      if (y < h - 1) stack.push(idx + w);
+    }
+  }
+
+  // Also remove isolated near-background pixels throughout image (global pass)
+  for (let i = 0; i < w * h; i++) {
+    if (!mask[i]) {
+      const px = i * 4;
+      const dist = colorDist(px);
+      const luma = d[px] * 0.299 + d[px+1] * 0.587 + d[px+2] * 0.114;
+      const sat = Math.max(d[px], d[px+1], d[px+2]) - Math.min(d[px], d[px+1], d[px+2]);
+      // Remove very bright, desaturated pixels anywhere (typical white bg spill)
+      if (bgLuma > 180 && luma > 240 && sat < 12) mask[i] = 1;
+      // Soften near-bg pixels
+      else if (bgLuma > 180 && dist < tolerance * 1.6 && sat < 30) {
+        const alpha = Math.round(((dist - tolerance) / (tolerance * 0.6)) * 255);
+        d[px + 3] = Math.min(d[px + 3], Math.max(0, alpha));
+      }
+    }
+  }
+
+  // Apply mask with feathered edge (2px Gaussian-style blend)
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      const idx = y * w + x;
+      if (!mask[idx]) continue;
+      d[idx * 4 + 3] = 0;
+      // Feather immediate neighbours that are kept
+      for (const [nx, ny] of [[x-1,y],[x+1,y],[x,y-1],[x,y+1]]) {
+        if (nx < 0 || nx >= w || ny < 0 || ny >= h) continue;
+        const nidx = ny * w + nx;
+        if (!mask[nidx]) d[nidx * 4 + 3] = Math.min(d[nidx * 4 + 3], 160);
+      }
+    }
+  }
+
+  ctx.putImageData(id, 0, 0);
+}
+
+// ── PRE-WARM: load all built-in pedal images in background ─
+function prewarmImages() {
+  // Stagger loads — don't hammer proxies all at once
+  PEDALS.forEach((p, i) => {
+    const key = 'pfimg_' + IMG_VERSION + '_' + p.id;
+    try { const v = localStorage.getItem(key); if (v) { imgCache[p.id] = v; return; } } catch(e) {}
+    setTimeout(() => {
+      loadPedalImage(p).then(() => {
+        // If a lib icon is showing SVG fallback, refresh it with the real image
+        const libEl = document.querySelector(`.lib-pedal[data-id="${p.id}"] .lib-icon`);
+        if (libEl && imgCache[p.id] && imgCache[p.id] !== 'FAILED') {
+          const img = document.createElement('img');
+          img.src = imgCache[p.id];
+          img.style.cssText = 'width:100%;height:100%;object-fit:contain;filter:url(#cartoon) saturate(2.2) contrast(1.3)';
+          libEl.innerHTML = ''; libEl.appendChild(img);
+        }
+      });
+    }, i * 400); // 400ms apart to avoid hammering
+  });
+}
+
+// ── RENDER LIBRARY ───────────────────────────────────────
+function renderLibrary(filter=''){
+  const scroll=document.getElementById('lib-scroll'),lc=filter.toLowerCase();
+  scroll.innerHTML='';
+  for(const[cat,cd]of Object.entries(CATS)){
+    const pedals=allPedals().filter(p=>p.cat===cat&&(lc===''||p.name.toLowerCase().includes(lc)||p.brand.toLowerCase().includes(lc)));
+    if(!pedals.length)continue;
+    const div=document.createElement('div');
+    const hdr=document.createElement('div');hdr.className='cat-header open';
+    hdr.innerHTML=`<span class="cat-name" style="color:${cd.color}">${cd.label}</span><span class="cat-arrow">▶</span>`;
+    const body=document.createElement('div');body.className='cat-body';
+    hdr.addEventListener('click',()=>{hdr.classList.toggle('open');body.classList.toggle('collapsed')});
+    for(const p of pedals){
+      const el=document.createElement('div');el.className='lib-pedal';el.draggable=true;el.dataset.id=p.id;el.style.borderLeftColor=cd.color;
+      const cachedImg = imgCache[p.id];
+      const iconContent = (cachedImg && cachedImg !== 'FAILED')
+        ? `<img src="${cachedImg}" style="width:100%;height:100%;object-fit:contain;filter:url(#cartoon) saturate(2.2) contrast(1.3)" alt="${p.name}">`
+        : makePedalSVG(p, 30, 42);
+      el.innerHTML=`<div class="lib-icon" style="background:${p.bodyColor}">${iconContent}</div><div><div class="lib-name">${(p.name.replace(p.brand,'').trim()||p.name)}</div><div class="lib-brand">${p.brand}</div></div>`;
+      el.addEventListener('dragstart',e=>{dragLibId=p.id;dragSrcZone=null;dragSrcIdx=null;el.classList.add('dragging');e.dataTransfer.effectAllowed='copy';e.dataTransfer.setData('text/plain',p.id)});
+      el.addEventListener('dragend',()=>el.classList.remove('dragging'));
+      el.addEventListener('dblclick',()=>addToZone(p.id,addDest));
+      body.appendChild(el);
+    }
+    div.appendChild(hdr);div.appendChild(body);scroll.appendChild(div);
+  }
+}
+
+// ── RENDER BOARD ─────────────────────────────────────────
 function renderBoard(){
-  const size = BOARD_SIZES[currentSize];
-  document.getElementById('board-surface').style.width = size.w+'px';
-  document.getElementById('fx-loop-surface').style.width = size.w+'px';
-  renderZone('pre');
-  renderZone('fx');
-  if(showRouting){renderRoutingBar('pre');renderRoutingBar('fx');}
-  requestAnimationFrame(()=>{drawCables('pre');drawCables('fx');});
-  const total = prePedals.length + fxPedals.length;
-  document.getElementById('pedal-count').textContent = `${total} pedal${total!==1?'s':''}`;
+  const sz=SIZES[currentSize];
+  ['board-surface','fx-loop-surface'].forEach((id,i)=>{
+    const s=document.getElementById(id);
+    s.style.width=sz.w+'px';s.style.minHeight=(i===1?Math.round(sz.h*.75):sz.h)+'px';
+    multiRow?s.classList.add('multi-row'):s.classList.remove('multi-row');
+  });
+  renderZone('pre');renderZone('fx');
+  renderRoutingBar('pre');renderRoutingBar('fx');
+  const tot=prePedals.length+fxPedals.length;
+  document.getElementById('board-name').textContent=sz.label;
+  document.getElementById('board-dim').textContent=sz.dim;
+  document.getElementById('pedal-count').textContent=`${tot} pedal${tot!==1?'s':''} · ${prePedals.length} pre · ${fxPedals.length} loop`;
+  saveState();
 }
 
-function renderZone(zone){
-  const isPre = zone==='pre';
-  const ids = isPre?prePedals:fxPedals;
-  const row = document.getElementById(isPre?'pedals-row':'fx-pedals-row');
-  row.innerHTML = '';
-  ids.forEach((id,idx)=>{
-    const pedal = [...PEDALS,...customPedals].find(p=>p.id===id);
-    if(!pedal) return;
-    const wrapper = document.createElement('div');
-    wrapper.className = 'board-pedal';
-    wrapper.draggable = true;
-    wrapper.dataset.idx = idx;
-    wrapper.dataset.zone = zone;
-    wrapper.innerHTML = createPedalHTML(pedal,true);
-    const badge = document.createElement('div');
-    badge.className = 'pedal-order-badge';
-    badge.textContent = idx+1;
-    wrapper.appendChild(badge);
-    const rm = document.createElement('div');
-    rm.className = 'pedal-remove';
-    rm.innerHTML = '✕';
-    rm.onclick = e=>{e.stopPropagation();if(zone==='pre')prePedals.splice(idx,1);else fxPedals.splice(idx,1);renderBoard();};
-    wrapper.appendChild(rm);
-    wrapper.ondragstart = e=>{dragSrcZone=zone;dragSrcIdx=idx;dragLibId=null;wrapper.classList.add('dragging-board');e.dataTransfer.setData('text/plain',id);};
-    wrapper.ondragend = ()=>{wrapper.classList.remove('dragging-board');dragSrcZone=null;dragSrcIdx=null;};
-    wrapper.ondragover = e=>e.preventDefault();
-    wrapper.ondrop = e=>{e.preventDefault();handleDropOnPedal(idx,zone);};
-    row.appendChild(wrapper);
+async function renderZone(zone){
+  const isPre=zone==='pre';
+  const ids=isPre?prePedals:fxPedals;
+  const rowEl=document.getElementById(isPre?'pedals-row':'fx-pedals-row');
+  const emptyEl=document.getElementById(isPre?'empty-pre':'empty-fx');
+  emptyEl.classList.toggle('hidden',ids.length>0);
+  rowEl.innerHTML='';
+  for(let idx=0;idx<ids.length;idx++){
+    const pid=ids[idx];const pedal=allPedals().find(p=>p.id===pid);if(!pedal)continue;
+    // Input jumper (before first pedal, dimmed)
+    if(idx===0){const jw=document.createElement('div');jw.className='jumper-wrap';jw.style.opacity='.4';jw.innerHTML=makeJumperSVG(0,zone);rowEl.appendChild(jw)}
+    // Pedal wrapper
+    const wrapper=document.createElement('div');wrapper.className='board-pedal';wrapper.draggable=true;wrapper.dataset.idx=idx;wrapper.dataset.zone=zone;
+    // Card
+    const card=document.createElement('div');card.className='pedal-card';card.style.background=pedal.bodyColor+'14';
+    const cached=imgCache[pedal.id];
+    if(cached&&cached!=='FAILED'){const img=document.createElement('img');img.src=cached;img.className='pedal-real-img';img.alt=pedal.name;card.appendChild(img)}
+    else if(cached==='FAILED'){const fb=document.createElement('div');fb.className='pedal-svg-fallback';fb.innerHTML=makePedalSVG(pedal,84,124);card.appendChild(fb)}
+    else{
+      const sh=document.createElement('div');sh.className='pedal-loading';sh.innerHTML=`<div class="pedal-loading-icon">${makePedalSVG(pedal,50,74)}</div>`;card.appendChild(sh);
+      loadPedalImage(pedal).then(url=>{
+        if(!card.isConnected)return;card.innerHTML='';
+        if(url){const img=document.createElement('img');img.src=url;img.className='pedal-real-img';img.alt=pedal.name;card.appendChild(img)}
+        else{const fb=document.createElement('div');fb.className='pedal-svg-fallback';fb.innerHTML=makePedalSVG(pedal,84,124);card.appendChild(fb)}
+      });
+    }
+    wrapper.appendChild(card);
+    // Badge
+    const badge=document.createElement('div');badge.className=`pedal-badge ${isPre?'badge-pre':'badge-fx'}`;badge.textContent=idx+1;wrapper.appendChild(badge);
+    // Remove
+    const rm=document.createElement('div');rm.className='pedal-remove';rm.innerHTML='✕';rm.addEventListener('click',e=>{e.stopPropagation();removeFromZone(idx,zone)});wrapper.appendChild(rm);
+    wrapper.addEventListener('mouseenter',()=>showInfo(pedal,zone));wrapper.addEventListener('mouseleave',hideInfo);
+    wrapper.addEventListener('dragstart',e=>{dragSrcZone=zone;dragSrcIdx=idx;dragLibId=null;wrapper.classList.add('dragging-board');e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('text/plain',pid)});
+    wrapper.addEventListener('dragend',()=>wrapper.classList.remove('dragging-board'));
+    wrapper.addEventListener('dragover',e=>{e.preventDefault();e.dataTransfer.dropEffect=dragSrcZone?'move':'copy'});
+    wrapper.addEventListener('drop',e=>{e.preventDefault();handleDropOnPedal(idx,zone)});
+    rowEl.appendChild(wrapper);
+    // Jumper between / after
+    const jw=document.createElement('div');jw.className='jumper-wrap';if(idx>=ids.length-1)jw.style.opacity='.4';jw.innerHTML=makeJumperSVG(idx+1,zone);rowEl.appendChild(jw);
+  }
+}
+
+function renderRoutingBar(zone){
+  const ids=zone==='pre'?prePedals:fxPedals;
+  const bar=document.getElementById(`routing-${zone}-bar`);
+  bar.style.display=(!showRouting||ids.length===0)?'none':'flex';
+  if(!showRouting||!ids.length)return;
+  bar.innerHTML='';
+  ids.forEach((pid,idx)=>{
+    const p=allPedals().find(x=>x.id===pid);if(!p)return;
+    if(idx>0){const a=document.createElement('div');a.className=`rarr ${zone==='pre'?'rarr-pre':'rarr-fx'}`;a.textContent='▶';bar.appendChild(a)}
+    const n=document.createElement('div');n.className='rnode rnode-pedal';
+    const sn=(p.name.replace(p.brand,'').trim()||p.name).substring(0,12);
+    n.innerHTML=`<span class="rnum">${idx+1}</span>${sn}`;n.title=`${p.brand} ${p.name}`;bar.appendChild(n);
   });
 }
+
+// ── DRAG & DROP ZONES ────────────────────────────────────
+function setupDrop(surfaceId,zone){
+  const el=document.getElementById(surfaceId);
+  el.addEventListener('dragover',e=>{e.preventDefault();el.classList.add('drag-over')});
+  el.addEventListener('dragleave',e=>{if(!el.contains(e.relatedTarget))el.classList.remove('drag-over')});
+  el.addEventListener('drop',e=>{
+    e.preventDefault();el.classList.remove('drag-over');
+    if(dragLibId!==null){addToZone(dragLibId,zone);dragLibId=null}
+    else if(dragSrcZone!==null&&dragSrcZone!==zone){
+      const src=dragSrcZone==='pre'?prePedals:fxPedals;
+      const[m]=src.splice(dragSrcIdx,1);
+      (zone==='pre'?prePedals:fxPedals).push(m);
+      dragSrcZone=null;dragSrcIdx=null;renderBoard();
+    }
+  });
+}
+setupDrop('board-surface','pre');setupDrop('fx-loop-surface','fx');
 
 function handleDropOnPedal(targetIdx,targetZone){
-  const targetArr = targetZone==='pre'?prePedals:fxPedals;
-  if(dragLibId!==null){
-    targetArr.splice(targetIdx,0,dragLibId);
-    dragLibId = null;
-    renderBoard();
-    return;
-  }
-  if(dragSrcZone!==null && dragSrcIdx!==null){
-    const srcArr = dragSrcZone==='pre'?prePedals:fxPedals;
-    const [moved] = srcArr.splice(dragSrcIdx,1);
-    if(dragSrcZone===targetZone){
-      const insertAt = dragSrcIdx < targetIdx ? targetIdx-1 : targetIdx;
-      srcArr.splice(insertAt,0,moved);
-    }else{
-      targetArr.splice(targetIdx,0,moved);
-    }
-    dragSrcZone = null; dragSrcIdx = null;
-    renderBoard();
+  const tArr=targetZone==='pre'?prePedals:fxPedals;
+  if(dragLibId!==null){tArr.splice(targetIdx,0,dragLibId);dragLibId=null;renderBoard();return}
+  if(dragSrcZone!==null&&dragSrcIdx!==null){
+    const sArr=dragSrcZone==='pre'?prePedals:fxPedals;
+    if(dragSrcZone===targetZone){const[m]=sArr.splice(dragSrcIdx,1);sArr.splice(dragSrcIdx<targetIdx?targetIdx-1:targetIdx,0,m)}
+    else{const[m]=sArr.splice(dragSrcIdx,1);tArr.splice(targetIdx,0,m)}
+    dragSrcZone=null;dragSrcIdx=null;renderBoard();
   }
 }
-
+function removeFromZone(idx,zone){(zone==='pre'?prePedals:fxPedals).splice(idx,1);renderBoard()}
 function addToZone(id,zone){
-  const size = BOARD_SIZES[currentSize];
-  const arr = zone==='pre'?prePedals:fxPedals;
-  if(prePedals.length + fxPedals.length >= size.max) return;
-  arr.push(id);
-  renderBoard();
+  const max=SIZES[currentSize].max;
+  if(prePedals.length+fxPedals.length>=max){showToast(`Board full — max ${max} pedals`,'error');return}
+  (zone==='pre'?prePedals:fxPedals).push(id);renderBoard();
+  showToast(`Added to ${zone==='pre'?'Pre-Amp Chain':'FX Loop'} ✓`,'success');
 }
 
-function drawCables(zone){ /* minimal working cables */ 
-  const isPre = zone==='pre';
-  const row = document.getElementById(isPre?'pedals-row':'fx-pedals-row');
-  const svg = document.getElementById(isPre?'cable-svg-pre':'cable-svg-fx');
-  svg.innerHTML = '';
-  const items = row.querySelectorAll('.board-pedal');
-  if(items.length<2) return;
-  // (simple line for now – you can expand later)
+// ── INFO PANEL ───────────────────────────────────────────
+function showInfo(p,zone){
+  const cd=CATS[p.cat];
+  document.getElementById('info-name').textContent=p.name.replace(p.brand,'').trim()||p.name;
+  document.getElementById('info-brand').textContent=p.brand;
+  document.getElementById('info-cat').textContent=cd.label;document.getElementById('info-cat').style.color=cd.color;
+  document.getElementById('info-zone').textContent=zone==='pre'?'▶ Pre-Amp Chain':'↻ FX Loop';
+  document.getElementById('info-zone').style.color=zone==='pre'?'var(--route-pre)':'var(--route-fx)';
+  document.getElementById('info-panel').classList.add('visible');
 }
+function hideInfo(){document.getElementById('info-panel').classList.remove('visible')}
 
-function renderRoutingBar(){} // placeholder – you can expand
+// ── TOAST ────────────────────────────────────────────────
+let _tt;
+function showToast(msg,type=''){const t=document.getElementById('toast');t.textContent=msg;t.className=type?`show ${type}`:'show';clearTimeout(_tt);_tt=setTimeout(()=>t.classList.remove('show'),2400)}
 
-// ==================== SEARCH (fixed) ====================
+// ── SEARCH/SCRAPE ────────────────────────────────────────
 async function searchPedals(query){
-  const status = document.getElementById('search-status');
-  const results = document.getElementById('search-results');
-  results.innerHTML = '';
-  status.innerHTML = '🔍 Searching Sweetwater…';
-  const q = encodeURIComponent(query + ' effects pedal');
+  const status=document.getElementById('search-status'),results=document.getElementById('search-results');
+  results.innerHTML='';status.innerHTML='<span class="spinner"></span>Searching Sweetwater…';
   try{
-    const resp = await fetch(CORS + `https://www.sweetwater.com/store/search.php?s=${q}`);
-    const data = await resp.json();
-    const items = parseSite(data.contents);
-    if(items.length===0){
-      status.innerHTML = 'No results — showing built-in';
-      showFallbackResults(query);
-      return;
-    }
-    status.innerHTML = `${items.length} real pedals found`;
-    showScrapedResults(items);
-  }catch(e){
-    status.innerHTML = 'External search blocked by browser — using built-in library';
-    showFallbackResults(query);
-  }
+    const url=`https://www.sweetwater.com/store/search.php?s=${encodeURIComponent(query+' effects pedal')}`;
+    const r=await fetch(`${PROXY}/get?url=${encodeURIComponent(url)}`,{signal:AbortSignal.timeout(10000)});
+    const data=await r.json();const doc=new DOMParser().parseFromString(data.contents||'','text/html');
+    let parsed=[];
+    doc.querySelectorAll('[class*="product-listing"],[class*="ProductCard"],[class*="product-card"],[class*="product-item"],.product').forEach(item=>{
+      const n=item.querySelector('h2,h3,h4,[class*="name"],[class*="title"]');
+      if(n){const t=n.textContent.trim();if(t.length>3&&t.length<80)parsed.push({name:t})}
+    });
+    if(!parsed.length){doc.querySelectorAll('h2,h3,h4,a[href*="/store/detail"]').forEach(h=>{const t=h.textContent.trim();if(t.length>4&&t.length<80&&(t.toLowerCase().includes('pedal')||t.toLowerCase().includes('effect')||t.toLowerCase().includes(query.toLowerCase().split(' ')[0])))parsed.push({name:t})})}
+    const seen=new Set();
+    parsed=parsed.filter(p=>{if(seen.has(p.name)||p.name.length<5)return false;seen.add(p.name);return true}).slice(0,8);
+    if(!parsed.length){status.innerHTML='No results. Showing built-in matches.';showFallback(query);return}
+    status.innerHTML=`${parsed.length} results from Sweetwater`;showScrapedResults(parsed,query);
+  }catch(e){status.innerHTML='Showing built-in matches.';showFallback(query)}
 }
 
-function parseSite(html){
-  const doc = new DOMParser().parseFromString(html,'text/html');
-  const items = [];
-  doc.querySelectorAll('.product-card, .product, [class*="product"]').forEach(el=>{
-    const name = el.querySelector('h2,h3,.product-name')?.textContent.trim();
-    const img = el.querySelector('img')?.src;
-    if(name && name.length>4) items.push({name, imageUrl:img||null});
-  });
-  return items;
-}
-
-function showScrapedResults(items){
-  const container = document.getElementById('search-results');
-  container.innerHTML = '';
+function showScrapedResults(items,query){
+  const results=document.getElementById('search-results');results.innerHTML='';
   items.forEach(item=>{
-    const pedal = {id:'custom_'+Date.now(), name:item.name.substring(0,40), brand:item.name.split(' ')[0], cat:'overdrive', imageUrl:item.imageUrl};
-    const div = document.createElement('div');
-    div.className = 'search-result-item';
-    div.innerHTML = `<div style="width:60px;height:80px;background:#333;border-radius:4px;overflow:hidden">${createPedalHTML(pedal,false)}</div><div><b>${pedal.name}</b><br>${pedal.brand}</div><button>+ ADD</button>`;
-    div.querySelector('button').onclick = ()=>{
-      customPedals.push(pedal);
-      renderLibrary(document.getElementById('lib-search').value);
-      addToZone(pedal.id, addDest);
-      document.getElementById('modal-overlay').classList.remove('open');
-    };
-    container.appendChild(div);
+    const brand=extractBrand(item.name),cat=guessCat(item.name);
+    const tmp={id:'custom_'+Date.now()+Math.random(),name:item.name.substring(0,45),brand,cat,bodyColor:guessCatColor(item.name),textColor:'#fff',knobs:guessKnobs(item.name),accent:'#e8e8e8'};
+    const div=document.createElement('div');div.className='sri';
+    div.innerHTML=`<div class="sri-svg">${makePedalSVG(tmp,42,58)}</div><div style="flex:1;min-width:0"><div class="sri-name">${tmp.name}</div><div class="sri-brand">${brand}</div><div class="sri-cat" style="color:${CATS[cat].color}">${CATS[cat].label}</div></div><button class="sri-add">+ ADD</button>`;
+    div.querySelector('.sri-add').addEventListener('click',()=>{tmp.id='custom_'+Date.now();customPedals.push(tmp);renderLibrary(document.getElementById('lib-search').value);addToZone(tmp.id,addDest);closeModal()});
+    results.appendChild(div);
   });
 }
-
-function showFallbackResults(query){
-  const lc = query.toLowerCase();
-  const matches = [...PEDALS,...customPedals].filter(p=>p.name.toLowerCase().includes(lc)||p.brand.toLowerCase().includes(lc)).slice(0,8);
-  const container = document.getElementById('search-results');
-  container.innerHTML = '';
+function showFallback(query){
+  const lq=query.toLowerCase(),results=document.getElementById('search-results');
+  const matches=allPedals().filter(p=>p.name.toLowerCase().includes(lq)||p.brand.toLowerCase().includes(lq)).slice(0,8);
+  if(!matches.length){results.innerHTML='<div style="color:var(--muted);font-family:var(--font-m);font-size:11px;padding:10px">No matches found.</div>';return}
+  results.innerHTML='';
   matches.forEach(p=>{
-    const div = document.createElement('div');
-    div.className = 'search-result-item';
-    div.innerHTML = `<div style="width:60px;height:80px;background:#333;border-radius:4px;overflow:hidden">${createPedalHTML(p,false)}</div><div><b>${p.name}</b><br>${p.brand}</div><button>+ ADD</button>`;
-    div.querySelector('button').onclick = ()=>{
-      addToZone(p.id, addDest);
-      document.getElementById('modal-overlay').classList.remove('open');
-    };
-    container.appendChild(div);
+    const div=document.createElement('div');div.className='sri';
+    div.innerHTML=`<div class="sri-svg">${makePedalSVG(p,42,58)}</div><div style="flex:1;min-width:0"><div class="sri-name">${p.name}</div><div class="sri-brand">${p.brand}</div><div class="sri-cat" style="color:${CATS[p.cat].color}">${CATS[p.cat].label}</div></div><button class="sri-add">+ ADD</button>`;
+    div.querySelector('.sri-add').addEventListener('click',()=>{addToZone(p.id,addDest);closeModal()});
+    results.appendChild(div);
   });
 }
+function guessCat(n){n=n.toLowerCase();
+  if(n.includes('reverb')||n.includes('spring'))return'reverb';
+  if(n.includes('delay')||n.includes('echo'))return'delay';
+  if(n.includes('chorus')||n.includes('flanger')||n.includes('phase')||n.includes('tremolo'))return'modulation';
+  if(n.includes('fuzz')||n.includes('muff'))return'fuzz';
+  if(n.includes('distortion')||n.includes('metal'))return'distortion';
+  if(n.includes('overdrive')||n.includes('screamer')||n.includes('boost'))return'overdrive';
+  if(n.includes('wah')||n.includes('filter')||n.includes('envelope'))return'filter';
+  if(n.includes('comp'))return'compressor';
+  if(n.includes('tuner')||n.includes('looper')||n.includes('noise'))return'utility';
+  return'overdrive';
+}
+function guessCatColor(n){const m={reverb:'#17a89e',delay:'#1a6be8',modulation:'#22a84e',fuzz:'#9922cc',distortion:'#cc2222',overdrive:'#e8621a',filter:'#d4aa00',compressor:'#607080',utility:'#404555'};return m[guessCat(n)]||'#607080'}
+function guessKnobs(n){n=n.toLowerCase();if(n.includes('reverb'))return['Decay','Mix','Tone'];if(n.includes('delay'))return['Time','Mix','Feedback'];if(n.includes('comp'))return['Sustain','Level','Attack'];return['Drive','Tone','Level']}
+function extractBrand(name){const bs=['Boss','MXR','Strymon','Electro-Harmonix','EHX','Ibanez','Dunlop','ProCo','TC Electronic','Keeley','ZVex','Chase Bliss Audio','Red Panda','Fulltone','Walrus Audio','JHS','Way Huge','Earthquaker Devices','Digitech','Line 6'];for(const b of bs)if(name.toLowerCase().includes(b.toLowerCase()))return b;return name.split(' ')[0]}
 
-// ==================== MODAL & INIT ====================
-document.getElementById('btn-add-pedal').onclick = ()=>{document.getElementById('modal-overlay').classList.add('open');};
-document.getElementById('modal-close').onclick = ()=>{document.getElementById('modal-overlay').classList.remove('open');};
+// ── MODAL ────────────────────────────────────────────────
+function openModal(){document.getElementById('modal-overlay').classList.add('open')}
+function closeModal(){document.getElementById('modal-overlay').classList.remove('open');document.getElementById('search-results').innerHTML='';document.getElementById('search-status').innerHTML='';document.getElementById('modal-search-input').value=''}
+document.getElementById('btn-add-pedal').addEventListener('click',openModal);
+document.getElementById('modal-close').addEventListener('click',closeModal);
+document.getElementById('modal-overlay').addEventListener('click',e=>{if(e.target===document.getElementById('modal-overlay'))closeModal()});
+document.getElementById('modal-search-btn').addEventListener('click',()=>{const q=document.getElementById('modal-search-input').value.trim();if(q)searchPedals(q)});
+document.getElementById('modal-search-input').addEventListener('keydown',e=>{if(e.key==='Enter'){const q=e.target.value.trim();if(q)searchPedals(q)}});
+document.querySelectorAll('.dest-btn').forEach(btn=>btn.addEventListener('click',()=>{document.querySelectorAll('.dest-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');addDest=btn.dataset.dest}));
 
-let searchTO;
-document.getElementById('modal-search-input').addEventListener('input',()=>{
-  clearTimeout(searchTO);
-  search
+// ── CONTROLS ─────────────────────────────────────────────
+document.getElementById('board-size-select').addEventListener('change',e=>{
+  currentSize=e.target.value;const max=SIZES[currentSize].max;
+  if(prePedals.length+fxPedals.length>max){const k=Math.floor(max*.6);prePedals=prePedals.slice(0,k);fxPedals=fxPedals.slice(0,max-k);showToast(`Resized — trimmed to ${max} pedals`,'error')}
+  renderBoard();
+});
+document.querySelectorAll('.layout-btn').forEach(btn=>btn.addEventListener('click',()=>{document.querySelectorAll('.layout-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');multiRow=btn.dataset.rows==='2';renderBoard()}));
+document.getElementById('btn-routing').addEventListener('click',()=>{showRouting=!showRouting;document.getElementById('btn-routing').classList.toggle('active',showRouting);renderBoard()});
+document.getElementById('btn-clear').addEventListener('click',()=>{if(!prePedals.length&&!fxPedals.length)return;if(confirm('Clear all pedals from the board?')){prePedals=[];fxPedals=[];renderBoard()}});
+document.getElementById('lib-search').addEventListener('input',e=>renderLibrary(e.target.value));
+
+// ── EXPORT ───────────────────────────────────────────────
+document.getElementById('btn-export').addEventListener('click',async()=>{
+  const btn=document.getElementById('btn-export');btn.textContent='⏳ Rendering…';btn.disabled=true;
+  try{const el=document.getElementById('pedalboard');const canvas=await html2canvas(el,{backgroundColor:'#07070a',scale:2,useCORS:true,logging:false,allowTaint:true});const a=document.createElement('a');a.download='pedalboard.png';a.href=canvas.toDataURL('image/png');a.click();showToast('PNG exported! ✓','success')}
+  catch(e){showToast('Export failed — try a different browser','error')}
+  btn.innerHTML='⬇ <span>Export PNG</span>';btn.disabled=false;
+});
+
+// ── SAVE / LOAD ──────────────────────────────────────────
+function saveState(){try{localStorage.setItem('pf3_pre',JSON.stringify(prePedals));localStorage.setItem('pf3_fx',JSON.stringify(fxPedals));localStorage.setItem('pf3_size',currentSize);localStorage.setItem('pf3_custom',JSON.stringify(customPedals))}catch(e){}}
+function loadState(){
+  try{
+    prePedals=JSON.parse(localStorage.getItem('pf3_pre')||'[]');
+    fxPedals=JSON.parse(localStorage.getItem('pf3_fx')||'[]');
+    customPedals=JSON.parse(localStorage.getItem('pf3_custom')||'[]');
+    const s=localStorage.getItem('pf3_size');if(s&&SIZES[s]){currentSize=s;document.getElementById('board-size-select').value=s}
+    // Pre-warm image cache
+    allPedals().forEach(p=>{try{const v=localStorage.getItem('pfimg_'+p.id);if(v)imgCache[p.id]=v}catch(e){}});
+  }catch(e){prePedals=[];fxPedals=[]}
+}
+
+// ── INIT ─────────────────────────────────────────────────
+loadState();
+renderLibrary();
+renderBoard();
+document.getElementById('btn-routing').classList.add('active');
+// Kick off background image pre-warming for all built-in pedals
+setTimeout(prewarmImages, 800);
+</script>
+</body>
+</html>
