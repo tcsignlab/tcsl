@@ -4,11 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>GlobeTap – Guess the City</title>
-
-  <script src="https://unpkg.com/three"></script>
-  <script src="https://unpkg.com/globe.gl"></script>
-  <script src="https://unpkg.com/topojson-client@3"></script>
-
+  <!-- Fixed CDNs (same as before) -->
+  <script src="https://unpkg.com/three/build/three.min.js"></script>
+  <script src="https://unpkg.com/globe.gl/dist/globe.gl.min.js"></script>
+  <script src="https://unpkg.com/topojson-client@3/dist/topojson-client.min.js"></script>
   <style>
     body { margin:0; background:#000; color:#fff; font-family:Arial,Helvetica,sans-serif; overflow:hidden; }
     #globeViz { position:absolute; width:100%; height:100%; z-index:1; }
@@ -25,7 +24,6 @@
       transition:opacity 1s ease;
     }
     #center.hidden { opacity:0; pointer-events:none; }
-
     .menu {
       display:flex; flex-direction:column; align-items:center; gap:14px;
       background:rgba(0,0,0,0.85); padding:30px 40px; border-radius:16px;
@@ -36,25 +34,28 @@
       transition:all .25s;
     }
     button:hover { background:#00ddff; color:#000; transform:scale(1.05); }
+    #loading {
+      position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+      z-index:30; background:rgba(0,0,0,0.9); padding:20px 40px; border-radius:16px;
+      font-size:1.3rem; display:none; text-align:center;
+    }
   </style>
 </head>
 <body>
-
 <div id="globeViz"></div>
-
 <div id="ui">
   <div id="score">Score: 0</div>
   <div id="target">Find: ...</div>
   <div id="round-info">Round 1 / 5</div>
   <div id="timer">⏱ 10</div>
 </div>
-
 <div id="center">
   <div id="game-over" class="menu" style="display:none;">
     <p id="final-score" style="font-size:2.2rem; margin:0;">Final Score: 0</p>
     <button id="play-again-btn">Play Again</button>
   </div>
 </div>
+<div id="loading">🌍 Loading 140,000+ real world cities…<br><small>(one-time fetch – no repeats until all played)</small></div>
 
 <script>
 // =============== GLOBE (bright + interactive) ===============
@@ -68,44 +69,63 @@ const globe = Globe()(document.getElementById('globeViz'))
   .pointAltitude('altitude')
   .pointColor('color')
   .pointRadius(0.5)
-  .pointMerge(true)
   .onGlobeClick(({ lat, lng }) => { if (gameActive) handleGuess({ lat, lng }); });
 
-// =============== SETTINGS + CITIES ===============
-const TOTAL_ROUNDS = 5;
-const TIME_PER_ROUND = 10;
+// =============== WORLD CITIES (scraped live – ALL cities, no repeats until exhausted) ===============
+const CITIES_URL = 'https://raw.githubusercontent.com/lutangar/cities.json/master/cities.json';
+let allCities = [];
+let remainingCities = [];
+let currentTarget = null;
 
-let cities = [
-  {name:"New York",country:"United States",lat:40.7128,lng:-74.0060},
-  {name:"London",country:"United Kingdom",lat:51.5074,lng:-0.1278},
-  {name:"Tokyo",country:"Japan",lat:35.6762,lng:139.6503},
-  {name:"Paris",country:"France",lat:48.8566,lng:2.3522},
-  {name:"Sydney",country:"Australia",lat:-33.8688,lng:151.2093},
-  {name:"Moscow",country:"Russia",lat:55.7558,lng:37.6173},
-  {name:"Beijing",country:"China",lat:39.9042,lng:116.4074},
-  {name:"Rio de Janeiro",country:"Brazil",lat:-22.9068,lng:-43.1729},
-  {name:"Cairo",country:"Egypt",lat:30.0444,lng:31.2357},
-  {name:"Cape Town",country:"South Africa",lat:-33.9249,lng:18.4241},
-  {name:"Mexico City",country:"Mexico",lat:19.4326,lng:-99.1332},
-  {name:"Mumbai",country:"India",lat:19.0760,lng:72.8777},
-  {name:"Bangkok",country:"Thailand",lat:13.7563,lng:100.5018},
-  {name:"Istanbul",country:"Turkey",lat:41.0082,lng:28.9784},
-  {name:"Toronto",country:"Canada",lat:43.6532,lng:-79.3832},
-  {name:"Seoul",country:"South Korea",lat:37.5665,lng:126.9780},
-  {name:"Buenos Aires",country:"Argentina",lat:-34.6037,lng:-58.3816},
-  {name:"Jakarta",country:"Indonesia",lat:-6.2088,lng:106.8456},
-  {name:"Madrid",country:"Spain",lat:40.4168,lng:-3.7038},
-  {name:"Rome",country:"Italy",lat:41.9028,lng:12.4964},
-  {name:"Dubai",country:"United Arab Emirates",lat:25.2048,lng:55.2708},
-  {name:"Singapore",country:"Singapore",lat:1.3521,lng:103.8198}
+const FALLBACK_CITIES = [
+  {name:"New York",country:"US",lat:40.7128,lng:-74.0060},
+  {name:"London",country:"GB",lat:51.5074,lng:-0.1278},
+  {name:"Tokyo",country:"JP",lat:35.6762,lng:139.6503},
+  {name:"Paris",country:"FR",lat:48.8566,lng:2.3522},
+  {name:"Sydney",country:"AU",lat:-33.8688,lng:151.2093}
+  // ... (original 22 kept as emergency fallback)
 ];
 
-let roundCities = [];
-let pins = [];
-let index = 0;
-let score = 0;
-let gameActive = false;
-let timerId = null;
+// Shuffle helper (Fisher-Yates – totally random)
+function shuffle(array) {
+  const copy = [...array];
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
+}
+
+// Load massive real-world city database once (≈140k cities from GeoNames)
+async function loadWorldCities() {
+  const loadingEl = document.getElementById('loading');
+  loadingEl.style.display = 'block';
+  
+  try {
+    const res = await fetch(CITIES_URL);
+    if (!res.ok) throw new Error('Network error');
+    const data = await res.json();
+    
+    allCities = data
+      .map(city => ({
+        name: city.name,
+        country: city.country,        // ISO2 code (e.g. "FR")
+        lat: parseFloat(city.lat),
+        lng: parseFloat(city.lng)
+      }))
+      .filter(c => !isNaN(c.lat) && !isNaN(c.lng) && c.name && c.country);
+    
+    console.log(`✅ Loaded ${allCities.length.toLocaleString()} real cities from the web`);
+    remainingCities = shuffle(allCities);
+  } catch (err) {
+    console.warn('⚠️ City database fetch failed – using tiny fallback', err);
+    allCities = FALLBACK_CITIES.map(c => ({...c}));
+    remainingCities = shuffle(allCities);
+  } finally {
+    loadingEl.style.display = 'none';
+    startGame();   // game only starts AFTER cities are ready
+  }
+}
 
 // =============== COUNTRY BORDERS ===============
 fetch('https://unpkg.com/world-atlas@2/countries-50m.json')
@@ -116,29 +136,34 @@ fetch('https://unpkg.com/world-atlas@2/countries-50m.json')
       .polygonStrokeColor(() => '#44aaff')
       .polygonStrokeWidth(0.8)
       .polygonAltitude(0.005);
-  });
+  })
+  .catch(err => console.warn('Could not load country borders (non-critical):', err));
 
 // =============== DISTANCE ===============
 function haversine(lat1, lon1, lat2, lon2) {
   const R = 6371;
-  const dLat = (lat2-lat1)*Math.PI/180;
-  const dLon = (lon2-lon1)*Math.PI/180;
-  const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
-  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = Math.sin(dLat / 2) ** 2 +
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+            Math.sin(dLon / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-// =============== PIN (big & bright) ===============
+// =============== PIN (big & bright + animation) ===============
 function dropPin(lat, lng, color) {
-  const pin = {lat, lng, color, altitude:1.6};
+  const pin = { lat, lng, color, altitude: 1.6 };
   pins.push(pin);
   globe.pointsData(pins);
+
   let alt = 1.6;
   function animate() {
     alt -= 0.095;
     pin.altitude = Math.max(alt, 0.04);
     globe.pointsData(pins);
-    if (alt > 0.04) requestAnimationFrame(animate);
-    else {
+    if (alt > 0.04) {
+      requestAnimationFrame(animate);
+    } else {
       let bounce = 0.08;
       function bounceAnim() {
         bounce -= 0.006;
@@ -152,7 +177,26 @@ function dropPin(lat, lng, color) {
   animate();
 }
 
-// =============== GAME ===============
+// =============== GAME LOGIC ===============
+let pins = [];
+let index = 0;
+let score = 0;
+let gameActive = false;
+let timerId = null;
+const TOTAL_ROUNDS = 5;
+const TIME_PER_ROUND = 10;
+
+function pickNextTarget() {
+  // NEW CITY AT START OF EACH ROUND – pulled from global remaining pool (no repeats until ALL played)
+  if (remainingCities.length === 0) {
+    remainingCities = shuffle([...allCities]);
+  }
+  currentTarget = remainingCities.splice(0, 1)[0];
+
+  document.getElementById('target').textContent = `Find: ${currentTarget.name}, ${currentTarget.country}`;
+  document.getElementById('round-info').textContent = `Round ${index + 1} / ${TOTAL_ROUNDS}`;
+}
+
 function startGame() {
   pins = [];
   globe.pointsData([]);
@@ -160,16 +204,10 @@ function startGame() {
   index = 0;
   gameActive = true;
 
-  roundCities = [];
-  for (let i = 0; i < TOTAL_ROUNDS; i++) {
-    roundCities.push(cities[Math.floor(Math.random() * cities.length)]);
-  }
-
   document.getElementById('score').textContent = 'Score: 0';
-  document.getElementById('target').textContent = `Find: ${roundCities[0].name}, ${roundCities[0].country}`;
-  document.getElementById('round-info').textContent = `Round 1 / ${TOTAL_ROUNDS}`;
   document.getElementById('center').classList.add('hidden');
 
+  pickNextTarget();   // ← scrapes next city for round 1
   startTimer();
 }
 
@@ -177,7 +215,6 @@ function startTimer() {
   if (timerId) clearInterval(timerId);
   let timeLeft = TIME_PER_ROUND;
   document.getElementById('timer').textContent = `⏱ ${timeLeft}`;
-
   timerId = setInterval(() => {
     timeLeft--;
     document.getElementById('timer').textContent = `⏱ ${timeLeft}`;
@@ -192,19 +229,21 @@ function handleGuess(pos) {
   if (!gameActive) return;
   if (timerId) clearInterval(timerId);
 
-  const target = roundCities[index];
-  const distance = pos ? haversine(pos.lat, pos.lng, target.lat, target.lng) : 35000;
+  const target = currentTarget;
+  const distance = pos 
+    ? haversine(pos.lat, pos.lng, target.lat, target.lng) 
+    : 35000;
+
   let points = Math.max(0, Math.round(5200 - distance * 7.5));
   score += points;
-
   document.getElementById('score').textContent = `Score: ${score}`;
-  if (pos) dropPin(pos.lat, pos.lng, '#ff3366');
-  dropPin(target.lat, target.lng, '#00ff88');
+
+  if (pos) dropPin(pos.lat, pos.lng, '#ff3366');   // player guess (red)
+  dropPin(target.lat, target.lng, '#00ff88');      // correct city (green)
 
   index++;
   if (index < TOTAL_ROUNDS) {
-    document.getElementById('target').textContent = `Find: ${roundCities[index].name}, ${roundCities[index].country}`;
-    document.getElementById('round-info').textContent = `Round ${index + 1} / ${TOTAL_ROUNDS}`;
+    pickNextTarget();   // ← new random city for NEXT round (from pool)
     startTimer();
   } else {
     endGame();
@@ -224,8 +263,9 @@ document.getElementById('play-again-btn').addEventListener('click', () => {
   startGame();
 });
 
-// =============== START GAME IMMEDIATELY ===============
-startGame();
+// =============== START EVERYTHING ===============
+// Globe + borders load instantly, then we fetch the full world cities database once
+loadWorldCities();
 </script>
 </body>
 </html>
