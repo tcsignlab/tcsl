@@ -449,65 +449,81 @@ let dragLibId=null,dragSrcZone=null,dragSrcIdx=null,addDest='pre';
 const imgCache={};
 function allPedals(){return[...PEDALS,...customPedals]}
 
-// ── IMAGE PIPELINE ───────────────────────────────────────
-// Primary strategy: Anthropic API with web_search (real web access)
-// Fallback: direct CORS proxy load of any URL found
-// Background removal: flood-fill from border + feathered edges
+// ── IMAGE PIPELINE ── Wikipedia API (works from GitHub Pages, CORS-open) ──
+// Wikipedia's API allows origin=* and their CDN serves images with CORS headers.
+// No API key, no proxy, no server needed.
 
-const IMG_VER = 'v5'; // bump this to bust all cached images
-const CORS_PROXIES = [
-  url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
-  url => `https://corsproxy.io/?url=${encodeURIComponent(url)}`,
-  url => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
-];
-
-// In-flight tracker: prevent duplicate fetches for the same pedal
+const WIKI = 'https://en.wikipedia.org/w/api.php';
+const IMG_VER = 'v6';
 const inFlight = new Set();
+
+// Known Wikipedia article titles for built-in pedals
+// Using exact article titles gives fastest, highest-quality images
+const WIKI_TITLES = {
+  ts9:       'Ibanez Tube Screamer',
+  ts808:     'Ibanez Tube Screamer',
+  ocd:       'Fulltone OCD',
+  sd1:       'Boss SD-1',
+  klon:      'Klon Centaur',
+  ds1:       'Boss DS-1',
+  rat:       'Pro Co RAT',
+  bigmuff:   'Big Muff',
+  ff:        'Fuzz Face',
+  zvex:      'ZVex Effects',
+  dd7:       'Boss DD-7',
+  timeline:  'Strymon',
+  carbon:    'MXR Carbon Copy',
+  bigsky:    'Strymon',
+  flint:     'Strymon',
+  el_cap:    'Strymon',
+  ce2:       'Boss CE-2',
+  phase90:   'MXR Phase 90',
+  crybaby:   'Cry Baby',
+  cs3:       'Boss CS-3',
+  dynacomp:  'MXR Dyna Comp',
+  tu3:       'Boss TU-3',
+};
 
 function imgKey(id) { return `pfimg_${IMG_VER}_${id}`; }
 
 function cacheSet(id, val) {
   imgCache[id] = val;
-  try {
-    localStorage.setItem(imgKey(id), val);
-  } catch(e) {
-    // Quota exceeded — evict old versions then retry
+  try { localStorage.setItem(imgKey(id), val); } catch(e) {
+    // Quota hit — evict old versions then retry
     try {
-      const dead = [];
-      for (let i = 0; i < localStorage.length; i++) {
+      for (let i = localStorage.length - 1; i >= 0; i--) {
         const k = localStorage.key(i);
-        if (k && k.startsWith('pfimg_') && !k.startsWith('pfimg_' + IMG_VER)) dead.push(k);
+        if (k && k.startsWith('pfimg_') && !k.startsWith('pfimg_' + IMG_VER))
+          localStorage.removeItem(k);
       }
-      dead.forEach(k => localStorage.removeItem(k));
       localStorage.setItem(imgKey(id), val);
     } catch(e2) {}
   }
 }
 
 async function loadPedalImage(pedal) {
-  // 1. Memory cache
   if (imgCache[pedal.id]) return imgCache[pedal.id] === 'FAILED' ? null : imgCache[pedal.id];
-  // 2. localStorage cache (correct versioned key)
   try {
     const v = localStorage.getItem(imgKey(pedal.id));
     if (v) { imgCache[pedal.id] = v; return v === 'FAILED' ? null : v; }
   } catch(e) {}
-  // 3. Deduplicate in-flight requests
+  // Deduplicate concurrent requests
   if (inFlight.has(pedal.id)) {
     return new Promise(resolve => {
-      const poll = setInterval(() => {
+      const t = setInterval(() => {
         if (!inFlight.has(pedal.id)) {
-          clearInterval(poll);
-          resolve(imgCache[pedal.id] === 'FAILED' ? null : imgCache[pedal.id] || null);
+          clearInterval(t);
+          const v = imgCache[pedal.id];
+          resolve(v && v !== 'FAILED' ? v : null);
         }
-      }, 200);
+      }, 250);
     });
   }
   inFlight.add(pedal.id);
   try {
-    const url = await findImageUrl(pedal);
-    if (url) {
-      const processed = await processImage(url);
+    const imgUrl = await findImageUrl(pedal);
+    if (imgUrl) {
+      const processed = await processImage(imgUrl);
       if (processed) { cacheSet(pedal.id, processed); return processed; }
     }
     cacheSet(pedal.id, 'FAILED');
@@ -520,87 +536,75 @@ async function loadPedalImage(pedal) {
   }
 }
 
-// ── IMAGE FINDER: Anthropic web_search as primary ────────
-// Retailer sites are JS-rendered so HTML scraping returns empty pages.
-// The Anthropic API has real web access and reliably finds image URLs.
+// ── FIND IMAGE via Wikipedia API ──────────────────────────
 async function findImageUrl(pedal) {
-  const query = `${pedal.brand} ${pedal.name}`;
+  // Strategy 1: Known Wikipedia article title (fastest)
+  const knownTitle = WIKI_TITLES[pedal.id] || pedal.wikiTitle;
+  if (knownTitle) {
+    const img = await wikiPageImage(knownTitle);
+    if (img) return img;
+  }
 
-  // ── PRIMARY: Anthropic API + web_search ─────────────────
+  // Strategy 2: Wikipedia search for the pedal
   try {
-    const resp = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 500,
-        tools: [{ type: 'web_search_20250305', name: 'web_search' }],
-        messages: [{
-          role: 'user',
-          content: `Search for a product image of the "${query}" guitar effects pedal. I need a direct image URL (ending in .jpg, .jpeg, .png, or .webp) from sweetwater.com, guitarcenter.com, musiciansfriend.com, the manufacturer's site, or any gear retailer. Prefer a top-down or front-facing product photo on a plain background. Return ONLY the direct image URL — nothing else, no markdown, no explanation.`
-        }]
-      })
-    });
-    if (resp.ok) {
-      const data = await resp.json();
-      // Extract text from response — handle both text blocks and tool_result blocks
-      const allText = (data.content || [])
-        .filter(b => b.type === 'text')
-        .map(b => b.text)
-        .join('\n');
-      // Also check tool results for embedded image URLs
-      const toolResults = (data.content || [])
-        .filter(b => b.type === 'tool_result')
-        .flatMap(b => (b.content || []).filter(c => c.type === 'text').map(c => c.text))
-        .join('\n');
-      const combined = allText + '\n' + toolResults;
-      // Extract first valid image URL
-      const m = combined.match(/https?:\/\/[^\s"'<>\n\]]+\.(jpg|jpeg|png|webp)(\?[^\s"'<>\n\]]*)?/i);
-      if (m && m[0]) return m[0];
+    const q = encodeURIComponent(`${pedal.brand} ${pedal.name} guitar pedal`);
+    const r = await fetch(`${WIKI}?action=query&list=search&srsearch=${q}&srlimit=4&format=json&origin=*`,
+      { signal: AbortSignal.timeout(8000) });
+    const d = await r.json();
+    for (const result of (d?.query?.search || [])) {
+      const img = await wikiPageImage(result.title);
+      if (img) return img;
     }
   } catch(e) {}
 
-  // ── FALLBACK: try loading image directly via CORS proxies ─
-  // This works if the pedal has a known/guessable CDN URL pattern
-  const guessedUrls = guessImageUrls(pedal);
-  for (const u of guessedUrls) {
-    const result = await tryLoadImage(CORS_PROXIES[0](u), 5000);
-    if (result) return u; // return original URL so processImage can proxy it
-  }
+  // Strategy 3: Brand name search fallback
+  try {
+    const r = await fetch(`${WIKI}?action=query&list=search&srsearch=${encodeURIComponent(pedal.brand + ' guitar effects')}&srlimit=2&format=json&origin=*`,
+      { signal: AbortSignal.timeout(6000) });
+    const d = await r.json();
+    for (const result of (d?.query?.search || [])) {
+      const img = await wikiPageImage(result.title);
+      if (img) return img;
+    }
+  } catch(e) {}
 
   return null;
 }
 
-// ── GUESS CDN URLS for known brands ──────────────────────
-function guessImageUrls(pedal) {
-  const slug = (pedal.name + ' ' + pedal.brand)
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-|-$/g, '');
-  const slug2 = pedal.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-  return [
-    // Sweetwater CDN pattern
-    `https://media.sweetwater.com/api/i/q-82__w-600__ha-bc5b24ce4da33e3e__hmac-/images/items/750/${slug2}.jpg`,
-    `https://media.sweetwater.com/api/i/q-82__w-600__ha-bc5b24ce4da33e3e__hmac-/images/items/750/${slug}.jpg`,
-  ];
+// Fetch thumbnail for a Wikipedia article title (CORS-open endpoint)
+async function wikiPageImage(title) {
+  try {
+    const t = encodeURIComponent(title);
+    const r = await fetch(
+      `${WIKI}?action=query&titles=${t}&prop=pageimages&format=json&pithumbsize=600&piprop=thumbnail&origin=*`,
+      { signal: AbortSignal.timeout(7000) }
+    );
+    const d = await r.json();
+    const page = Object.values(d?.query?.pages || {})[0];
+    const src = page?.thumbnail?.source;
+    return src || null;
+  } catch(e) { return null; }
 }
 
-// ── PROCESS IMAGE: CORS proxy load + background removal ──
+// ── LOAD & PROCESS IMAGE ─────────────────────────────────
+// Wikipedia images served from upload.wikimedia.org have
+// Access-Control-Allow-Origin: * so no proxy is needed.
 async function processImage(imgUrl) {
-  for (const makeProxy of CORS_PROXIES) {
-    const result = await tryLoadImage(makeProxy(imgUrl), 12000);
-    if (result) return result;
-  }
+  // Direct load first (works for Wikipedia/Wikimedia URLs)
+  const direct = await tryLoadImage(imgUrl);
+  if (direct) return direct;
+  // CORS proxy fallbacks for non-wiki sources
+  const proxied = await tryLoadImage(`https://api.allorigins.win/raw?url=${encodeURIComponent(imgUrl)}`);
+  if (proxied) return proxied;
   return null;
 }
 
-// Try to load an image src onto a canvas and return data URL, or null
-function tryLoadImage(src, timeout = 12000) {
+function tryLoadImage(src) {
   return new Promise(resolve => {
     const img = new Image();
     img.crossOrigin = 'anonymous';
     let done = false;
-    const finish = (val) => { if (!done) { done = true; resolve(val); } };
+    const finish = v => { if (!done) { done = true; resolve(v); } };
     img.onload = () => {
       try {
         const W = img.naturalWidth || img.width;
@@ -616,34 +620,41 @@ function tryLoadImage(src, timeout = 12000) {
     };
     img.onerror = () => finish(null);
     img.src = src;
-    setTimeout(() => finish(null), timeout);
+    setTimeout(() => finish(null), 14000);
   });
 }
 
-// ── ADVANCED BACKGROUND REMOVAL ──────────────────────────
-// Samples border pixels to detect bg colour, flood-fills from edges,
-// then feathers the resulting mask for clean cutout edges.
+// ── BACKGROUND REMOVAL: flood-fill from all border pixels ─
 function removeBackground(ctx, w, h) {
   const id = ctx.getImageData(0, 0, w, h);
   const d = id.data;
 
-  // Sample border pixels to find average bg colour
-  let rS=0, gS=0, bS=0, n=0;
-  const step = Math.max(1, Math.floor(Math.min(w,h)/24));
-  for (let x=0; x<w; x+=step) { let p=(0*w+x)*4; rS+=d[p];gS+=d[p+1];bS+=d[p+2];n++; p=((h-1)*w+x)*4; rS+=d[p];gS+=d[p+1];bS+=d[p+2];n++; }
-  for (let y=0; y<h; y+=step) { let p=(y*w+0)*4; rS+=d[p];gS+=d[p+1];bS+=d[p+2];n++; p=(y*w+(w-1))*4; rS+=d[p];gS+=d[p+1];bS+=d[p+2];n++; }
+  // Sample border to estimate background colour
+  let rS=0,gS=0,bS=0,n=0;
+  const step = Math.max(1, Math.floor(Math.min(w,h)/28));
+  for (let x=0;x<w;x+=step){
+    let p=(0*w+x)*4;    rS+=d[p];gS+=d[p+1];bS+=d[p+2];n++;
+    p=((h-1)*w+x)*4;   rS+=d[p];gS+=d[p+1];bS+=d[p+2];n++;
+  }
+  for (let y=0;y<h;y+=step){
+    let p=(y*w)*4;      rS+=d[p];gS+=d[p+1];bS+=d[p+2];n++;
+    p=(y*w+(w-1))*4;   rS+=d[p];gS+=d[p+1];bS+=d[p+2];n++;
+  }
   const bgR=rS/n, bgG=gS/n, bgB=bS/n;
   const bgLuma = bgR*0.299 + bgG*0.587 + bgB*0.114;
+  const tol = bgLuma > 210 ? 36 : bgLuma > 140 ? 26 : 18;
 
-  const cdist = (px) => { const dr=d[px]-bgR,dg=d[px+1]-bgG,db=d[px+2]-bgB; return Math.sqrt(dr*dr+dg*dg+db*db); };
-  const tol = bgLuma > 200 ? 32 : bgLuma > 100 ? 24 : 20;
+  const cdist = px => {
+    const dr=d[px]-bgR, dg=d[px+1]-bgG, db=d[px+2]-bgB;
+    return Math.sqrt(dr*dr+dg*dg+db*db);
+  };
 
-  // Flood fill from all border pixels
+  // Flood-fill mask from all border pixels
   const visited = new Uint8Array(w*h);
   const mask    = new Uint8Array(w*h);
   const stack   = [];
-  for (let x=0; x<w; x++) { stack.push(x, (h-1)*w+x); }
-  for (let y=0; y<h; y++) { stack.push(y*w, y*w+(w-1)); }
+  for (let x=0;x<w;x++)     { stack.push(x);           stack.push((h-1)*w+x); }
+  for (let y=1;y<h-1;y++)   { stack.push(y*w);         stack.push(y*w+(w-1)); }
 
   while (stack.length) {
     const idx = stack.pop();
@@ -651,7 +662,7 @@ function removeBackground(ctx, w, h) {
     visited[idx] = 1;
     if (cdist(idx*4) <= tol) {
       mask[idx] = 1;
-      const x=idx%w, y=Math.floor(idx/w);
+      const x=idx%w, y=(idx/w)|0;
       if (x>0)   stack.push(idx-1);
       if (x<w-1) stack.push(idx+1);
       if (y>0)   stack.push(idx-w);
@@ -659,45 +670,46 @@ function removeBackground(ctx, w, h) {
     }
   }
 
-  // Global pass: zap remaining near-white/near-bg isolated pixels
+  // Extra pass: zap nearly-white stray pixels anywhere in image
   if (bgLuma > 200) {
-    for (let i=0; i<w*h; i++) {
+    for (let i=0;i<w*h;i++) {
       if (mask[i]) continue;
-      const px=i*4, sat=Math.max(d[px],d[px+1],d[px+2])-Math.min(d[px],d[px+1],d[px+2]);
+      const px=i*4;
+      const sat=Math.max(d[px],d[px+1],d[px+2])-Math.min(d[px],d[px+1],d[px+2]);
       const luma=d[px]*0.299+d[px+1]*0.587+d[px+2]*0.114;
-      if (luma > 242 && sat < 10) mask[i] = 1;
+      if (luma > 245 && sat < 8) mask[i] = 1;
     }
   }
 
-  // Apply mask + feather edges
-  for (let y=0; y<h; y++) {
-    for (let x=0; x<w; x++) {
+  // Apply mask + feather edges (1-pixel soft border)
+  for (let y=0;y<h;y++) {
+    for (let x=0;x<w;x++) {
       const idx=y*w+x;
       if (!mask[idx]) continue;
       d[idx*4+3] = 0;
-      for (const [nx,ny] of [[x-1,y],[x+1,y],[x,y-1],[x,y+1],[x-1,y-1],[x+1,y-1],[x-1,y+1],[x+1,y+1]]) {
+      for (const [nx,ny] of [[x-1,y],[x+1,y],[x,y-1],[x,y+1]]) {
         if (nx<0||nx>=w||ny<0||ny>=h) continue;
         const ni=ny*w+nx;
-        if (!mask[ni]) d[ni*4+3] = Math.min(d[ni*4+3], 180);
+        if (!mask[ni]) d[ni*4+3] = Math.min(d[ni*4+3], 170);
       }
     }
   }
   ctx.putImageData(id, 0, 0);
 }
 
-// ── UPDATE UI when image finishes loading ─────────────────
+// ── UPDATE UI elements live when an image loads ───────────
 function applyImageToUI(pedalId, dataUrl) {
   if (!dataUrl || dataUrl === 'FAILED') return;
-  // Update library icon
-  const libIcon = document.querySelector(`.lib-pedal[data-id="${pedalId}"] .lib-icon`);
-  if (libIcon) {
-    libIcon.innerHTML = `<img src="${dataUrl}" style="width:100%;height:100%;object-fit:contain;filter:url(#cartoon) saturate(2) contrast(1.3)" alt="">`;
-  }
-  // Update any board cards currently showing shimmer/fallback
-  document.querySelectorAll(`.board-pedal[data-zone]`).forEach(wrapper => {
-    const allZone = wrapper.dataset.zone === 'pre' ? prePedals : fxPedals;
-    const idx = parseInt(wrapper.dataset.idx);
-    if (allZone[idx] === pedalId) {
+  const IMG_STYLE = 'width:100%;height:100%;object-fit:contain;filter:url(#cartoon) saturate(2) contrast(1.3)';
+  // Library icon
+  const icon = document.querySelector(`.lib-pedal[data-id="${pedalId}"] .lib-icon`);
+  if (icon) icon.innerHTML = `<img src="${dataUrl}" style="${IMG_STYLE}" alt="">`;
+  // Board cards (any zone)
+  document.querySelectorAll('.board-pedal').forEach(wrapper => {
+    const zone = wrapper.dataset.zone;
+    const idx  = parseInt(wrapper.dataset.idx);
+    const arr  = zone === 'pre' ? prePedals : fxPedals;
+    if (arr[idx] === pedalId) {
       const card = wrapper.querySelector('.pedal-card');
       if (card && !card.querySelector('.pedal-real-img')) {
         card.innerHTML = `<img src="${dataUrl}" class="pedal-real-img" alt="">`;
@@ -706,21 +718,24 @@ function applyImageToUI(pedalId, dataUrl) {
   });
 }
 
-// ── PRE-WARM all built-in pedals on startup ───────────────
+// ── PREWARM: fetch images for all built-in pedals ─────────
+// Stagger 700ms apart to avoid hitting Wikipedia rate limits
 function prewarmImages() {
   PEDALS.forEach((p, i) => {
-    // Already in memory or localStorage cache?
-    if (imgCache[p.id] && imgCache[p.id] !== 'FAILED') return;
+    // Already in memory?
+    if (imgCache[p.id] && imgCache[p.id] !== 'FAILED') {
+      applyImageToUI(p.id, imgCache[p.id]);
+      return;
+    }
+    // Check localStorage
     try {
       const v = localStorage.getItem(imgKey(p.id));
       if (v) { imgCache[p.id] = v; applyImageToUI(p.id, v); return; }
     } catch(e) {}
-    // Schedule staggered fetch — 600ms apart to stay under rate limits
+    // Schedule fetch
     setTimeout(() => {
-      loadPedalImage(p).then(url => {
-        if (url) applyImageToUI(p.id, url);
-      });
-    }, i * 600);
+      loadPedalImage(p).then(url => { if (url) applyImageToUI(p.id, url); });
+    }, i * 700);
   });
 }
 
@@ -878,50 +893,40 @@ function hideInfo(){document.getElementById('info-panel').classList.remove('visi
 let _tt;
 function showToast(msg,type=''){const t=document.getElementById('toast');t.textContent=msg;t.className=type?`show ${type}`:'show';clearTimeout(_tt);_tt=setTimeout(()=>t.classList.remove('show'),2400)}
 
-// ── PEDAL SEARCH via Anthropic API ───────────────────────
+// ── PEDAL SEARCH via Wikipedia API ───────────────────────
+// Wikipedia search is CORS-open and returns real product info
 async function searchPedals(query) {
-  const status = document.getElementById('search-status');
+  const status  = document.getElementById('search-status');
   const results = document.getElementById('search-results');
   results.innerHTML = '';
-  status.innerHTML = '<span class="spinner"></span>Searching Sweetwater &amp; Guitar Center…';
+  status.innerHTML  = '<span class="spinner"></span>Searching Wikipedia…';
 
   try {
-    const resp = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 800,
-        tools: [{ type: 'web_search_20250305', name: 'web_search' }],
-        messages: [{
-          role: 'user',
-          content: `Search sweetwater.com and guitarcenter.com for guitar effects pedals matching "${query}". Return ONLY a raw JSON array (no markdown fences, no explanation) of up to 6 matching pedals. Each object must have exactly these keys: "name" (full product name string), "brand" (manufacturer string), "category" (exactly one of: overdrive, distortion, fuzz, delay, reverb, modulation, filter, compressor, utility, ambient). Example format: [{"name":"Boss DS-1 Distortion","brand":"Boss","category":"distortion"}]`
-        }]
-      })
-    });
-    if (resp.ok) {
-      const data = await resp.json();
-      const txt = (data.content || []).filter(b => b.type === 'text').map(b => b.text).join('');
-      const m = txt.match(/\[[\s\S]*?\]/);
-      if (m) {
-        let parsed = [];
-        try { parsed = JSON.parse(m[0]); } catch(e) {}
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          const seen = new Set();
-          const clean = parsed
-            .filter(p => p && typeof p.name === 'string' && p.name.length > 2)
-            .filter(p => { if (seen.has(p.name)) return false; seen.add(p.name); return true; })
-            .slice(0, 8);
-          if (clean.length > 0) {
-            status.innerHTML = `${clean.length} results found`;
-            showSearchResults(clean);
-            return;
-          }
-        }
-      }
+    // Full-text search
+    const q = encodeURIComponent(query + ' guitar effects pedal');
+    const r = await fetch(
+      `${WIKI}?action=query&list=search&srsearch=${q}&srlimit=10&format=json&origin=*`,
+      { signal: AbortSignal.timeout(9000) }
+    );
+    const d = await r.json();
+    const hits = (d?.query?.search || []).filter(s =>
+      /pedal|effects|overdrive|distortion|fuzz|delay|reverb|chorus|flanger|wah|compressor|guitar/i
+        .test(s.title + ' ' + s.snippet)
+    ).slice(0, 8);
+
+    if (hits.length) {
+      status.innerHTML = `${hits.length} results found`;
+      showSearchResults(hits.map(h => ({
+        name:  h.title,
+        brand: extractBrand(h.title),
+        cat:   guessCat(h.title + ' ' + h.snippet),
+        wikiTitle: h.title,
+      })));
+      return;
     }
   } catch(e) {}
 
+  // Fallback: filter built-in library
   status.innerHTML = 'Showing built-in matches';
   showFallback(query);
 }
@@ -930,22 +935,23 @@ function showSearchResults(items) {
   const results = document.getElementById('search-results');
   results.innerHTML = '';
   items.forEach(item => {
-    const cat = CATS[item.category] ? item.category : guessCat(item.name);
+    const cat = CATS[item.cat] ? item.cat : guessCat(item.name);
     const uid = 'custom_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7);
     const tmp = {
       id: uid,
-      name: (item.name || '').substring(0, 50),
-      brand: item.brand || extractBrand(item.name),
+      name:       (item.name || '').substring(0, 50),
+      brand:      item.brand || extractBrand(item.name),
       cat,
-      bodyColor: guessCatColor(item.name),
-      textColor: '#fff',
-      knobs: guessKnobs(item.name),
-      accent: '#e8e8e8'
+      wikiTitle:  item.wikiTitle || null,
+      bodyColor:  guessCatColor(item.name),
+      textColor:  '#fff',
+      knobs:      guessKnobs(item.name),
+      accent:     '#e8e8e8'
     };
     const div = document.createElement('div');
     div.className = 'sri';
     div.innerHTML = `
-      <div class="sri-svg" id="sri-icon-${uid}">${makePedalSVG(tmp, 42, 58)}</div>
+      <div class="sri-svg" id="sri-${uid}">${makePedalSVG(tmp, 42, 58)}</div>
       <div style="flex:1;min-width:0">
         <div class="sri-name">${tmp.name}</div>
         <div class="sri-brand">${tmp.brand}</div>
@@ -954,18 +960,18 @@ function showSearchResults(items) {
       <button class="sri-add">+ ADD</button>`;
     div.querySelector('.sri-add').addEventListener('click', () => {
       const finalId = 'custom_' + Date.now();
-      tmp.id = finalId;
-      customPedals.push({ ...tmp });
+      const pedal = { ...tmp, id: finalId };
+      customPedals.push(pedal);
       renderLibrary(document.getElementById('lib-search').value);
       addToZone(finalId, addDest);
-      loadPedalImage(tmp).then(url => { if (url) { imgCache[finalId] = url; applyImageToUI(finalId, url); } });
+      loadPedalImage(pedal).then(url => { if (url) applyImageToUI(finalId, url); });
       closeModal();
     });
     results.appendChild(div);
-    // Load preview image async
+    // Load preview image for result
     loadPedalImage(tmp).then(url => {
       if (!url) return;
-      const el = document.getElementById(`sri-icon-${uid}`);
+      const el = document.getElementById(`sri-${uid}`);
       if (el) el.innerHTML = `<img src="${url}" style="width:42px;height:58px;object-fit:contain;filter:url(#cartoon) saturate(2) contrast(1.3)" alt="">`;
     });
   });
