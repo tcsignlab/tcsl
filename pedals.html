@@ -450,345 +450,277 @@ const imgCache={};
 function allPedals(){return[...PEDALS,...customPedals]}
 
 // ── IMAGE PIPELINE ───────────────────────────────────────
-const PROXY = 'https://api.allorigins.win';
-const IMG_VERSION = 'v4'; // bump to bust all cached images
+// Primary strategy: Anthropic API with web_search (real web access)
+// Fallback: direct CORS proxy load of any URL found
+// Background removal: flood-fill from border + feathered edges
 
-// Concurrent fetch queue — max 3 at once so we don't spam proxies
-const fetchQueue = { running: 0, max: 3, pending: [] };
-function queuedFetch(fn) {
-  return new Promise((res, rej) => {
-    const run = () => { fetchQueue.running++; fn().then(res, rej).finally(() => { fetchQueue.running--; const next = fetchQueue.pending.shift(); if (next) next(); }); };
-    if (fetchQueue.running < fetchQueue.max) run(); else fetchQueue.pending.push(run);
-  });
+const IMG_VER = 'v5'; // bump this to bust all cached images
+const CORS_PROXIES = [
+  url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+  url => `https://corsproxy.io/?url=${encodeURIComponent(url)}`,
+  url => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
+];
+
+// In-flight tracker: prevent duplicate fetches for the same pedal
+const inFlight = new Set();
+
+function imgKey(id) { return `pfimg_${IMG_VER}_${id}`; }
+
+function cacheSet(id, val) {
+  imgCache[id] = val;
+  try {
+    localStorage.setItem(imgKey(id), val);
+  } catch(e) {
+    // Quota exceeded — evict old versions then retry
+    try {
+      const dead = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (k && k.startsWith('pfimg_') && !k.startsWith('pfimg_' + IMG_VER)) dead.push(k);
+      }
+      dead.forEach(k => localStorage.removeItem(k));
+      localStorage.setItem(imgKey(id), val);
+    } catch(e2) {}
+  }
 }
 
 async function loadPedalImage(pedal) {
-  const key = 'pfimg_' + IMG_VERSION + '_' + pedal.id;
+  // 1. Memory cache
   if (imgCache[pedal.id]) return imgCache[pedal.id] === 'FAILED' ? null : imgCache[pedal.id];
-  try { const v = localStorage.getItem(key); if (v) { imgCache[pedal.id] = v; return v === 'FAILED' ? null : v; } } catch(e) {}
-  let url = null;
-  try { url = await findImageUrl(pedal); } catch(e) {}
-  if (!url) { cacheSet(pedal.id, key, 'FAILED'); return null; }
+  // 2. localStorage cache (correct versioned key)
   try {
-    const processed = await processImage(url);
-    if (processed) { cacheSet(pedal.id, key, processed); return processed; }
+    const v = localStorage.getItem(imgKey(pedal.id));
+    if (v) { imgCache[pedal.id] = v; return v === 'FAILED' ? null : v; }
   } catch(e) {}
-  cacheSet(pedal.id, key, 'FAILED');
-  return null;
-}
-
-function cacheSet(id, key, val) {
-  imgCache[id] = val;
-  try { localStorage.setItem(key, val); } catch(e) {
-    // Storage quota — clear old images and retry
-    try { clearOldImages(); localStorage.setItem(key, val); } catch(e2) {}
+  // 3. Deduplicate in-flight requests
+  if (inFlight.has(pedal.id)) {
+    return new Promise(resolve => {
+      const poll = setInterval(() => {
+        if (!inFlight.has(pedal.id)) {
+          clearInterval(poll);
+          resolve(imgCache[pedal.id] === 'FAILED' ? null : imgCache[pedal.id] || null);
+        }
+      }, 200);
+    });
   }
-}
-function clearOldImages() {
-  const toDelete = [];
-  for (let i = 0; i < localStorage.length; i++) {
-    const k = localStorage.key(i);
-    if (k && k.startsWith('pfimg_') && !k.startsWith('pfimg_' + IMG_VERSION)) toDelete.push(k);
-  }
-  toDelete.forEach(k => localStorage.removeItem(k));
-}
-
-// ── MULTI-SOURCE IMAGE FINDER ─────────────────────────────
-// Tries sources in order, returns first working direct image URL
-async function findImageUrl(pedal) {
-  const q = `${pedal.brand} ${pedal.name}`;
-
-  // Helper: fetch page via allorigins and parse as DOM
-  const fetchPage = async (url, timeout = 9000) => {
-    const r = await fetch(`${PROXY}/get?url=${encodeURIComponent(url)}`, { signal: AbortSignal.timeout(timeout) });
-    const data = await r.json();
-    return new DOMParser().parseFromString(data.contents || '', 'text/html');
-  };
-
-  // Extract best image from a parsed doc
-  const extractImg = (doc, ...hostHints) => {
-    // Priority 1: og:image meta (most reliable for product pages)
-    const og = doc.querySelector('meta[property="og:image"],meta[name="og:image"]');
-    if (og) { const s = og.getAttribute('content'); if (isImgUrl(s)) return s; }
-    // Priority 2: JSON-LD product image
-    for (const script of doc.querySelectorAll('script[type="application/ld+json"]')) {
-      try {
-        const j = JSON.parse(script.textContent);
-        const imgs = [].concat(j?.image, j?.['@graph']?.map?.(n=>n.image)).flat().filter(Boolean);
-        for (const img of imgs) { const s = typeof img === 'string' ? img : img?.url || img?.contentUrl; if (isImgUrl(s)) return s; }
-      } catch(e) {}
+  inFlight.add(pedal.id);
+  try {
+    const url = await findImageUrl(pedal);
+    if (url) {
+      const processed = await processImage(url);
+      if (processed) { cacheSet(pedal.id, processed); return processed; }
     }
-    // Priority 3: largest product img matching host hints
-    const allImgs = [...doc.querySelectorAll('img[src],img[data-src],img[data-lazy-src],img[data-original]')];
-    for (const hint of [...hostHints, '']) {
-      for (const el of allImgs) {
-        const src = el.getAttribute('src') || el.getAttribute('data-src') || el.getAttribute('data-lazy-src') || el.getAttribute('data-original') || '';
-        if (isImgUrl(src) && (!hint || src.includes(hint))) return src;
-      }
-    }
+    cacheSet(pedal.id, 'FAILED');
     return null;
-  };
+  } catch(e) {
+    cacheSet(pedal.id, 'FAILED');
+    return null;
+  } finally {
+    inFlight.delete(pedal.id);
+  }
+}
 
-  const isImgUrl = s => s && s.startsWith('http') && /\.(jpg|jpeg|png|webp)(\?|$)/i.test(s);
+// ── IMAGE FINDER: Anthropic web_search as primary ────────
+// Retailer sites are JS-rendered so HTML scraping returns empty pages.
+// The Anthropic API has real web access and reliably finds image URLs.
+async function findImageUrl(pedal) {
+  const query = `${pedal.brand} ${pedal.name}`;
 
-  // ── SOURCE 1: SWEETWATER ─────────────────────────────────
-  try {
-    return await queuedFetch(async () => {
-      const doc = await fetchPage(`https://www.sweetwater.com/store/search.php?s=${encodeURIComponent(q)}`);
-      // Try inline search-result images first
-      const imgSelectors = [
-        'img[src*="media.sweetwater.com"]', 'img[data-src*="sweetwater"]',
-        '[class*="ProductCard"] img', '[class*="product-listing"] img',
-        '[class*="product-card"] img', '.product img',
-      ];
-      for (const sel of imgSelectors) {
-        const el = doc.querySelector(sel);
-        if (el) { const s = el.getAttribute('src') || el.getAttribute('data-src'); if (isImgUrl(s)) return s; }
-      }
-      // Follow first product detail link
-      const lnk = doc.querySelector('a[href*="/store/detail"],a[href*="sweetwater.com/store/"]');
-      if (lnk) {
-        const href = makeAbsolute(lnk, 'https://www.sweetwater.com');
-        const doc2 = await fetchPage(href, 8000);
-        const img = extractImg(doc2, 'media.sweetwater', 'sweetwater');
-        if (img) return img;
-      }
-      return null;
-    });
-  } catch(e) {}
-
-  // ── SOURCE 2: GUITAR CENTER ──────────────────────────────
-  try {
-    return await queuedFetch(async () => {
-      const doc = await fetchPage(`https://www.guitarcenter.com/search?Ntt=${encodeURIComponent(q)}`);
-      const og = doc.querySelector('meta[property="og:image"]');
-      if (og) { const s = og.getAttribute('content'); if (isImgUrl(s)) return s; }
-      const imgSels = ['[class*="product"] img[src*="gc.com"]','[class*="product"] img[src*="guitarcenter"]','[class*="ProductCard"] img','[class*="product-image"] img'];
-      for (const sel of imgSels) { const el = doc.querySelector(sel); if (el) { const s = el.getAttribute('src') || el.getAttribute('data-src'); if (isImgUrl(s)) return s; } }
-      // Follow product link
-      const lnk = doc.querySelector('a[href*="guitarcenter.com/"][href*=".gc"]') || doc.querySelector('[class*="product"] a[href]');
-      if (lnk) {
-        const href = makeAbsolute(lnk, 'https://www.guitarcenter.com');
-        const doc2 = await fetchPage(href, 8000);
-        const img = extractImg(doc2, 'gc.com', 'guitarcenter', 'media');
-        if (img) return img;
-      }
-      return null;
-    });
-  } catch(e) {}
-
-  // ── SOURCE 3: MUSICIANS FRIEND ───────────────────────────
-  try {
-    return await queuedFetch(async () => {
-      const doc = await fetchPage(`https://www.musiciansfriend.com/search?q=${encodeURIComponent(q)}`);
-      const img = extractImg(doc, 'musiciansfriend', 'musician');
-      if (img) return img;
-      const lnk = doc.querySelector('a[href*="musiciansfriend.com/"][href*="effects"]') || doc.querySelector('[class*="product"] a');
-      if (lnk) {
-        const doc2 = await fetchPage(makeAbsolute(lnk, 'https://www.musiciansfriend.com'), 8000);
-        return extractImg(doc2, 'musiciansfriend');
-      }
-      return null;
-    });
-  } catch(e) {}
-
-  // ── SOURCE 4: B&H PHOTO ──────────────────────────────────
-  try {
-    return await queuedFetch(async () => {
-      const doc = await fetchPage(`https://www.bhphotovideo.com/c/search?q=${encodeURIComponent(q)}`);
-      const img = extractImg(doc, 'bhphotovideo', 'bh');
-      return img;
-    });
-  } catch(e) {}
-
-  // ── SOURCE 5: REVERB.COM ─────────────────────────────────
-  try {
-    return await queuedFetch(async () => {
-      const doc = await fetchPage(`https://reverb.com/marketplace?query=${encodeURIComponent(q)}&item_region=worldwide&inventory_new_or_used=new`);
-      // Reverb uses data-src heavily
-      const el = doc.querySelector('[class*="product"] img,[class*="listing"] img,[class*="card"] img');
-      if (el) { const s = el.getAttribute('src') || el.getAttribute('data-src'); if (isImgUrl(s)) return s; }
-      const img = extractImg(doc, 'reverb-res', 'res.cloudinary');
-      return img;
-    });
-  } catch(e) {}
-
-  // ── SOURCE 6: ANTHROPIC WEB SEARCH (last resort) ─────────
+  // ── PRIMARY: Anthropic API + web_search ─────────────────
   try {
     const resp = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514', max_tokens: 400,
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 500,
         tools: [{ type: 'web_search_20250305', name: 'web_search' }],
-        messages: [{ role: 'user', content: `Find a direct top-down product photo image URL for the "${pedal.brand} ${pedal.name}" guitar effects pedal from sweetwater.com, guitarcenter.com, or the manufacturer's website. The URL must end in .jpg, .jpeg, .png, or .webp. Return ONLY the raw image URL with no other text.` }]
+        messages: [{
+          role: 'user',
+          content: `Search for a product image of the "${query}" guitar effects pedal. I need a direct image URL (ending in .jpg, .jpeg, .png, or .webp) from sweetwater.com, guitarcenter.com, musiciansfriend.com, the manufacturer's site, or any gear retailer. Prefer a top-down or front-facing product photo on a plain background. Return ONLY the direct image URL — nothing else, no markdown, no explanation.`
+        }]
       })
     });
     if (resp.ok) {
       const data = await resp.json();
-      const txt = (data.content || []).filter(b => b.type === 'text').map(b => b.text).join('');
-      const m = txt.match(/https?:\/\/[^\s"'<>\n]+\.(jpg|jpeg|png|webp)(\?[^\s"'<>\n]*)?/i);
-      if (m) return m[0];
+      // Extract text from response — handle both text blocks and tool_result blocks
+      const allText = (data.content || [])
+        .filter(b => b.type === 'text')
+        .map(b => b.text)
+        .join('\n');
+      // Also check tool results for embedded image URLs
+      const toolResults = (data.content || [])
+        .filter(b => b.type === 'tool_result')
+        .flatMap(b => (b.content || []).filter(c => c.type === 'text').map(c => c.text))
+        .join('\n');
+      const combined = allText + '\n' + toolResults;
+      // Extract first valid image URL
+      const m = combined.match(/https?:\/\/[^\s"'<>\n\]]+\.(jpg|jpeg|png|webp)(\?[^\s"'<>\n\]]*)?/i);
+      if (m && m[0]) return m[0];
     }
   } catch(e) {}
+
+  // ── FALLBACK: try loading image directly via CORS proxies ─
+  // This works if the pedal has a known/guessable CDN URL pattern
+  const guessedUrls = guessImageUrls(pedal);
+  for (const u of guessedUrls) {
+    const result = await tryLoadImage(CORS_PROXIES[0](u), 5000);
+    if (result) return u; // return original URL so processImage can proxy it
+  }
 
   return null;
 }
 
-function makeAbsolute(linkEl, base) {
-  const href = linkEl.getAttribute('href') || '';
-  return href.startsWith('http') ? href : base + (href.startsWith('/') ? '' : '/') + href;
+// ── GUESS CDN URLS for known brands ──────────────────────
+function guessImageUrls(pedal) {
+  const slug = (pedal.name + ' ' + pedal.brand)
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '');
+  const slug2 = pedal.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  return [
+    // Sweetwater CDN pattern
+    `https://media.sweetwater.com/api/i/q-82__w-600__ha-bc5b24ce4da33e3e__hmac-/images/items/750/${slug2}.jpg`,
+    `https://media.sweetwater.com/api/i/q-82__w-600__ha-bc5b24ce4da33e3e__hmac-/images/items/750/${slug}.jpg`,
+  ];
 }
 
-// ── IMAGE PROCESSING: proxy load + advanced bg removal ────
+// ── PROCESS IMAGE: CORS proxy load + background removal ──
 async function processImage(imgUrl) {
-  // Try multiple proxy strategies for CORS
-  const proxies = [
-    `${PROXY}/raw?url=${encodeURIComponent(imgUrl)}`,
-    `https://corsproxy.io/?${encodeURIComponent(imgUrl)}`,
-    `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(imgUrl)}`,
-  ];
-
-  for (const proxyUrl of proxies) {
-    const result = await tryLoadImage(proxyUrl);
+  for (const makeProxy of CORS_PROXIES) {
+    const result = await tryLoadImage(makeProxy(imgUrl), 12000);
     if (result) return result;
   }
   return null;
 }
 
-function tryLoadImage(src) {
+// Try to load an image src onto a canvas and return data URL, or null
+function tryLoadImage(src, timeout = 12000) {
   return new Promise(resolve => {
     const img = new Image();
     img.crossOrigin = 'anonymous';
+    let done = false;
+    const finish = (val) => { if (!done) { done = true; resolve(val); } };
     img.onload = () => {
       try {
         const W = img.naturalWidth || img.width;
         const H = img.naturalHeight || img.height;
-        if (W < 20 || H < 20) { resolve(null); return; }
+        if (W < 40 || H < 40) { finish(null); return; }
         const canvas = document.createElement('canvas');
         canvas.width = W; canvas.height = H;
         const ctx = canvas.getContext('2d');
         ctx.drawImage(img, 0, 0);
         removeBackground(ctx, W, H);
-        resolve(canvas.toDataURL('image/png'));
-      } catch(e) { resolve(null); }
+        finish(canvas.toDataURL('image/png'));
+      } catch(e) { finish(null); }
     };
-    img.onerror = () => resolve(null);
+    img.onerror = () => finish(null);
     img.src = src;
-    setTimeout(() => { if (!img.complete) { img.src = ''; resolve(null); } }, 12000);
+    setTimeout(() => finish(null), timeout);
   });
 }
 
-// ── ADVANCED BACKGROUND REMOVAL ───────────────────────────
-// Uses flood-fill from all four corners + edge sampling to build
-// a background mask, then feathers the edges.
+// ── ADVANCED BACKGROUND REMOVAL ──────────────────────────
+// Samples border pixels to detect bg colour, flood-fills from edges,
+// then feathers the resulting mask for clean cutout edges.
 function removeBackground(ctx, w, h) {
   const id = ctx.getImageData(0, 0, w, h);
   const d = id.data;
 
-  // Sample corner/edge pixels to characterise background colour
-  const samplePositions = [];
-  const step = Math.max(1, Math.floor(Math.min(w, h) / 20));
-  for (let x = 0; x < w; x += step) { samplePositions.push(x, 0); samplePositions.push(x, h - 1); }
-  for (let y = 0; y < h; y += step) { samplePositions.push(0, y); samplePositions.push(w - 1, y); }
+  // Sample border pixels to find average bg colour
+  let rS=0, gS=0, bS=0, n=0;
+  const step = Math.max(1, Math.floor(Math.min(w,h)/24));
+  for (let x=0; x<w; x+=step) { let p=(0*w+x)*4; rS+=d[p];gS+=d[p+1];bS+=d[p+2];n++; p=((h-1)*w+x)*4; rS+=d[p];gS+=d[p+1];bS+=d[p+2];n++; }
+  for (let y=0; y<h; y+=step) { let p=(y*w+0)*4; rS+=d[p];gS+=d[p+1];bS+=d[p+2];n++; p=(y*w+(w-1))*4; rS+=d[p];gS+=d[p+1];bS+=d[p+2];n++; }
+  const bgR=rS/n, bgG=gS/n, bgB=bS/n;
+  const bgLuma = bgR*0.299 + bgG*0.587 + bgB*0.114;
 
-  // Accumulate avg border colour
-  let rSum = 0, gSum = 0, bSum = 0, n = 0;
-  for (let i = 0; i < samplePositions.length; i += 2) {
-    const px = (samplePositions[i + 1] * w + samplePositions[i]) * 4;
-    rSum += d[px]; gSum += d[px + 1]; bSum += d[px + 2]; n++;
-  }
-  const bgR = rSum / n, bgG = gSum / n, bgB = bSum / n;
+  const cdist = (px) => { const dr=d[px]-bgR,dg=d[px+1]-bgG,db=d[px+2]-bgB; return Math.sqrt(dr*dr+dg*dg+db*db); };
+  const tol = bgLuma > 200 ? 32 : bgLuma > 100 ? 24 : 20;
 
-  // Decide: is background light (white/grey) or dark?
-  const bgLuma = bgR * 0.299 + bgG * 0.587 + bgB * 0.114;
+  // Flood fill from all border pixels
+  const visited = new Uint8Array(w*h);
+  const mask    = new Uint8Array(w*h);
+  const stack   = [];
+  for (let x=0; x<w; x++) { stack.push(x, (h-1)*w+x); }
+  for (let y=0; y<h; y++) { stack.push(y*w, y*w+(w-1)); }
 
-  // Flood-fill mask from four corners
-  const visited = new Uint8Array(w * h);
-  const mask = new Uint8Array(w * h); // 0 = keep, 1 = remove
-  const tolerance = bgLuma > 180 ? 28 : 22; // looser for light bg
-
-  function colorDist(px) {
-    const dr = d[px] - bgR, dg = d[px + 1] - bgG, db = d[px + 2] - bgB;
-    return Math.sqrt(dr * dr + dg * dg + db * db);
-  }
-
-  const stack = [];
-  const pushCorners = () => {
-    [[0,0],[w-1,0],[0,h-1],[w-1,h-1]].forEach(([x,y]) => { const idx = y * w + x; if (!visited[idx]) stack.push(idx); });
-    // Also seed from border pixels
-    for (let x = 0; x < w; x++) { stack.push(x); stack.push((h-1)*w+x); }
-    for (let y = 0; y < h; y++) { stack.push(y*w); stack.push(y*w+w-1); }
-  };
-  pushCorners();
-
-  while (stack.length > 0) {
+  while (stack.length) {
     const idx = stack.pop();
-    if (idx < 0 || idx >= w * h || visited[idx]) continue;
+    if (idx < 0 || idx >= w*h || visited[idx]) continue;
     visited[idx] = 1;
-    const px = idx * 4;
-    if (colorDist(px) <= tolerance) {
+    if (cdist(idx*4) <= tol) {
       mask[idx] = 1;
-      const x = idx % w, y = Math.floor(idx / w);
-      if (x > 0) stack.push(idx - 1);
-      if (x < w - 1) stack.push(idx + 1);
-      if (y > 0) stack.push(idx - w);
-      if (y < h - 1) stack.push(idx + w);
+      const x=idx%w, y=Math.floor(idx/w);
+      if (x>0)   stack.push(idx-1);
+      if (x<w-1) stack.push(idx+1);
+      if (y>0)   stack.push(idx-w);
+      if (y<h-1) stack.push(idx+w);
     }
   }
 
-  // Also remove isolated near-background pixels throughout image (global pass)
-  for (let i = 0; i < w * h; i++) {
-    if (!mask[i]) {
-      const px = i * 4;
-      const dist = colorDist(px);
-      const luma = d[px] * 0.299 + d[px+1] * 0.587 + d[px+2] * 0.114;
-      const sat = Math.max(d[px], d[px+1], d[px+2]) - Math.min(d[px], d[px+1], d[px+2]);
-      // Remove very bright, desaturated pixels anywhere (typical white bg spill)
-      if (bgLuma > 180 && luma > 240 && sat < 12) mask[i] = 1;
-      // Soften near-bg pixels
-      else if (bgLuma > 180 && dist < tolerance * 1.6 && sat < 30) {
-        const alpha = Math.round(((dist - tolerance) / (tolerance * 0.6)) * 255);
-        d[px + 3] = Math.min(d[px + 3], Math.max(0, alpha));
-      }
+  // Global pass: zap remaining near-white/near-bg isolated pixels
+  if (bgLuma > 200) {
+    for (let i=0; i<w*h; i++) {
+      if (mask[i]) continue;
+      const px=i*4, sat=Math.max(d[px],d[px+1],d[px+2])-Math.min(d[px],d[px+1],d[px+2]);
+      const luma=d[px]*0.299+d[px+1]*0.587+d[px+2]*0.114;
+      if (luma > 242 && sat < 10) mask[i] = 1;
     }
   }
 
-  // Apply mask with feathered edge (2px Gaussian-style blend)
-  for (let y = 0; y < h; y++) {
-    for (let x = 0; x < w; x++) {
-      const idx = y * w + x;
+  // Apply mask + feather edges
+  for (let y=0; y<h; y++) {
+    for (let x=0; x<w; x++) {
+      const idx=y*w+x;
       if (!mask[idx]) continue;
-      d[idx * 4 + 3] = 0;
-      // Feather immediate neighbours that are kept
-      for (const [nx, ny] of [[x-1,y],[x+1,y],[x,y-1],[x,y+1]]) {
-        if (nx < 0 || nx >= w || ny < 0 || ny >= h) continue;
-        const nidx = ny * w + nx;
-        if (!mask[nidx]) d[nidx * 4 + 3] = Math.min(d[nidx * 4 + 3], 160);
+      d[idx*4+3] = 0;
+      for (const [nx,ny] of [[x-1,y],[x+1,y],[x,y-1],[x,y+1],[x-1,y-1],[x+1,y-1],[x-1,y+1],[x+1,y+1]]) {
+        if (nx<0||nx>=w||ny<0||ny>=h) continue;
+        const ni=ny*w+nx;
+        if (!mask[ni]) d[ni*4+3] = Math.min(d[ni*4+3], 180);
       }
     }
   }
-
   ctx.putImageData(id, 0, 0);
 }
 
-// ── PRE-WARM: load all built-in pedal images in background ─
+// ── UPDATE UI when image finishes loading ─────────────────
+function applyImageToUI(pedalId, dataUrl) {
+  if (!dataUrl || dataUrl === 'FAILED') return;
+  // Update library icon
+  const libIcon = document.querySelector(`.lib-pedal[data-id="${pedalId}"] .lib-icon`);
+  if (libIcon) {
+    libIcon.innerHTML = `<img src="${dataUrl}" style="width:100%;height:100%;object-fit:contain;filter:url(#cartoon) saturate(2) contrast(1.3)" alt="">`;
+  }
+  // Update any board cards currently showing shimmer/fallback
+  document.querySelectorAll(`.board-pedal[data-zone]`).forEach(wrapper => {
+    const allZone = wrapper.dataset.zone === 'pre' ? prePedals : fxPedals;
+    const idx = parseInt(wrapper.dataset.idx);
+    if (allZone[idx] === pedalId) {
+      const card = wrapper.querySelector('.pedal-card');
+      if (card && !card.querySelector('.pedal-real-img')) {
+        card.innerHTML = `<img src="${dataUrl}" class="pedal-real-img" alt="">`;
+      }
+    }
+  });
+}
+
+// ── PRE-WARM all built-in pedals on startup ───────────────
 function prewarmImages() {
-  // Stagger loads — don't hammer proxies all at once
   PEDALS.forEach((p, i) => {
-    const key = 'pfimg_' + IMG_VERSION + '_' + p.id;
-    try { const v = localStorage.getItem(key); if (v) { imgCache[p.id] = v; return; } } catch(e) {}
+    // Already in memory or localStorage cache?
+    if (imgCache[p.id] && imgCache[p.id] !== 'FAILED') return;
+    try {
+      const v = localStorage.getItem(imgKey(p.id));
+      if (v) { imgCache[p.id] = v; applyImageToUI(p.id, v); return; }
+    } catch(e) {}
+    // Schedule staggered fetch — 600ms apart to stay under rate limits
     setTimeout(() => {
-      loadPedalImage(p).then(() => {
-        // If a lib icon is showing SVG fallback, refresh it with the real image
-        const libEl = document.querySelector(`.lib-pedal[data-id="${p.id}"] .lib-icon`);
-        if (libEl && imgCache[p.id] && imgCache[p.id] !== 'FAILED') {
-          const img = document.createElement('img');
-          img.src = imgCache[p.id];
-          img.style.cssText = 'width:100%;height:100%;object-fit:contain;filter:url(#cartoon) saturate(2.2) contrast(1.3)';
-          libEl.innerHTML = ''; libEl.appendChild(img);
-        }
+      loadPedalImage(p).then(url => {
+        if (url) applyImageToUI(p.id, url);
       });
-    }, i * 400); // 400ms apart to avoid hammering
+    }, i * 600);
   });
 }
 
@@ -946,36 +878,96 @@ function hideInfo(){document.getElementById('info-panel').classList.remove('visi
 let _tt;
 function showToast(msg,type=''){const t=document.getElementById('toast');t.textContent=msg;t.className=type?`show ${type}`:'show';clearTimeout(_tt);_tt=setTimeout(()=>t.classList.remove('show'),2400)}
 
-// ── SEARCH/SCRAPE ────────────────────────────────────────
-async function searchPedals(query){
-  const status=document.getElementById('search-status'),results=document.getElementById('search-results');
-  results.innerHTML='';status.innerHTML='<span class="spinner"></span>Searching Sweetwater…';
-  try{
-    const url=`https://www.sweetwater.com/store/search.php?s=${encodeURIComponent(query+' effects pedal')}`;
-    const r=await fetch(`${PROXY}/get?url=${encodeURIComponent(url)}`,{signal:AbortSignal.timeout(10000)});
-    const data=await r.json();const doc=new DOMParser().parseFromString(data.contents||'','text/html');
-    let parsed=[];
-    doc.querySelectorAll('[class*="product-listing"],[class*="ProductCard"],[class*="product-card"],[class*="product-item"],.product').forEach(item=>{
-      const n=item.querySelector('h2,h3,h4,[class*="name"],[class*="title"]');
-      if(n){const t=n.textContent.trim();if(t.length>3&&t.length<80)parsed.push({name:t})}
+// ── PEDAL SEARCH via Anthropic API ───────────────────────
+async function searchPedals(query) {
+  const status = document.getElementById('search-status');
+  const results = document.getElementById('search-results');
+  results.innerHTML = '';
+  status.innerHTML = '<span class="spinner"></span>Searching Sweetwater &amp; Guitar Center…';
+
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 800,
+        tools: [{ type: 'web_search_20250305', name: 'web_search' }],
+        messages: [{
+          role: 'user',
+          content: `Search sweetwater.com and guitarcenter.com for guitar effects pedals matching "${query}". Return ONLY a raw JSON array (no markdown fences, no explanation) of up to 6 matching pedals. Each object must have exactly these keys: "name" (full product name string), "brand" (manufacturer string), "category" (exactly one of: overdrive, distortion, fuzz, delay, reverb, modulation, filter, compressor, utility, ambient). Example format: [{"name":"Boss DS-1 Distortion","brand":"Boss","category":"distortion"}]`
+        }]
+      })
     });
-    if(!parsed.length){doc.querySelectorAll('h2,h3,h4,a[href*="/store/detail"]').forEach(h=>{const t=h.textContent.trim();if(t.length>4&&t.length<80&&(t.toLowerCase().includes('pedal')||t.toLowerCase().includes('effect')||t.toLowerCase().includes(query.toLowerCase().split(' ')[0])))parsed.push({name:t})})}
-    const seen=new Set();
-    parsed=parsed.filter(p=>{if(seen.has(p.name)||p.name.length<5)return false;seen.add(p.name);return true}).slice(0,8);
-    if(!parsed.length){status.innerHTML='No results. Showing built-in matches.';showFallback(query);return}
-    status.innerHTML=`${parsed.length} results from Sweetwater`;showScrapedResults(parsed,query);
-  }catch(e){status.innerHTML='Showing built-in matches.';showFallback(query)}
+    if (resp.ok) {
+      const data = await resp.json();
+      const txt = (data.content || []).filter(b => b.type === 'text').map(b => b.text).join('');
+      const m = txt.match(/\[[\s\S]*?\]/);
+      if (m) {
+        let parsed = [];
+        try { parsed = JSON.parse(m[0]); } catch(e) {}
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          const seen = new Set();
+          const clean = parsed
+            .filter(p => p && typeof p.name === 'string' && p.name.length > 2)
+            .filter(p => { if (seen.has(p.name)) return false; seen.add(p.name); return true; })
+            .slice(0, 8);
+          if (clean.length > 0) {
+            status.innerHTML = `${clean.length} results found`;
+            showSearchResults(clean);
+            return;
+          }
+        }
+      }
+    }
+  } catch(e) {}
+
+  status.innerHTML = 'Showing built-in matches';
+  showFallback(query);
 }
 
-function showScrapedResults(items,query){
-  const results=document.getElementById('search-results');results.innerHTML='';
-  items.forEach(item=>{
-    const brand=extractBrand(item.name),cat=guessCat(item.name);
-    const tmp={id:'custom_'+Date.now()+Math.random(),name:item.name.substring(0,45),brand,cat,bodyColor:guessCatColor(item.name),textColor:'#fff',knobs:guessKnobs(item.name),accent:'#e8e8e8'};
-    const div=document.createElement('div');div.className='sri';
-    div.innerHTML=`<div class="sri-svg">${makePedalSVG(tmp,42,58)}</div><div style="flex:1;min-width:0"><div class="sri-name">${tmp.name}</div><div class="sri-brand">${brand}</div><div class="sri-cat" style="color:${CATS[cat].color}">${CATS[cat].label}</div></div><button class="sri-add">+ ADD</button>`;
-    div.querySelector('.sri-add').addEventListener('click',()=>{tmp.id='custom_'+Date.now();customPedals.push(tmp);renderLibrary(document.getElementById('lib-search').value);addToZone(tmp.id,addDest);closeModal()});
+function showSearchResults(items) {
+  const results = document.getElementById('search-results');
+  results.innerHTML = '';
+  items.forEach(item => {
+    const cat = CATS[item.category] ? item.category : guessCat(item.name);
+    const uid = 'custom_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7);
+    const tmp = {
+      id: uid,
+      name: (item.name || '').substring(0, 50),
+      brand: item.brand || extractBrand(item.name),
+      cat,
+      bodyColor: guessCatColor(item.name),
+      textColor: '#fff',
+      knobs: guessKnobs(item.name),
+      accent: '#e8e8e8'
+    };
+    const div = document.createElement('div');
+    div.className = 'sri';
+    div.innerHTML = `
+      <div class="sri-svg" id="sri-icon-${uid}">${makePedalSVG(tmp, 42, 58)}</div>
+      <div style="flex:1;min-width:0">
+        <div class="sri-name">${tmp.name}</div>
+        <div class="sri-brand">${tmp.brand}</div>
+        <div class="sri-cat" style="color:${CATS[cat]?.color||'#888'}">${CATS[cat]?.label||cat}</div>
+      </div>
+      <button class="sri-add">+ ADD</button>`;
+    div.querySelector('.sri-add').addEventListener('click', () => {
+      const finalId = 'custom_' + Date.now();
+      tmp.id = finalId;
+      customPedals.push({ ...tmp });
+      renderLibrary(document.getElementById('lib-search').value);
+      addToZone(finalId, addDest);
+      loadPedalImage(tmp).then(url => { if (url) { imgCache[finalId] = url; applyImageToUI(finalId, url); } });
+      closeModal();
+    });
     results.appendChild(div);
+    // Load preview image async
+    loadPedalImage(tmp).then(url => {
+      if (!url) return;
+      const el = document.getElementById(`sri-icon-${uid}`);
+      if (el) el.innerHTML = `<img src="${url}" style="width:42px;height:58px;object-fit:contain;filter:url(#cartoon) saturate(2) contrast(1.3)" alt="">`;
+    });
   });
 }
 function showFallback(query){
@@ -1043,8 +1035,10 @@ function loadState(){
     fxPedals=JSON.parse(localStorage.getItem('pf3_fx')||'[]');
     customPedals=JSON.parse(localStorage.getItem('pf3_custom')||'[]');
     const s=localStorage.getItem('pf3_size');if(s&&SIZES[s]){currentSize=s;document.getElementById('board-size-select').value=s}
-    // Pre-warm image cache
-    allPedals().forEach(p=>{try{const v=localStorage.getItem('pfimg_'+p.id);if(v)imgCache[p.id]=v}catch(e){}});
+    // Pre-warm image cache from localStorage (versioned key)
+    allPedals().forEach(p => {
+      try { const v = localStorage.getItem(imgKey(p.id)); if (v) imgCache[p.id] = v; } catch(e) {}
+    });
   }catch(e){prePedals=[];fxPedals=[]}
 }
 
