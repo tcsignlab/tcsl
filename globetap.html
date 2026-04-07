@@ -58,20 +58,30 @@
 <div id="loading">🌍 Loading 140,000+ real world cities…<br><small>(one-time fetch – no repeats until all played)</small></div>
 
 <script>
-// =============== GLOBE (bright + interactive) ===============
-const globe = Globe()(document.getElementById('globeViz'))
-  .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-day.jpg')
+// =============== GLOBE (natural earth texture + borders – NOT white) ===============
+const globeEl = document.getElementById('globeViz');
+const globe = Globe()(globeEl)
+  .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-day.jpg')   // realistic natural map
   .bumpImageUrl('https://unpkg.com/three-globe/example/img/earth-topology.png')
   .backgroundColor('#000011')
   .atmosphereColor('#77aaff')
   .atmosphereAltitude(0.35)
   .pointOfView({ lat: 25, lng: 10, altitude: 2.8 })
+  // Explicit accessors + bigger brighter pins + zero transition lag = pins now work and globe feels smooth
+  .pointLatitude('lat')
+  .pointLongitude('lng')
   .pointAltitude('altitude')
   .pointColor('color')
-  .pointRadius(0.5)
+  .pointRadius(0.85)
+  .pointsTransitionDuration(0)          // instant updates = no clunk
   .onGlobeClick(({ lat, lng }) => { if (gameActive) handleGuess({ lat, lng }); });
 
-// =============== WORLD CITIES (scraped live – ALL cities, no repeats until exhausted) ===============
+// Auto-resize for smooth performance on any screen size
+window.addEventListener('resize', () => {
+  globe.width(window.innerWidth).height(window.innerHeight);
+});
+
+// =============== WORLD CITIES (all real cities – no repeats until exhausted) ===============
 const CITIES_URL = 'https://raw.githubusercontent.com/lutangar/cities.json/master/cities.json';
 let allCities = [];
 let remainingCities = [];
@@ -83,10 +93,9 @@ const FALLBACK_CITIES = [
   {name:"Tokyo",country:"JP",lat:35.6762,lng:139.6503},
   {name:"Paris",country:"FR",lat:48.8566,lng:2.3522},
   {name:"Sydney",country:"AU",lat:-33.8688,lng:151.2093}
-  // ... (original 22 kept as emergency fallback)
 ];
 
-// Shuffle helper (Fisher-Yates – totally random)
+// Shuffle helper
 function shuffle(array) {
   const copy = [...array];
   for (let i = copy.length - 1; i > 0; i--) {
@@ -96,7 +105,20 @@ function shuffle(array) {
   return copy;
 }
 
-// Load massive real-world city database once (≈140k cities from GeoNames)
+// Smart country name: if it's an ISO2 code (e.g. "US") → full name; if already full → keep it
+function getCountryName(code) {
+  if (!code) return 'Unknown';
+  // If it's already a full name (length > 2), return as-is
+  if (code.length > 2) return code;
+  // Otherwise assume ISO2 and convert
+  try {
+    return new Intl.DisplayNames(['en'], { type: 'region' }).of(code) || code;
+  } catch (e) {
+    return code;
+  }
+}
+
+// Load massive real-world city database once
 async function loadWorldCities() {
   const loadingEl = document.getElementById('loading');
   loadingEl.style.display = 'block';
@@ -108,26 +130,26 @@ async function loadWorldCities() {
     
     allCities = data
       .map(city => ({
-        name: city.name,
-        country: city.country,        // ISO2 code (e.g. "FR")
+        name: city.name || city.city || city.city_ascii,
+        country: city.country,        // could be ISO2 or full name depending on source
         lat: parseFloat(city.lat),
         lng: parseFloat(city.lng)
       }))
       .filter(c => !isNaN(c.lat) && !isNaN(c.lng) && c.name && c.country);
     
-    console.log(`✅ Loaded ${allCities.length.toLocaleString()} real cities from the web`);
+    console.log(`✅ Loaded ${allCities.length.toLocaleString()} real cities`);
     remainingCities = shuffle(allCities);
   } catch (err) {
-    console.warn('⚠️ City database fetch failed – using tiny fallback', err);
+    console.warn('⚠️ City database fetch failed – using fallback', err);
     allCities = FALLBACK_CITIES.map(c => ({...c}));
     remainingCities = shuffle(allCities);
   } finally {
     loadingEl.style.display = 'none';
-    startGame();   // game only starts AFTER cities are ready
+    startGame();   // game starts only after cities ready
   }
 }
 
-// =============== COUNTRY BORDERS ===============
+// =============== COUNTRY BORDERS (kept exactly as requested) ===============
 fetch('https://unpkg.com/world-atlas@2/countries-50m.json')
   .then(r => r.json())
   .then(world => {
@@ -150,35 +172,28 @@ function haversine(lat1, lon1, lat2, lon2) {
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-// =============== PIN (big & bright + animation) ===============
+// =============== PIN (now guaranteed visible + smooth) ===============
+let pins = [];   // moved to top for clean scope
+
 function dropPin(lat, lng, color) {
   const pin = { lat, lng, color, altitude: 1.6 };
   pins.push(pin);
-  globe.pointsData(pins);
+  globe.pointsData(pins);   // instant update
 
+  // Quick drop animation (fewer frames = no clunk)
   let alt = 1.6;
-  function animate() {
-    alt -= 0.095;
-    pin.altitude = Math.max(alt, 0.04);
+  const dropStep = () => {
+    alt = Math.max(alt - 0.18, 0.04);
+    pin.altitude = alt;
     globe.pointsData(pins);
     if (alt > 0.04) {
-      requestAnimationFrame(animate);
-    } else {
-      let bounce = 0.08;
-      function bounceAnim() {
-        bounce -= 0.006;
-        pin.altitude = Math.max(bounce, 0.04);
-        globe.pointsData(pins);
-        if (bounce > 0.04) requestAnimationFrame(bounceAnim);
-      }
-      bounceAnim();
+      requestAnimationFrame(dropStep);
     }
-  }
-  animate();
+  };
+  dropStep();
 }
 
 // =============== GAME LOGIC ===============
-let pins = [];
 let index = 0;
 let score = 0;
 let gameActive = false;
@@ -187,13 +202,13 @@ const TOTAL_ROUNDS = 5;
 const TIME_PER_ROUND = 10;
 
 function pickNextTarget() {
-  // NEW CITY AT START OF EACH ROUND – pulled from global remaining pool (no repeats until ALL played)
   if (remainingCities.length === 0) {
     remainingCities = shuffle([...allCities]);
   }
   currentTarget = remainingCities.splice(0, 1)[0];
 
-  document.getElementById('target').textContent = `Find: ${currentTarget.name}, ${currentTarget.country}`;
+  const fullCountry = getCountryName(currentTarget.country);
+  document.getElementById('target').textContent = `Find: ${currentTarget.name}, ${fullCountry}`;
   document.getElementById('round-info').textContent = `Round ${index + 1} / ${TOTAL_ROUNDS}`;
 }
 
@@ -207,7 +222,7 @@ function startGame() {
   document.getElementById('score').textContent = 'Score: 0';
   document.getElementById('center').classList.add('hidden');
 
-  pickNextTarget();   // ← scrapes next city for round 1
+  pickNextTarget();
   startTimer();
 }
 
@@ -238,12 +253,12 @@ function handleGuess(pos) {
   score += points;
   document.getElementById('score').textContent = `Score: ${score}`;
 
-  if (pos) dropPin(pos.lat, pos.lng, '#ff3366');   // player guess (red)
-  dropPin(target.lat, target.lng, '#00ff88');      // correct city (green)
+  if (pos) dropPin(pos.lat, pos.lng, '#ff3366');
+  dropPin(target.lat, target.lng, '#00ff88');
 
   index++;
   if (index < TOTAL_ROUNDS) {
-    pickNextTarget();   // ← new random city for NEXT round (from pool)
+    pickNextTarget();
     startTimer();
   } else {
     endGame();
@@ -264,7 +279,6 @@ document.getElementById('play-again-btn').addEventListener('click', () => {
 });
 
 // =============== START EVERYTHING ===============
-// Globe + borders load instantly, then we fetch the full world cities database once
 loadWorldCities();
 </script>
 </body>
