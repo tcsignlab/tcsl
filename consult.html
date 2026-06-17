@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SignGuard Advisory</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --primary: #2e6cff;
+      --dark: #0b1f3a;
+      --light: #f7f9fc;
+      --text: #1a1a1a;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      color: var(--text);
+    }
+
+    /* NAV */
+    nav {
+      position: sticky;
+      top: 0;
+      background: rgba(255,255,255,0.85);
+      backdrop-filter: blur(10px);
+      padding: 15px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #eee;
+      z-index: 1000;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+    }
+
+    .logo svg {
+      width: 32px;
+      height: 32px;
+    }
+
+    nav a {
+      text-decoration: none;
+      color: var(--text);
+      margin-left: 20px;
+      font-weight: 500;
+    }
+
+    nav a:hover {
+      color: var(--primary);
+    }
+
+    /* HERO */
+    header {
+      background: linear-gradient(135deg, #0b1f3a, #1b3d6d);
+      color: white;
+      text-align: center;
+      padding: 120px 20px;
+    }
+
+    header h1 {
+      font-size: 48px;
+      margin-bottom: 15px;
+      animation: fadeUp 1s ease forwards;
+    }
+
+    header p {
+      font-size: 20px;
+      opacity: 0.9;
+      animation: fadeUp 1.4s ease forwards;
+    }
+
+    .cta {
+      margin-top: 30px;
+      animation: fadeUp 1.8s ease forwards;
+    }
+
+    .cta a {
+      background: var(--primary);
+      color: white;
+      padding: 14px 26px;
+      border-radius: 6px;
+      text-decoration: none;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+
+    .cta a:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    }
+
+    section {
+      padding: 80px 20px;
+      max-width: 1100px;
+      margin: auto;
+    }
+
+    h2 {
+      font-size: 32px;
+      margin-bottom: 30px;
+      text-align: center;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 25px;
+    }
+
+    .card {
+      padding: 25px;
+      border-radius: 10px;
+      background: white;
+      border: 1px solid #eee;
+      transition: all 0.3s ease;
+      opacity: 0;
+      transform: translateY(20px);
+    }
+
+    .card.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 15px 35px rgba(0,0,0,0.08);
+    }
+
+    .pricing {
+      border: 2px solid var(--primary);
+    }
+
+    .highlight {
+      background: var(--light);
+      text-align: center;
+      padding: 70px 20px;
+    }
+
+    footer {
+      background: var(--dark);
+      color: white;
+      text-align: center;
+      padding: 40px 20px;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+
+</head>
+
+<body>
+
+<nav>
+  <div class="logo">
+    <!-- Placeholder Logo -->
+    <svg viewBox="0 0 24 24" fill="none">
+      <path d="M12 2L4 6V12C4 17 7.5 21 12 22C16.5 21 20 17 20 12V6L12 2Z" stroke="#2e6cff" stroke-width="2" fill="rgba(46,108,255,0.1)"/>
+    </svg>
+    SignGuard Advisory
+  </div>
+  <div>
+    <a href="#services">Services</a>
+    <a href="#pricing">Pricing</a>
+    <a href="#contact">Contact</a>
+  </div>
+</nav>
+
+<header>
+  <h1>Protect Your Signage Investment</h1>
+  <p>Independent advisory to reduce risk, control costs, and deliver projects right the first time.</p>
+  <div class="cta">
+    <a href="#contact">Request Consultation</a>
+  </div>
+</header>
+
+<section id="services">
+  <h2>What We Do</h2>
+  <div class="grid">
+    <div class="card">Procurement advisory and bid comparison</div>
+    <div class="card">Independent bid review and risk analysis</div>
+    <div class="card">Project oversight from design to install</div>
+    <div class="card">Permitting and compliance strategy</div>
+  </div>
+</section>
+
+<section class="highlight">
+  <h2>Why This Matters</h2>
+  <p>Signage projects often exceed <strong>$20,000 – $250,000+</strong>.</p>
+  <p>One missed detail can create delays, rework, and unnecessary cost.</p>
+  <p><strong>SignGuard prevents those problems early.</strong></p>
+</section>
+
+<section id="pricing">
+  <h2>Service Packages</h2>
+  <div class="grid">
+    <div class="card pricing">
+      <h3>Bid Review</h3>
+      <p><strong>$500 – $1,500</strong></p>
+      <p>Identify risks, pricing gaps, and prevent overpaying.</p>
+    </div>
+    <div class="card pricing">
+      <h3>Project Oversight</h3>
+      <p><strong>$2k – $10k+</strong></p>
+      <p>End-to-end guidance through vendor selection and installation.</p>
+    </div>
+    <div class="card pricing">
+      <h3>Shop Profit Audit</h3>
+      <p><strong>$2k – $5k</strong></p>
+      <p>Improve pricing, workflow, and margins.</p>
+    </div>
+  </div>
+</section>
+
+<section id="contact">
+  <h2>Contact</h2>
+  <p>Start with a consultation or bid review.</p>
+  <p><strong>Email:</strong> your@email.com</p>
+  <p><strong>LinkedIn:</strong> your-profile</p>
+  <p><strong>Remote / Nationwide</strong></p>
+</section>
+
+<footer>
+  <p>© 2026 SignGuard Advisory</p>
+</footer>
+
+<script>
+  const cards = document.querySelectorAll('.card');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+      }
+    });
+  });
+  cards.forEach(card => observer.observe(card));
+</script>
+
+</body>
+</html>
