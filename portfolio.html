@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Design Portfolio Slider</title>
+
+<style>
+  body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #111;
+    color: #fff;
+    text-align: center;
+  }
+
+  .slider {
+    position: relative;
+    max-width: 900px;
+    margin: 50px auto;
+  }
+
+  .slide {
+    display: none;
+    width: 100%;
+    border-radius: 10px;
+  }
+
+  .slide.active {
+    display: block;
+    animation: fade 1s ease-in-out;
+  }
+
+  @keyframes fade {
+    from { opacity: 0.4; }
+    to { opacity: 1; }
+  }
+
+  .controls {
+    margin-top: 15px;
+  }
+
+  button {
+    background: #222;
+    color: #fff;
+    border: 1px solid #555;
+    padding: 10px 15px;
+    margin: 5px;
+    cursor: pointer;
+    border-radius: 5px;
+  }
+
+  button:hover {
+    background: #444;
+  }
+</style>
+</head>
+
+<body>
+
+<h1>Design Portfolio</h1>
+
+<div class="slider">
+  <img class="slide active" src="plans/01.jpg">
+  <img class="slide" src="plans/02.jpg">
+  <img class="slide" src="plans/03.jpg">
+  <img class="slide" src="plans/04.jpg">
+  <img class="slide" src="plans/05.jpg">
+  <img class="slide" src="plans/06.jpg">
+  <img class="slide" src="plans/07.jpg">
+  <img class="slide" src="plans/08.jpg">
+  <img class="slide" src="plans/09.jpg">
+  <img class="slide" src="plans/10.jpg">
+  <img class="slide" src="plans/11.jpg">
+  <img class="slide" src="plans/12.jpg">
+  <img class="slide" src="plans/13.jpg">
+  <img class="slide" src="plans/14.jpg">
+  <img class="slide" src="plans/15.jpg">
+  <img class="slide" src="plans/16.jpg">
+  <img class="slide" src="plans/17.jpg">
+  <img class="slide" src="plans/18.jpg">
+  <img class="slide" src="plans/19.jpg">
+  <img class="slide" src="plans/20.jpg">
+</div>
+
+<div class="controls">
+  <button onclick="prevSlide()">⟨ Prev</button>
+  <button onclick="togglePlay()">Start / Stop</button>
+  <button onclick="nextSlide()">Next ⟩</button>
+</div>
+
+<script>
+  let slides = document.querySelectorAll('.slide');
+  let index = 0;
+  let interval = null;
+  let playing = true;
+
+  function showSlide(i) {
+    slides.forEach(s => s.classList.remove('active'));
+    slides[i].classList.add('active');
+  }
+
+  function nextSlide() {
+    index = (index + 1) % slides.length;
+    showSlide(index);
+  }
+
+  function prevSlide() {
+    index = (index - 1 + slides.length) % slides.length;
+    showSlide(index);
+  }
+
+  function startAuto() {
+    interval = setInterval(nextSlide, 3000);
+    playing = true;
+  }
+
+  function stopAuto() {
+    clearInterval(interval);
+    playing = false;
+  }
+
+  function togglePlay() {
+    playing ? stopAuto() : startAuto();
+  }
+
+  // Start autoplay on load
+  startAuto();
+</script>
+
+</body>
+</html>
