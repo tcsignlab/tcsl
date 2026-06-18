@@ -16,43 +16,22 @@
       --text: #1a1a1a;
     }
 
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      scroll-behavior: smooth;
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; scroll-behavior: smooth; }
 
-    body {
-      font-family: 'Inter', sans-serif;
-      color: var(--text);
-    }
+    body { font-family: 'Inter', sans-serif; color: var(--text); }
 
-    /* NAV */
     nav {
-      position: sticky;
-      top: 0;
+      position: sticky; top: 0;
       background: rgba(255,255,255,0.85);
       backdrop-filter: blur(10px);
       padding: 15px 30px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+      display: flex; justify-content: space-between; align-items: center;
       border-bottom: 1px solid #eee;
       z-index: 1000;
     }
 
-    .logo {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-weight: 700;
-    }
-
-    .logo svg {
-      width: 32px;
-      height: 32px;
-    }
+    .logo { display: flex; align-items: center; gap: 10px; font-weight: 700; }
+    .logo svg { width: 32px; height: 32px; }
 
     nav a {
       text-decoration: none;
@@ -61,11 +40,8 @@
       font-weight: 500;
     }
 
-    nav a:hover {
-      color: var(--primary);
-    }
+    nav a:hover { color: var(--primary); }
 
-    /* HERO */
     header {
       background: linear-gradient(135deg, #0b1f3a, #1b3d6d);
       color: white;
@@ -73,22 +49,10 @@
       padding: 120px 20px;
     }
 
-    header h1 {
-      font-size: 48px;
-      margin-bottom: 15px;
-      animation: fadeUp 1s ease forwards;
-    }
+    header h1 { font-size: 48px; margin-bottom: 15px; animation: fadeUp 1s ease forwards; }
+    header p { font-size: 20px; opacity: 0.9; animation: fadeUp 1.4s ease forwards; }
 
-    header p {
-      font-size: 20px;
-      opacity: 0.9;
-      animation: fadeUp 1.4s ease forwards;
-    }
-
-    .cta {
-      margin-top: 30px;
-      animation: fadeUp 1.8s ease forwards;
-    }
+    .cta { margin-top: 30px; animation: fadeUp 1.8s ease forwards; }
 
     .cta a {
       background: var(--primary);
@@ -105,17 +69,9 @@
       box-shadow: 0 10px 25px rgba(0,0,0,0.2);
     }
 
-    section {
-      padding: 80px 20px;
-      max-width: 1100px;
-      margin: auto;
-    }
+    section { padding: 80px 20px; max-width: 1100px; margin: auto; }
 
-    h2 {
-      font-size: 32px;
-      margin-bottom: 30px;
-      text-align: center;
-    }
+    h2 { font-size: 32px; margin-bottom: 30px; text-align: center; }
 
     .grid {
       display: grid;
@@ -133,24 +89,38 @@
       transform: translateY(20px);
     }
 
-    .card.visible {
-      opacity: 1;
-      transform: translateY(0);
-    }
+    .card.visible { opacity: 1; transform: translateY(0); }
 
     .card:hover {
       transform: translateY(-5px);
       box-shadow: 0 15px 35px rgba(0,0,0,0.08);
     }
 
-    .pricing {
-      border: 2px solid var(--primary);
+    .card ul {
+      margin-top: 10px;
+      padding-left: 18px;
     }
+
+    .card li {
+      margin-bottom: 6px;
+      font-size: 14px;
+    }
+
+    .pricing { border: 2px solid var(--primary); }
 
     .highlight {
       background: var(--light);
       text-align: center;
       padding: 70px 20px;
+    }
+
+    /* NEW SECTION STYLE */
+    .mistakes {
+      background: #fff;
+    }
+
+    .mistakes .card {
+      border-left: 4px solid #ff4d4d;
     }
 
     footer {
@@ -172,7 +142,6 @@
 
 <nav>
   <div class="logo">
-    <!-- Placeholder Logo -->
     <svg viewBox="0 0 24 24" fill="none">
       <path d="M12 2L4 6V12C4 17 7.5 21 12 22C16.5 21 20 17 20 12V6L12 2Z" stroke="#2e6cff" stroke-width="2" fill="rgba(46,108,255,0.1)"/>
     </svg>
@@ -187,7 +156,7 @@
 
 <header>
   <h1>Protect Your Signage Investment</h1>
-  <p>Independent advisory to reduce risk, control costs, and deliver projects right the first time.</p>
+  <p>Reduce risk, control costs, and eliminate costly mistakes before they happen.</p>
   <div class="cta">
     <a href="#contact">Request Consultation</a>
   </div>
@@ -196,18 +165,98 @@
 <section id="services">
   <h2>What We Do</h2>
   <div class="grid">
-    <div class="card">Procurement advisory and bid comparison</div>
-    <div class="card">Independent bid review and risk analysis</div>
-    <div class="card">Project oversight from design to install</div>
-    <div class="card">Permitting and compliance strategy</div>
+
+```
+<div class="card">
+  <h3>Procurement Advisory</h3>
+  <p>Define exactly what you're buying before vendors quote it.</p>
+  <ul>
+    <li>Clear specifications</li>
+    <li>Standardized bid scope</li>
+    <li>Eliminate vague pricing</li>
+  </ul>
+</div>
+
+<div class="card">
+  <h3>Independent Bid Review</h3>
+  <p>Uncover hidden risks and cost issues before signing.</p>
+  <ul>
+    <li>Spot overpricing</li>
+    <li>Catch missing scope</li>
+    <li>Compare bids properly</li>
+  </ul>
+</div>
+
+<div class="card">
+  <h3>Project Oversight</h3>
+  <p>Catch problems before they become expensive mistakes.</p>
+  <ul>
+    <li>Shop drawing review</li>
+    <li>Fabrication oversight</li>
+    <li>Install quality checks</li>
+  </ul>
+</div>
+
+<div class="card">
+  <h3>Permitting & Compliance</h3>
+  <p>Keep approvals moving without delays.</p>
+  <ul>
+    <li>Code interpretation</li>
+    <li>Permit readiness</li>
+    <li>Fewer rejections</li>
+  </ul>
+</div>
+```
+
   </div>
 </section>
 
 <section class="highlight">
   <h2>Why This Matters</h2>
   <p>Signage projects often exceed <strong>$20,000 – $250,000+</strong>.</p>
-  <p>One missed detail can create delays, rework, and unnecessary cost.</p>
-  <p><strong>SignGuard prevents those problems early.</strong></p>
+  <p>Most overruns come from issues that could have been caught early.</p>
+  <p><strong>SignGuard eliminates those risks before fabrication begins.</strong></p>
+</section>
+
+<!-- NEW SECTION -->
+
+<section class="mistakes">
+  <h2>Mistakes We Catch Before They Cost You</h2>
+  <div class="grid">
+
+```
+<div class="card">
+  <h3>Incomplete Quotes</h3>
+  <p>Vendors omit mounting, electrical, or install details — leading to change orders later.</p>
+</div>
+
+<div class="card">
+  <h3>Material Downgrades</h3>
+  <p>Specified materials quietly swapped for cheaper alternatives during production.</p>
+</div>
+
+<div class="card">
+  <h3>Code Violations</h3>
+  <p>Signs designed without full compliance — resulting in permit rejection or redesign.</p>
+</div>
+
+<div class="card">
+  <h3>Underpriced Bids</h3>
+  <p>Low bids that look attractive but lead to delays, shortcuts, or future cost increases.</p>
+</div>
+
+<div class="card">
+  <h3>Shop Drawing Errors</h3>
+  <p>Incorrect dimensions, spacing, or mounting details approved before fabrication.</p>
+</div>
+
+<div class="card">
+  <h3>Installation Issues</h3>
+  <p>Alignment, placement, or structural problems discovered after install.</p>
+</div>
+```
+
+  </div>
 </section>
 
 <section id="pricing">
@@ -216,17 +265,17 @@
     <div class="card pricing">
       <h3>Bid Review</h3>
       <p><strong>$500 – $1,500</strong></p>
-      <p>Identify risks, pricing gaps, and prevent overpaying.</p>
+      <p>Best for preventing overpaying before committing.</p>
     </div>
     <div class="card pricing">
       <h3>Project Oversight</h3>
       <p><strong>$2k – $10k+</strong></p>
-      <p>End-to-end guidance through vendor selection and installation.</p>
+      <p>Best for high-value signage projects.</p>
     </div>
     <div class="card pricing">
       <h3>Shop Profit Audit</h3>
       <p><strong>$2k – $5k</strong></p>
-      <p>Improve pricing, workflow, and margins.</p>
+      <p>Improve margins and efficiency.</p>
     </div>
   </div>
 </section>
@@ -236,7 +285,6 @@
   <p>Start with a consultation or bid review.</p>
   <p><strong>Email:</strong> your@email.com</p>
   <p><strong>LinkedIn:</strong> your-profile</p>
-  <p><strong>Remote / Nationwide</strong></p>
 </section>
 
 <footer>
